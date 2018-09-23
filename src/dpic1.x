@@ -422,11 +422,13 @@ function eqstring( seg1:chbufp; inx1,len1: chbufinx;
 var i,j,k: integer;
 begin
    (*D if debuglevel = 2 then begin
-      writeln(log,' eqstring:'); write(log,' 1st arg =');
+      writeln(log,' eqstring:'); D*)
+   (* write(log,' 1st arg =');
       if seg1 = nil then write(log,' nil') else snapname(seg1,inx1,len1);
       writeln(log); write(log,' 2nd arg =');
       if seg2 = nil then write(log,' nil') else snapname(seg2,inx2,len2);
-      writeln(log) end; D*)
+      writeln(log) *)
+      (*D end; D*)
    if (seg1 = nil) or (seg2 = nil) then k := maxint
    else begin
       i := 0; k := 0; if len1 < len2 then j := len1 else j := len2;
@@ -1548,9 +1550,23 @@ var
 begin (*produce*)
 (*D if (debuglevel > 0) then begin
       writeln(log);
-      writeln(log, 'Production(newp=',newp:1,
+      write(log, 'Production(newp=',newp:1,
                    ',lexval=',attstack@[newp].lexval:1,
                    ',p=',p:1,')' );
+      with attstack@[newp] do case p of
+         primary4: begin write(log,' opr: ('); wfloat(log,xval);
+            write(log,')') end;
+         term2: begin write(log,' opr: '); wfloat(log,xval);
+            write(log,' * '); wfloat(log,attstack@[newp+2].xval) end;
+         term3: begin write(log,' opr: '); wfloat(log,xval);
+            write(log,' / '); wfloat(log,attstack@[newp+2].xval) end;
+         expression4: begin write(log,' opr: '); wfloat(log,xval);
+            write(log,' + '); wfloat(log,attstack@[newp+2].xval) end;
+         expression5: begin write(log,' opr: '); wfloat(log,xval);
+            write(log,' - '); wfloat(log,attstack@[newp+2].xval) end;
+         otherwise
+         end;
+      writeln(log);
       flush(log)
       end; D*)
 

@@ -738,6 +738,8 @@ Char lxch[lxmax + 1]={
 /* Parser variables */
 int oldsymb;                                    /* last lexical symbol */
 arg *macros, *args, *freearg;         /* macro and macro argument list */
+/*D currentmacro: argp; D*/
+/* last-found macro */
 stackinx stacktop, pseudotop, validtop, top;
 stackelm *parsestack;                                   /* parse stack */
 boolean parsestop;                                     /* parser flags */
@@ -9819,11 +9821,13 @@ eqstring(Char *seg1, chbufinx inx1, chbufinx len1, Char *seg2, chbufinx inx2,
   int j, k;
 
   /*D if debuglevel = 2 then begin
-     writeln(log,' eqstring:'); write(log,' 1st arg =');
+     writeln(log,' eqstring:'); D*/
+  /* write(log,' 1st arg =');
      if seg1 = nil then write(log,' nil') else snapname(seg1,inx1,len1);
      writeln(log); write(log,' 2nd arg =');
      if seg2 = nil then write(log,' nil') else snapname(seg2,inx2,len2);
-     writeln(log) end; D*/
+     writeln(log) */
+  /*D end; D*/
   if ((seg1 == NULL) || (seg2 == NULL)) {
       k = maxint;
       return k;
@@ -11853,9 +11857,23 @@ produce(stackinx newp, int p)
 
   /*D if (debuglevel > 0) then begin
         writeln(log);
-        writeln(log, 'Production(newp=',newp:1,
+        write(log, 'Production(newp=',newp:1,
                      ',lexval=',attstack^[newp].lexval:1,
                      ',p=',p:1,')' );
+        with attstack^[newp] do case p of
+           primary4: begin write(log,' opr: ('); wfloat(log,xval);
+              write(log,')') end;
+           term2: begin write(log,' opr: '); wfloat(log,xval);
+              write(log,' * '); wfloat(log,attstack^[newp+2].xval) end;
+           term3: begin write(log,' opr: '); wfloat(log,xval);
+              write(log,' / '); wfloat(log,attstack^[newp+2].xval) end;
+           expression4: begin write(log,' opr: '); wfloat(log,xval);
+              write(log,' + '); wfloat(log,attstack^[newp+2].xval) end;
+           expression5: begin write(log,' opr: '); wfloat(log,xval);
+              write(log,' - '); wfloat(log,attstack^[newp+2].xval) end;
+           otherwise
+           end;
+        writeln(log);
         flush(log)
         end; D*/
   With = &attstack[newp];
@@ -16081,24 +16099,36 @@ procedure logaddr D*/
 /*D;
 begin
    write(log,'[');
+D*/
+/*
    if b <> nil then write(log,odp(b):1,':',b^.attrib:1) else write(log,'nil');
+*/
+/*D
+   if b <> nil then write(log,odp(b):1) else write(log,'nil');
    writeln(log,']')
    end;
 procedure wrbufaddr D*/
 /*DF(q: fbufferp; job: integer)FD*/
 /*D;
 var r: fbufferp;
+   difa: boolean;
 begin
    if q=nil then write(log,'[nil]') else begin
+      difa := false;
+      r := q; while r^.nextb<>nil do r := r^.nextb;
+      while r^.prevb<>nil do begin
+         difa := difa or (r^.attrib<>r^.prevb^.attrib); r := r^.prevb end;
       if job <=0 then begin
          r := q; while r^.prevb<>nil do r := r^.prevb;
          while r<>q do begin
-            write(log,'[',odp(r):1,':',r^.attrib:1); r := r^.nextb end
+            write(log,'[',odp(r):1); if difa then write(log,':',r^.attrib:1);
+            r := r^.nextb end
          end;
       write(log,'[',odp(q):1,':',q^.attrib:1,']');
       if job >=0 then while q^.nextb<>nil do begin
          q := q^.nextb;
-         write(log,odp(q):1,':',q^.attrib:1,']')
+         write(log,odp(q):1); if difa then write(log,':',q^.attrib:1);
+         write(log,']')
          end
       end
    end;
@@ -16110,13 +16140,12 @@ begin
   if p=nil then write(log,' nil buffer ')
   else while p<>nil do with p^ do begin
      if job > 2 then begin
-        write(log,' buf'); wrbufaddr(p,0)
-        end;
+       write(log,' buf'); wrbufaddr(p,0) end;
      if job > 1 then
        write(log,' readx=',readx:1,' savedlen=',savedlen:1,' attrib=',attrib:1);
      if r = 0 then j := 1 else if r < 0 then j := -r else j := readx;
      if job > 0 then write(log,'(',j:1,',',savedlen:1,')');
-     writeln(log);write(log,'|');
+     writeln(log); write(log,'|');
      if carray = nil then write(log,'nil')
      else begin
         i := j;
@@ -16150,6 +16179,16 @@ markerror(int emi)
   /*D if debuglevel > 0 then begin
       write(log,'*** Markerror'); wrbufaddr(inbuf,0);
       writeln(log,' emi=', emi:1, ', lexsymb=', lexsymb:1,':') end; D*/
+  /*D if debuglevel > 0 then begin
+      if currentmacro = nil then begin end
+      else if currentmacro^.argbody = nil then begin end
+      else if currentmacro^.argbody^.carray = nil then begin end
+      else with currentmacro^.argbody^ do begin
+         write(errout,'In macro ');
+         for j:=1 to -attrib do wchar(errout,carray^[j])
+         end;
+      writeln(errout,':')
+      end; D*/
   /* Write out the current and prev line */
   if (emi < 903) {
       thisbuf = inbuf;
@@ -16252,6 +16291,10 @@ markerror(int emi)
 
       case XERROR:
 	fprintf(errout, "Error");
+	break;
+
+      case XSTART:
+	fprintf(errout, ".PS");
 	break;
 
       case XEND:
@@ -17353,7 +17396,16 @@ exitmacro(void)
 { /*,lastarg */
   arg *a;
 
-  /*D if debuglevel > 0 then writeln(log,' exitmacro'); D*/
+  /*D i: integer; D*/
+  /*D if debuglevel > 0 then begin
+     write(log,' exitmacro ');
+     if currentmacro = nil then begin end
+     else if currentmacro^.argbody = nil then begin end
+     else if currentmacro^.argbody^.carray = nil then begin end
+     else with currentmacro^.argbody^ do
+        for i:=1 to -attrib do wchar(log,carray^[i]);
+     writeln(log)
+     end; D*/
   a = args;
   if (args != NULL) {                                /* first get rid of args */
       args = args->highera;
@@ -18009,9 +18061,9 @@ begin
       consoleflush
       end
    end; D*/
-/* Go up one buffer level */
+/* Prepend a buffer on the left */
 fbuffer *(
-nbuf(fbuffer *buf))
+prebuf(fbuffer *buf))
 { fbuffer *With;
 
   if (buf->prevb == NULL) {
@@ -18032,21 +18084,24 @@ nbuf(fbuffer *buf))
 void
 copyleft(fbuffer *mac, fbuffer **buf, int attr)
 { /*F(mac: fbufferp; var buf: fbufferp; attr: integer)F*/
-  fbuffer *ml = mac;
+  fbuffer *ml;
   int i, k;
   boolean newflag;
   boolean copied = false;
   fbuffer *With;
   int FORLIM;
 
-  /*D if debuglevel > 0 then writeln(log, 'copyleft:'); D*/
+  /*D if debuglevel > 0 then begin write(log, 'copyleft(',odp(mac):1);
+     writeln(log,',',odp(buf):1,',',attr:1,'):') end; D*/
   /*D if debuglevel > 1 then begin
      write(log,' input string'); wrbuf(mac,3,1);
      write(log,' output'); wrbuf(buf,3,1) end; D*/
-  while (ml != NULL) {
-      mac = ml;
-      ml = ml->nextb;
+  if (mac != NULL) {
+      while (mac->nextb != NULL) {
+	  mac = mac->nextb;
+      }
   }
+  /* ml := mac; while ml <> nil do begin mac := ml; ml := ml^.nextb end; */
   while (mac != NULL) {
       if (mac->carray != NULL) {
 	  if (mac->savedlen >= mac->readx) {
@@ -18060,11 +18115,11 @@ copyleft(fbuffer *mac, fbuffer **buf, int attr)
 	      else {
 		  newflag = false;
 	      }
-	      /*D if debuglevel > 0 then writeln(log,
+	      /* D if debuglevel > 0 then writeln(log,
 	         ' in copyleft, [',odp(mac):1,']^.savedlen(',
 	         mac^.savedlen:1,') >= mac^.readx(',mac^.readx:1,')',
 	         ' newflag=',newflag:1,' [',odp(buf):1,']:attrib=',
-	         buf^.attrib:1) ; D*/
+	         buf^.attrib:1) ; D */
 	      if (newflag) {
 		  newbuf(&ml);
 		  if (attr == 0) {
@@ -18080,15 +18135,14 @@ copyleft(fbuffer *mac, fbuffer **buf, int attr)
 	      }
 	  }
 	  k = mac->savedlen;
-	  if ((*buf)->readx < (k - mac->readx + 2)) {  /*not enough space*/
+	  if ((*buf)->readx < (k - mac->readx + 2)) {
 	      With = *buf;
-	      while (With->readx > 1) {
+	      while (With->readx > 1) {  /* fill the left part of buf*/
 		  With->readx--;
 		  With->carray[With->readx] = mac->carray[k];
 		  k--;
 	      }
-	      /* D if debuglevel = 2 then write(log,' nbuf 1:'); D */
-	      *buf = nbuf(*buf);
+	      *buf = prebuf(*buf);
 	  }
 	  With = *buf;
 	  FORLIM = mac->readx;
@@ -18099,14 +18153,15 @@ copyleft(fbuffer *mac, fbuffer **buf, int attr)
       }
       mac = mac->prevb;
   }
+  /* !!! */
   if (!copied) {
       return;
   }
+  /* */
   /*D; if debuglevel > 0 then begin
-     writeln(log,' copyleft result'); wrbuf(ml,3,1) end D*/
-  /* D if (debuglevel=2) and (buf^.readx<=1) then write(log,' nbuf 2:'); D */
+     writeln(log,' copyleft result'); wrbuf(buf,3,1) end D*/
   if ((*buf)->readx <= 1) {
-      *buf = nbuf(*buf);
+      *buf = prebuf(*buf);
   }
   With = *buf;
   With->carray[With->readx - 1] = nlch;
@@ -18283,14 +18338,14 @@ defineargbody(int *parenlevel, fbuffer **p2)
 		  markerror(872);
 	      }
 	      With->carray[With->savedlen] = ch;
-	      /*D if debuglevel = 2 then begin
+	      /*D if debuglevel > 2 then begin
 	         write(log,'defineargbody2: savedlen=',savedlen:1,' ');
 	         logchar(ch); writeln(log,' parenlevel=',parenlevel:1)
 	         end; D*/
 	      inchar();
 	  }
 	  else {
-	      /*D if debuglevel=2 then write(log,' defineargbody3'); D*/
+	      /*D if debuglevel>2 then write(log,' defineargbody3'); D*/
 	      prevch = ch;
 	      inchar();
 	      if (isdigit(ch) != 0) {
@@ -18312,7 +18367,7 @@ defineargbody(int *parenlevel, fbuffer **p2)
 		      markerror(872);
 		  }
 		  With->carray[With->savedlen] = prevch;
-		  /*D if debuglevel = 2 then begin
+		  /*D if debuglevel > 2 then begin
 		      write(log,'defineargbody2: savedlen=',savedlen:1,' ');
 		      logchar(ch); writeln(log) end; D*/
 	      }
@@ -18334,7 +18389,7 @@ defineargbody(int *parenlevel, fbuffer **p2)
   ch = ' ';
   *p2 = p1;
   /*D; if debuglevel > 0 then with p1^ do begin
-     write(log,' defineargbody'); wrbuf(p1,3,0) end D*/
+     write(log,' after defineargbody:'); wrbuf(p1,3,0) end D*/
 }
 
 
@@ -18362,6 +18417,7 @@ ismacro(Char *chb, chbufinx obi, chbufinx chbi)
   if (mac == NULL) {
       return ism;
   }
+  /*D currentmacro := mac; D*/
   ism = true;
   if (ch == '(') {
       level = 0;
@@ -18401,7 +18457,7 @@ copyarg(Char *chb, chbufinx chbs, chbufinx chbi)
   int i;
   arg *ar;
 
-  /*D if debuglevel > 0 then begin write(log,'copyarg(');
+  /*D if debuglevel > 0 then begin writeln(log); write(log,'copyarg(');
      for i:= chbs to chbi-1 do write(log,chb^[i]); write(log,') ') end; D*/
   for (i = chbs + 1; i < chbi; i++) {
       n = (n * 10) + chb[i] - '0';
@@ -19247,6 +19303,7 @@ parse(void)
   lexstate = 0;
   macros = NULL;
   args = NULL;
+  /*D currentmacro := nil; D*/
   forbufend = false;
   instr = false;
   stackattribute(0);

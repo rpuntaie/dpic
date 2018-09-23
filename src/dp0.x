@@ -287,6 +287,7 @@ type
     (* Parser variables *)
     oldsymb: integer;           (* last lexical symbol                *)
     macros,args,freearg: argp;  (* macro and macro argument list      *)
+    (*D currentmacro: argp; D*) (* last-found macro                   *)
     stacktop, pseudotop, validtop, top: stackinx;
     parsestack: @tparsestack;                 (* parse stack          *)
     parsestop: boolean;         (* parser flags                       *)

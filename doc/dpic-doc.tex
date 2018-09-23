@@ -51,7 +51,7 @@
 \newcommand{\Gpic}{{\bq Gpic}\xspace}
 \newcommand{\Dpic}{{\bq Dpic}\xspace}
 \newcommand{\tpic}{{\bq tpic}\xspace}
-\renewcommand{\LaTeX}{{LaTeX}\xspace}
+%\renewcommand{\LaTeX}{{LaTeX}\xspace}
 \newcommand{\mfpic}{{\bq mfpic}\xspace}
 \newcommand{\groff}{{\bq groff}\xspace}
 \newcommand{\xfig}{{\bq xfig}\xspace}
@@ -1136,15 +1136,16 @@ or, in some cases, printed on paper.
 % height, width, and position of text.
 
 \subsection{SVG text\label{SVGtext:}}
-  At least until an automatic way of returning formatted sizes from
-  renderer back to \pic interpreter is established, there is need
-  of a mechanism for the \pic interpreter to set the size of text,
+  In contrast with the various dpic \LaTeX output formats for which
+  text size is established by postprocessor commands,
+  the size of SVG text has to be set by the \pic interpreter
+  (at least until an automatic way of returning formatted sizes from
+  renderer back to \pic interpreter is established).
 \begin{wrapfigure}[9]{r}{0.3\textwidth}%
   \vspace*{-\baselineskip}%
   \hspace*{1em}%
   \parbox{0.3\textwidth}{\input{Xtest.tex}}%
  \end{wrapfigure}%
-  assuming plain text only without significant mathematics, for example.
   One difficulty is that
   the formatted height of text is generally a fraction of the nominal size.
   For example, the Times letter X at 100\,bp placed on a 100\,bp by
@@ -1152,53 +1153,52 @@ or, in some cases, printed on paper.
   The height of the X is
   approximately 66\,bp or 0.66 of the nominal height.
   This ratio depends on the font.
-  Consequently,
-  a language issue arises: if the attribute {\tt ht {\it y}}
+  Consequently, a language issue arises: if the attribute {\tt ht~{\it y}}
   is to be used to set text size,
   should the value of {\it y} be the nominal height (the point size) or
-  the formatted height of the text? Initial versions of the experimental
-  SVG output of \dpic used the
-  nominal height but later versions now conform to \LaTeX usage
-  by assuming that {\it y} is the
-  true graphical height in drawing units.  (This might require
-  minor changes to legacy diagrams but the changes are usually small.)
+  the formatted height of the text?
+% Initial versions of the experimental
+% SVG output of \dpic used the
+% nominal height but later versions now conform to \LaTeX usage by treating
+  \Dpic treats
+  {\it y} as the true graphical height in drawing units.
+  Thus for example, {\tt "text" ht 10bp} produces output {\tt 10bp} high.
 
   To assist with the above and similar issues
   when the {\tt -v} option is invoked, \dpic performs the equivalent
   of
     \ntt{dpPPI = 96}
     \ntt{dptextratio = 0.66}\\
-  in the outermost scope of a diagram.  These are ordinary variables
-  that can be referenced as usual or changed by, for example,
-    \ntt{dpPPI := {\it value}}.
+  in the outermost scope of the diagram.  These are ordinary variables
+  that can be referenced as usual.
 
   The variable {\tt dpPPI} is given the inital value 96 which is
   pixels per inch
   on a 20-inch wide computer monitor of 1920 pixels width.
   On such a monitor, dpic output should be close to true size.
-  This parameter can be reset using the assignmnent
+  This parameter can be changed using the assignmnent
     \ntt{dpPPI := {\sl value}}\\
-  for different screen resolution. 
+  for different screen resolution, and {\tt dptextratio} can
+  be similarly changed. 
 
   When \dpic sees the {\tt ht {\it y}} attribute attached to SVG text,
-  it sets the text size using
-  the variable {\tt dptextratio} to estimate the nominal height
-  required.  Otherwise \dpic uses the current value of the environment
+  it sets the nominal text size
+  to $y/\tt{dptextratio}$ expressed in points.
+  Otherwise, \dpic uses the current value of the environment
   variable {\tt textht}, which has default value $11/72 \times 0.66,$
-  to set the size to 11\,bp.
+  to set the default size to 11\,bp.
 
-  By default, \dpic sets the width of text
-  to the current value of {\tt textwid} but,
+  \Dpic sets the width of text
+  to the current value of {\tt textwid} by default but,
   as always, it is best not to rely on
   default behaviour. Specify the object (text in this case) completely
   using {\tt wid {\it expression} ht {\it expression}}.
-
   In the absence of an automatic means of determining it, text width can
   be measured approximately when displayed full-size on a monitor.
   Fortunately on many diagrams, knowing the width is unnecessary or
   is required for only a few key strings.
-  In principle, this might be automated using suitable macros and scripting
-  (JavaScript, probably).
+  In principle, this process might be automated using suitable macros
+  and scripting (JavaScript, probably).
 
 \subsection{Bounding boxes}
   The bounding box of a diagram is not always known exactly or even defined
@@ -1232,6 +1232,7 @@ or, in some cases, printed on paper.
   use of dpic in server mode has induced a change that correctly
   defines the bounding box for very basic diagrams.  More explicitly,
   consider
+\pagebreak
 \begin{verbatim}
   .PS
   box with .sw at 0,0
@@ -1304,7 +1305,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   Dpic does not generate tpic specials.
   See the option list in \SR{Usage:} for output formats.
 
-\subsection{`{.}' lines and program-generated pic}
+\subsection{``{.}'' lines and program-generated pic}
   Gpic passes lines beginning with {\tt.}\ through to the output,
   thereby allowing
   arbitrary Troff macros to be interspersed with pic drawing commands.  Some
@@ -1317,7 +1318,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   {\tt.PS}, {\tt.PE} delimiters.  These
   lines must be dealt with separately.
 
-\subsection{`\textbackslash'\ lines}
+\subsection{``\textbackslash''\ lines}
   Both gpic and dpic pass lines beginning with \tBS\ to the output but
   dpic does not automatically append a {\tt\%} at the end as gpic does.
 
