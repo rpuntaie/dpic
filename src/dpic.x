@@ -1502,6 +1502,7 @@ begin
     if emi < 900 then write(errout,'ERROR: ') else write(errout,'WARNING: ');
     if emi < 800 then begin
       case lexsymb of
+        XEOF: write(errout,'End of file');
         XLname: write(errout,'Name');
         XLabel: write(errout,'Label');
         XLaTeX: write(errout,
@@ -1512,7 +1513,10 @@ begin
         XEND: write(errout,'.PE');
 (* include controlerr.i *)
 (*GHMF#include 'controlerr.i'FMHG*)
-        otherwise write(errout,'Punctuation characters')
+        otherwise begin
+           write(errout,'Punctuation characters')
+           (*D; write(errout,' (decimal ', lexsymb:1,')') D*)
+           end
         end;
       writeln(errout,' found.');
       writeln(errout,' The following were expected:')
@@ -1611,7 +1615,7 @@ begin
    end; (* stackattribute *)
                                 (* End of macro found *)
 procedure exitmacro;
-var a (*,lastarg *): argp;
+var a: argp;
   (*D i: integer; D*)
 begin
   (*D if debuglevel > 0 then begin
@@ -1624,12 +1628,8 @@ begin
      writeln(log) 
      end; D*)
   a := args;
-  if args <> nil then args := args@.highera;  (* first get rid of args *)
+  if args <> nil then args := args@.highera;
   disposeargs(a)
-  (* while a <> nil do begin
-    disposebufs(a@.argbody ( D,1D ) );
-    lastarg := a; a := a@.nexta; dispose(lastarg)
-    end *)
   end;
                                 (* Read a line from the input *)
 procedure readline(var infname: text);
@@ -2182,12 +2182,10 @@ begin
          end;
       mac := mac@.prevb
       end;
-(* !!! *)
    if copied then begin
       if buf@.readx <= 1 then buf := prebuf(buf);
       with buf@ do carray@[readx-1] := nlch
       end
-(* *)
    (*D; if debuglevel > 0 then begin
       writeln(log,' copyleft result'); wrbuf(buf,3,1) end D*)
    end;
@@ -2907,8 +2905,7 @@ begin
          3: queue(lr[lri+rs], lr[lri+prod]);
          5: begin
               si := parsestack@[pseudotop].table;
-              (*D if trace then
-                  writeln(log, ' SI(', si: 1, ')');D*)
+              (*D if trace then writeln(log, ' SI(', si: 1, ')');D*)
               while (lr[lri+lb] <> si) and (lr[lri] <> 0) do lri := lr[lri]
               end
          end; (* case *)

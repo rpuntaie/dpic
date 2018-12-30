@@ -26,6 +26,7 @@ XEQEQ = <==>;
 XEQ = <=>;
 XGE = <>=>;
 XLE = <<=>;
+XEOF = <<EOF>>;
 XERROR = <<ERROR>>;
 XFOR = <for>;
 XGT = <>>;

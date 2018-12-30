@@ -120,7 +120,7 @@ Dwight Aplevich%
 \section{Introduction}
 
 This document is meant for persons using dpic to produce diagrams for
-\LaTeX documents or web files.  You are assumed to have basic knowledge
+\LaTeX\ documents or web files.  You are assumed to have basic knowledge
 of the pic language as described for the original Documenter's
 Workbench (ATT) pic~\cite{KRpic} or the
 current GNU pic (gpic) processor~\cite{Raymond95}.
@@ -130,7 +130,7 @@ Appendix~A, and the context-free dpic input grammar is given in Appendix~B.
 \Dpic accepts gpic input for the most part but
 there are minor differences.  The outputs of gpic and dpic are quite
 different but both can serve as preprocessors that create diagrams for
-inclusion in LaTeX documents.
+inclusion in \LaTeX\ documents.
 
 The pic language is particularly suited for easily creating line diagrams
 such as electric circuits, and many persons use a set of macros
@@ -158,7 +158,7 @@ the differences between gpic and dpic.
 \section{Dpic usage}\label{Usage:}
 In the following, items in square brackets [~] are optional
 and items separated by a vertical line~\VL~are alternatives.
-To produce .tex output (for LaTeX, \PSTricks, TikZ-PGF, \mfpic
+To produce .tex output (for \LaTeX, \PSTricks, TikZ-PGF, \mfpic
    processing):
    \ntt{dpic {\rm[}{\sl options}{\rm]} {\sl file}.pic \tRA\ {\sl file}.tex}\\
    or
@@ -195,7 +195,7 @@ To produce other formats:
 \end{tabbing}
 
 The {\tt -p} option produces output for postprocessing by the
-LaTeX package \PSTricks.
+\LaTeX\ package \PSTricks.
 Similarly, the {\tt -g} option produces output
 for the TikZ-PGF packages and makes pdf production
 via pdflatex a one-step process.
@@ -224,7 +224,7 @@ then any required text formatting generally must be included explicitly.
 The other possibility for SVG output is that an SVG library of elements
 can be drawn with dpic, and Inkscape used to place and connect copies
 of the elements.  Then Inkscape can export the graphics as eps for
-processing by \LaTeX or as pdf for processing by pdflatex.  Inkscape
+processing by \LaTeX\ or as pdf for processing by pdflatex.  Inkscape
 will also export a tex file from which labels can be formatted and
 overlaid on the imported eps or pdf.
 
@@ -243,10 +243,10 @@ The file Examples.txt contains a minimal example of each of these
 options except {\tt -z}.  Consult the appropriate manual for processing
 \mfpic, \PSTricks, \MetaPost, pgf, or psfrag output.
 
-Invoking dpic without options produces basic LaTeX drawing commands
-by default.  LaTeX line slopes, for example, are very limited and you
+Invoking dpic without options produces basic \LaTeX\ drawing commands
+by default.  \LaTeX\ line slopes, for example, are very limited and you
 must ensure that lines and arrows are drawn only at acceptable slopes.
-\Dpic sets the maximum slope integer to be 6 for LaTeX, 453 for eepic,
+\Dpic sets the maximum slope integer to be 6 for \LaTeX, 453 for eepic,
 and 1000 for pict2e.  To see the effect of the slope limitations,
 process the following:
 \begin{verbatim}
@@ -684,7 +684,7 @@ When m4 reads text, it strips off pairs of single quotes: thus,
 when it is a macro argument, for example, then the process is repeated.
 The single quotes serve to delay the evaluation of macros within
 {\tt text}, as in macro definitions described above.  Therefore, to
-avoid m4 changing dpic macro definitions or LaTeX, enclose
+avoid m4 changing dpic macro definitions or \LaTeX, enclose
 them in single quote pairs.
 
 Some simple applications of m4 macros are illustrated in the subsections
@@ -797,14 +797,14 @@ line command to fill the box.  A slightly more elaborate version
 that encloses the box in {\tt [}, {\tt ]} brackets is given by the
 Circuit\_macros {\tt rotbox} macro.
 
-\subsection{Subscripts}
+\subsection{Subscripts\label{Subscripts:}}
 \Dpic allows variables and labels to have a single or double subscript; thus
 {\tt x,} {\tt x[4],} and {\tt x[4,2]} are distinct variable names,
 and can be employed in expressions as usual.
 Similarly, {\tt P} and {\tt P[3]} are distinct labels.
 Writing the subscript as {\tt [{\sl position}]} for any defined
 position is the same as {\tt [{\sl position}.x, {\sl position}.y]}.
-In cases where the subscripted variable or label is part of a macro
+In cases where a double-subscripted variable or label is part of a macro
 argument, it is wise to protect the comma in the subscript
 with parentheses
 by writing, for example, {\tt x[(i,j)]} instead of {\tt x[i,j]}.
@@ -879,8 +879,8 @@ and draws the spline to pass through the given points.
 
 \subsection{Text}
 Pic interpreters are not wordprocessors, but
-generate output compatible with \LaTeX
-in the case of \dpic and \groff or \LaTeX in the case of \gpic.
+generate output compatible with
+\LaTeX\ in the case of \dpic and \groff or \LaTeX\ in the case of \gpic.
 \Dpic also generates
 output formats in which font choice and formatting, if any, must be done
 according to the context, as for example, postscript output containing psfrag
@@ -899,7 +899,7 @@ by hand for the particular workflow and postprocessor to be employed.
   can serve as a quick cure in specific cases, but is better done
   automatically as described in the Circuit\_macros documentation
   \cite{Aplevich09}.
-  Briefly summarized, LaTeX can write the exact height, width, and depth
+  Briefly summarized, \LaTeX\ can write the exact height, width, and depth
   of formatted text (or anything that creates a box) to a file.
   The file is read by dpic during a second processing of the diagram, so that
   the width $x$ and height $y$ are known numerical values in the phrase  
@@ -930,7 +930,7 @@ commands into dpic output.
 
 \Dpic lines beginning with the backslash \tBS\ are passed through to the
 output without modification.  This method works well for TeX statements,
-LaTeX statements, and commands to postprocessors that rely on the TeX macro
+\LaTeX\ statements, and commands to postprocessors that rely on the TeX macro
 processing.
 
 The second method is the form
@@ -1047,6 +1047,7 @@ define slantbox { [ # wid, ht, xslant, yslant, attributes
   line $5 from N to NE then to SE then to SW then to NW then to N
   ] }
 \end{verbatim}
+\vspace*{-1ex}
 This macro implements a version of
 the {\tt xslanted} and {\tt yslanted}
 attributes recently introduced for gpic boxes, for example
@@ -1060,7 +1061,7 @@ For example, the command
 is equivalent to the gpic example.  The above macro can be
 modified easily to produce arbitrary polygons, for example.
 The color {\tt Dandelion} is automatically defined for \PSTricks
-by the LaTeX line
+by the \LaTeX\ line
 \ntt{\tBS{}usepackage[dvipsnames]\tLB{}pstricks\tRB}\\
 For TikZ-PGF, try
 \ntt{\tBS{}usepackage[usenames,dvipsnames]\tLB{}xcolor\tRB}
@@ -1101,15 +1102,15 @@ The {\tt-r} (raw \Postscript),
 {\tt-v} (SVG),
 {\tt-d} (PDF),
 and {\tt-x} (\xfig) options
-of dpic produce output that is not intended to be processed directly by LaTeX
-or, in some cases, printed on paper.
+of dpic produce output that is not intended to be processed directly by
+\LaTeX\ or, in some cases, printed on paper.
 %  \Postscript output can be inserted
 %into a document with the {\tt \tBS{}includegraphics} macro. This command
 %will also import pdf for processing by pdflatex. 
 
   As a ``little language,'' \Pic and its interpreters 
   leave text sizing and formatting to word processors, which are
-  flavours of \LaTeX in the case of \dpic, and \groff or \LaTeX in the case
+  flavours of \LaTeX\ in the case of \dpic, and \groff or \LaTeX\ in the case
   of \gpic.
   Text formatting is specified by the text content itself or by
   the string contents of {\tt command} lines.
@@ -1121,7 +1122,7 @@ or, in some cases, printed on paper.
   In most cases, placing text using
     \ntt{"{\sl Text}" wid {\it x} ht {\it y} at {\it location}}\\
   is sufficient.
-  \LaTeX can write the height and width of the formatted text
+  \LaTeX\ can write the height and width of the formatted text
   (which can be anything that produces a TeX box)
   to an external file, which is passed to the \pic processor for use
   on a second pass over a diagram, as described in
@@ -1136,7 +1137,7 @@ or, in some cases, printed on paper.
 % height, width, and position of text.
 
 \subsection{SVG text\label{SVGtext:}}
-  In contrast with the various dpic \LaTeX output formats for which
+  In contrast with the various dpic \LaTeX\ output formats for which
   text size is established by postprocessor commands,
   the size of SVG text has to be set by the \pic interpreter
   (at least until an automatic way of returning formatted sizes from
@@ -1159,7 +1160,7 @@ or, in some cases, printed on paper.
   the formatted height of the text?
 % Initial versions of the experimental
 % SVG output of \dpic used the
-% nominal height but later versions now conform to \LaTeX usage by treating
+% nominal height but later versions now conform to \LaTeX\ usage by treating
   \Dpic treats
   {\it y} as the true graphical height in drawing units.
   Thus for example, {\tt "text" ht 10bp} produces output {\tt 10bp} high.
@@ -1305,7 +1306,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   Dpic does not generate tpic specials.
   See the option list in \SR{Usage:} for output formats.
 
-\subsection{``{.}'' lines and program-generated pic}
+\subsection{``{.}''~lines}% and program-generated pic}
   Gpic passes lines beginning with {\tt.}\ through to the output,
   thereby allowing
   arbitrary Troff macros to be interspersed with pic drawing commands.  Some
@@ -1463,7 +1464,7 @@ arguments can be arbitrary expressions rather than the constants shown.
   the double quote.  Otherwise, the backslash is an ordinary string
   character.
   For example, the characters\verb|\\"U| in a string are output as\verb|\"U|
-  to produce \"U when processed by LaTeX.
+  to produce \"U when processed by \LaTeX.
   A string with a backslash as last character
   has to be generated using a macro; for example, if we write
   {\tt define charstr \tLB"\$1"\tRB} then {\tt charstr(abc\tBS)}
@@ -1474,7 +1475,7 @@ arguments can be arbitrary expressions rather than the constants shown.
   expression.
 
   String height and width are unscaled on final output from dpic since
-  these may depend on later formatting by LaTeX.
+  these may depend on later formatting by \LaTeX.
 
 \subsection{{\tt print} {\sl arg},~$\ldots$}
   Dpic allows only one argument, which may be an expression, position,
@@ -1693,14 +1694,19 @@ to 0 sets the gap added by \dpic to zero.
 % The keyword {\tt continue} is not strictly necessary
 % but it has been retained for historical compatibility.
 
-\subsection{Subscripted variables and locations}
-  Dpic allows subscripted variables and positions, as an aid in
+\subsection{Subscripted variables and labels}
+  Dpic allows subscripted variables and positions, as described in
+  \SR{Subscripts:}.
+\iffalse
+  as an aid in
   geometric calculations such as fitting splines to a set of points.
   For example, {\tt Pos[{\sl expression}]} is a valid name for a position.
-  The rounded integer value of the expression is used.  Similarly,
-  {\tt x[{\sl expression}]} is
+  The rounded integer value of the expression is used.  Up to two subscripts
+  are allowed, and 
+  {\tt x[{\sl expression},{\sl expression}]} is
   a valid variable name.  There are no array operations, but it is easy
   to write macros for them.
+\fi
 
 \subsection{Splines}
   Gpic extends the ATT pic grammar to make {\tt line 0.5} legal and mean
@@ -1817,7 +1823,7 @@ A few additional mathematical functions are defined in dpic:
 
   For some versions of \PSTricks,
   a workaround for the problem has been to insert a
-  \PSTricks patch in your LaTeX code if you are enclosing splines
+  \PSTricks patch in your \LaTeX\ code if you are enclosing splines
   within\verb|\pscustom| commands.
   More recent versions of the \PSTricks package have changed
   again but, starting from the
@@ -1845,7 +1851,7 @@ command "\makeatletter\@ifundefined{ifPst@noCurrentPoint}%
  \psset{noCurrentPoint}}\makeatother%"
 \end{verbatim}
 
-  This patch need only be executed once per LaTeX run rather than with
+  This patch need only be executed once per \LaTeX\ run rather than with
   every diagram.
 
   If the above fix does not work then, for now,

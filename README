@@ -8,12 +8,16 @@ and are distributed under the licence at the end of this file, except for
 the file dpic-doc.pdf, which is subject to the Creative Commons attribution
 licence version 3.0 http://creativecommons.org/licenses/by/3.0/.
 
+Complete sources are available as a git repository at
+https://gitlab.com/aplevich/dpic
+
 Unix installation:
    Type `./configure' to generate a Makefile, then `make' to compile the
    sources.  Type `make install' or, if necessary, `sudo make install' to
    install the executable in /usr/bin, a man page in /usr/share/man/man1,
-   and dpic-doc.pdf in /usr/share/dpic.  To install the executable only,
-   type `make installdpic' and to install the documents only, type
+   and dpic-doc.pdf in /usr/share/dpic.  Typing `make PREFIX=local install'
+   puts the files in /usr/local instead of /usr.  To install the executable
+   only, type `make installdpic' and to install the documents only, type
    `make installdocs'.
 
    The configure script attempts to identify whether specific compiler

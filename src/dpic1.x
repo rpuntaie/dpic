@@ -223,7 +223,7 @@ begin
          XLbox,XLstring: begin
             wlogfl('boxfill',boxfill,0);
             wlogfl('boxheight',boxheight,0); wlogfl('boxwidth',boxwidth,0);
-            wlogfl('rad',boxradius,0) end;
+            wlogfl('boxrad',boxradius,0) end;
          XBLOCK: begin
             wlogfl('blockheight',blockheight,0);
             wlogfl('blockwidth',blockwidth,0);
@@ -767,8 +767,8 @@ begin
             XLright: pe.xpos := aat.xpos + boxwidth * 0.5
             end;
          XLstring: case direction of
-            XLup: pe.ypos := aat.ypos + boxradius * 0.5;
-            XLdown: pe.ypos := aat.ypos - boxradius * 0.5;
+            XLup: pe.ypos := aat.ypos + boxheight * 0.5;
+            XLdown: pe.ypos := aat.ypos - boxheight * 0.5;
             XLleft: pe.xpos := aat.xpos - boxwidth * 0.5;
             XLright: pe.xpos := aat.xpos + boxwidth * 0.5
             end;
@@ -950,15 +950,15 @@ begin
          x := 0.5 * (aat.xpos + pe@.endpos.xpos);
          y := 0.5 * (aat.ypos + pe@.endpos.ypos)
          end
-    else if (lexv = XEMPTY) and (not (ptype in [XLaTeX,XLstring])) then begin
-            (*D if debuglevel>0 then write(log,' XEMPTY'); D*)
-            end
+      else if (lexv = XEMPTY) and (not (ptype in [XLaTeX,XLstring])) then begin
+         (*D if debuglevel>0 then write(log,' XEMPTY'); D*)
+         end
       else case ptype of
          XLbox,XLstring,XBLOCK,XLcircle,XLellipse,XLarc: begin
             x := aat.xpos; y := aat.ypos;
             initnesw; nesw(pr);
             (* Compass corners of justified strings not implemented: *)
-         (* if ptype = XLstring then begin
+            (* if ptype = XLstring then begin
                checkjust(textp,A,B,L,R);
                offst := venv(pr,XLtextoffset);
                if L then x := x+boxwidth/2 + offst
@@ -1630,6 +1630,7 @@ begin (*produce*)
             end
          else if (drawmode in [SVG,PDF,PS]) and (envblock<>nil) then begin
             if envblock@.env<>nil then begin
+                                    (* linethick/2 in drawing units*)
                r := envblock@.env@[XLlinethick]/2/72*envblock@.env@[XLscale];
                   (*D if debuglevel > 0 then begin
                     write(log,' west='); wfloat(log,west);
@@ -1638,6 +1639,7 @@ begin (*produce*)
                     write(log,' shift=('); wfloat(log,-west+r);
                     write(log,','); wfloat(log,-south+r);
                     writeln(log,')'); flush(log) end; D*)
+                                    (* shift .sw to (r,r) *)
                shift(envblock, -west+2*r,-south+2*r);
                north := north-south+3*r; east := east-west+3*r;
                west := r; south := r
@@ -1646,7 +1648,9 @@ begin (*produce*)
          xfheight := north;
          with attstack@[newp] do getscale( xval,yval,envblock,scale,fsc );
             (*D if debuglevel > 0 then begin flush(log);
-              writeln(log,'After shift:'); printobject( envblock );
+              writeln(log,'After shift:');
+              write(log,'xfheight='); wfloat(log,xfheight); writeln(log);
+              printobject( envblock );
               printobject( envblock@.son ); writeln(log);
               write(log,'Starting drawtree ================= ');
               with attstack@[newp] do if (xval > 0.0) and (east > west) then

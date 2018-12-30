@@ -186,8 +186,9 @@ Dpic allows variables and labels to be subscripted; thus
 and
 .B T[5]
 are distinct labels.
-The value in brackets can be any expression
-but it is rounded to the nearest integer value.
+The value in brackets can be any expression, comma-separated
+expression pair, or a defined position,
+but expressions are rounded to the nearest integer value.
 A label gives a symbolic name to a position or drawn object;
 for example,
 .P
@@ -1241,7 +1242,7 @@ and the resulting file is inserted into a latex source file invoking,
 respectively, the tikz or pstricks package.
 .SH "SEE ALSO"
 .P
-E. S. Raymond, E. S.,
+E. S. Raymond,
 .I Making Pictures with GNU PIC,
 1995.
 .\" .br
@@ -1274,8 +1275,8 @@ pic.)
 .P
 J. D. Aplevich,
 .I M4 Macros for Electric Circuit Diagrams in LaTeX Documents,
-2017.
-File CMman.pdf in the graphics/Circuit_macros section
+2018.
+File Circuit_macros.pdf in the graphics/Circuit_macros section
 of CTAN repositories.
 (Extension of the pic
 language using the m4 macro processor for drawing electric circuits

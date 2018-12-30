@@ -31,7 +31,7 @@
 %
 % Use {\tt "} instead of ".
 %
-\phead{DPIC}{1}{2018.05.15}{}{}\shead{NAME}
+\phead{DPIC}{1}{2018.08.15}{}{}\shead{NAME}
 dpic - convert pic-language input to LaTeX-compatible and other formats
 \shead{SYNOPSIS}
 {\tt dpic\ [\ -defghmprstvx\ ]\ [\ -z\ ]\ [}
@@ -180,15 +180,14 @@ A
 in
 pic
 is an alphameric sequence that starts with an uppercase letter.
-Dpic allows variables and labels to be subscripted with up to two
-subscripts; thus
-{\tt T},
-{\tt T[5]},
+Dpic allows variables and labels to be subscripted; thus
+{\tt T}
 and
-{\tt T[5,-1]}
+{\tt T[5]}
 are distinct labels.
-The values in brackets can be any expressions
-but are rounded to the nearest integer value.
+The value in brackets can be any expression, comma-separated
+expression pair, or a defined position,
+but expressions are rounded to the nearest integer value.
 A label gives a symbolic name to a position or drawn object;
 for example,
 
@@ -1242,7 +1241,7 @@ and the resulting file is inserted into a latex source file invoking,
 respectively, the tikz or pstricks package.
 \shead{SEE ALSO}
 
-E. S. Raymond, E. S.,
+E. S. Raymond,
 {\it Making Pictures with GNU PIC,}
 1995.
 % .br
@@ -1275,8 +1274,8 @@ pic.)
 
 J. D. Aplevich,
 {\it M4 Macros for Electric Circuit Diagrams in LaTeX Documents,}
-2017.
-File CMman.pdf in the graphics/Circuit\_macros section
+2018.
+File Circuit\_macros.pdf in the graphics/Circuit\_macros section
 of CTAN repositories.
 (Extension of the pic
 language using the m4 macro processor for drawing electric circuits

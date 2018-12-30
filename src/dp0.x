@@ -248,7 +248,7 @@ type
     dpPPI: real;                (* pixels per inch                    *)
 
     north,south,east,west: real;(* compass corners of a primitive     *)
-    xfheight: real;             (* for calculating xfig coordinates   *)
+    xfheight: real;             (* for calculating xfig and svg coords*)
     freeseg: chbufp;            (* segment open to store strings      *)
     freex: 0..CHBUFSIZ+1;       (* next free location                 *)
     tmpbuf: chbufp;             (* buffer for snprintf or sprintf     *)

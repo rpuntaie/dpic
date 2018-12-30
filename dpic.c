@@ -280,6 +280,7 @@
 #define XEQ             29
 #define XGE             102
 #define XLE             103
+#define XEOF            1
 #define XERROR          3
 #define XFOR            83
 #define XGT             104
@@ -686,7 +687,7 @@ primitive *globalenv;                  /* the global environment block */
 double dptextratio;                  /* text parameters for SVG,PDF,PS */
 double dpPPI;                                       /* pixels per inch */
 double north, south, east, west;     /* compass corners of a primitive */
-double xfheight;                   /* for calculating xfig coordinates */
+double xfheight;                 /* for calculating xfig and svg coords*/
 Char *freeseg;                        /* segment open to store strings */
 short freex;                                     /* next free location */
 Char *tmpbuf;                        /* buffer for snprintf or sprintf */
@@ -2313,7 +2314,7 @@ xfigprelude(void)
      writeln('Center');
      writeln('Inches');
      writeln(xfigres:1,' 2');
-     writeln('# dpic version 2018.08.15 option -x for Fig 3.1')
+     writeln('# dpic version 2019.01.01 option -x for Fig 3.1')
      */
   printf("#FIG 3.2\n");
   printf("Landscape\n");
@@ -2323,7 +2324,7 @@ xfigprelude(void)
   printf("100.00\n");
   printf("Single\n");
   printf("-2\n");
-  printf("# dpic version 2018.08.15 option -x for Fig 3.2\n");
+  printf("# dpic version 2019.01.01 option -x for Fig 3.2\n");
   printf("%ld 2\n", (long)xfigres);
 }
 
@@ -2760,7 +2761,7 @@ svgprelude(double n, double s, double e, double w, double lth)
   printf("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n");
   printf("<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
   printf("\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
-  printf("<!-- Creator: dpic version 2018.08.15 option -v for SVG 1.1 -->\n");
+  printf("<!-- Creator: dpic version 2019.01.01 option -v for SVG 1.1 -->\n");
   hsize = (e - w + (2 * lth)) / fsc;
   vsize = (n - s + (2 * lth)) / fsc;
   printf("<!-- width=\"%d\" height=\"%d\" -->\n",
@@ -3671,7 +3672,7 @@ pstprelude(double n, double s, double e, double w)
   wcoord(&output, w, s);
   wcoord(&output, e, n);
   printf("%%\n");
-  printf("%% dpic version 2018.08.15 option -p for PSTricks 0.93a or later\n");
+  printf("%% dpic version 2019.01.01 option -p for PSTricks 0.93a or later\n");
 }
 
 
@@ -4452,7 +4453,7 @@ mfpprelude(double n, double s, double e, double w)
   wbrace(e / fsc);
   wbrace(s / fsc);
   wbrace(n / fsc);
-  printf("\n%% dpic version 2018.08.15 option -m for mfpic\n");
+  printf("\n%% dpic version 2019.01.01 option -m for mfpic\n");
   printf("\\dashlen=4bp\\dashspace=4bp\\dotspace=3bp\\pen{0.8bp}\n");
   printf("\\def\\mfpdefaultcolor{black}\\drawcolor{\\mfpdefaultcolor}\n");
   gslinethick = 0.8;
@@ -5164,7 +5165,7 @@ mfpdraw(primitive *node)
 void
 mpoprelude(void)
 { printstate++;
-  printf("%% dpic version 2018.08.15 option -s for MetaPost\n");
+  printf("%% dpic version 2019.01.01 option -s for MetaPost\n");
   printf("beginfig(%d)\n", printstate);
   printf("def lcbutt=linecap:=butt enddef;\n");
   printf("def lcsq=linecap:=squared enddef;\n");
@@ -5841,7 +5842,7 @@ mpodraw(primitive *node)
 void
 pgfprelude(void)
 { printf("\\begin{tikzpicture}[scale=2.54]\n");
-  printf("%% dpic version 2018.08.15 option -g for TikZ and PGF 1.01\n");
+  printf("%% dpic version 2019.01.01 option -g for TikZ and PGF 1.01\n");
   printf("\\ifx\\dpiclw\\undefined\\newdimen\\dpiclw\\fi\n");
   printf("\\global\\def\\dpicdraw{\\draw[line width=\\dpiclw]}\n");
   printf("\\global\\def\\dpicstop{;}\n");
@@ -6568,7 +6569,7 @@ psprelude(double n, double s, double e, double w, double lth)
   pswfloat(&output, sx);
   pswfloat(&output, ex);
   pswfloat(&output, nx);
-  printf("\n%%%%Creator: dpic version 2018.08.15 option ");
+  printf("\n%%%%Creator: dpic version 2019.01.01 option ");
   switch (drawmode) {
 
   case PSfrag:
@@ -7489,7 +7490,7 @@ pdfprelude(double n, double s, double e, double w, double lth)
 
   pdfobjcount = 0;
   printf("%%PDF-1.4\n");
-  printf("%% Creator: dpic version 2018.08.15 option -d for PDF\n");
+  printf("%% Creator: dpic version 2019.01.01 option -d for PDF\n");
   addbytes(62);                                 /* pdfobjcount must be 1 here */
   /* 123456789 123456789 123456789 123456789 123456789 123456789 12345*/
   /* 1. 2. 3. 4. 5. 6. */
@@ -8459,7 +8460,7 @@ texprelude(double n, double s, double e, double w)
       wcoord(&output, w, s);
       printf("\n\\thicklines\n");
   }
-  printf("%% dpic version 2018.08.15 option ");
+  printf("%% dpic version 2019.01.01 option ");
   switch (drawmode) {
 
   case TeX:
@@ -9492,7 +9493,7 @@ begin
          XLbox,XLstring: begin
             wlogfl('boxfill',boxfill,0);
             wlogfl('boxheight',boxheight,0); wlogfl('boxwidth',boxwidth,0);
-            wlogfl('rad',boxradius,0) end;
+            wlogfl('boxrad',boxradius,0) end;
          XBLOCK: begin
             wlogfl('blockheight',blockheight,0);
             wlogfl('blockwidth',blockwidth,0);
@@ -10416,11 +10417,11 @@ FindExitPoint(primitive *pr, postype *pe)
     switch (pr->direction) {
 
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.Ubox.boxradius * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->Upr.Ubox.boxheight * 0.5);
       break;
 
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.Ubox.boxradius * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->Upr.Ubox.boxheight * 0.5);
       break;
 
     case XLleft:
@@ -10814,13 +10815,13 @@ corner(primitive *pr, int lexv, double *x, double *y)
     nesw(pr);
     /* Compass corners of justified strings not implemented: */
     /* if ptype = XLstring then begin
-          checkjust(textp,A,B,L,R);
-          offst := venv(pr,XLtextoffset);
-          if L then x := x+boxwidth/2 + offst
-          else if R then x := x-boxwidth/2 - offst;
-          if A then y := y+boxheight/2 + offst
-          else if B then y := y-boxheight/2 - offst;
-          end; */
+       checkjust(textp,A,B,L,R);
+       offst := venv(pr,XLtextoffset);
+       if L then x := x+boxwidth/2 + offst
+       else if R then x := x-boxwidth/2 - offst;
+       if A then y := y+boxheight/2 + offst
+       else if B then y := y-boxheight/2 - offst;
+       end; */
     if ((pr->ptype == XLstring) && (drawmode == SVG)) {
 	switch (lexv) {
 
@@ -11986,6 +11987,7 @@ produce(stackinx newp, int p)
 	     (((1L << drawmode) & ((1L << SVG) | (1L << PDF) | (1L << PS))) !=
 	      0) && (envblock != NULL)) {
 	if (envblock->Upr.UBLOCK.env != NULL) {
+	    /* linethick/2 in drawing units*/
 	    r = (envblock->Upr.UBLOCK.env[XLlinethick - XLenvvar - 1] / 2 / 72) *
 		envblock->Upr.UBLOCK.env[XLscale - XLenvvar - 1];
 	    /*D if debuglevel > 0 then begin
@@ -11995,6 +11997,7 @@ produce(stackinx newp, int p)
 	      write(log,' shift=('); wfloat(log,-west+r);
 	      write(log,','); wfloat(log,-south+r);
 	      writeln(log,')'); flush(log) end; D*/
+	    /* shift .sw to (r,r) */
 	    shift(envblock, (2 * r) - west, (2 * r) - south);
 	    north += (3 * r) - south;
 	    east += (3 * r) - west;
@@ -12006,7 +12009,9 @@ produce(stackinx newp, int p)
     With3 = &attstack[newp];
     getscale(With3->xval, With3->yval, envblock, &scale, &fsc);
     /*D if debuglevel > 0 then begin flush(log);
-      writeln(log,'After shift:'); printobject( envblock );
+      writeln(log,'After shift:');
+      write(log,'xfheight='); wfloat(log,xfheight); writeln(log);
+      printobject( envblock );
       printobject( envblock^.son ); writeln(log);
       write(log,'Starting drawtree ================= ');
       with attstack^[newp] do if (xval > 0.0) and (east > west) then
@@ -16273,6 +16278,10 @@ markerror(int emi)
   if (emi < 800) {
       switch (lexsymb) {
 
+      case XEOF:
+	fprintf(errout, "End of file");
+	break;
+
       case XLname:
 	fprintf(errout, "Name");
 	break;
@@ -16968,6 +16977,7 @@ markerror(int emi)
 
       default:
 	fprintf(errout, "Punctuation characters");
+	/*D; write(errout,' (decimal ', lexsymb:1,')') D*/
 	break;
       }
       fprintf(errout, " found.\n");
@@ -17393,8 +17403,7 @@ stackattribute(stackinx stackp)
 /* End of macro found */
 void
 exitmacro(void)
-{ /*,lastarg */
-  arg *a;
+{ arg *a;
 
   /*D i: integer; D*/
   /*D if debuglevel > 0 then begin
@@ -17407,13 +17416,9 @@ exitmacro(void)
      writeln(log)
      end; D*/
   a = args;
-  if (args != NULL) {                                /* first get rid of args */
+  if (args != NULL) {
       args = args->highera;
   }
-  /* while a <> nil do begin
-    disposebufs(a^.argbody ( D,1D ) );
-    lastarg := a; a := a^.nexta; dispose(lastarg)
-    end */
   disposeargs(&a);
 }
 
@@ -18153,11 +18158,9 @@ copyleft(fbuffer *mac, fbuffer **buf, int attr)
       }
       mac = mac->prevb;
   }
-  /* !!! */
   if (!copied) {
       return;
   }
-  /* */
   /*D; if debuglevel > 0 then begin
      writeln(log,' copyleft result'); wrbuf(buf,3,1) end D*/
   if ((*buf)->readx <= 1) {
@@ -19216,8 +19219,7 @@ lookahead(symbol lsymbol)
 
       case 5:
 	si = parsestack[pseudotop].table;
-	/*D if trace then
-	    writeln(log, ' SI(', si: 1, ')');D*/
+	/*D if trace then writeln(log, ' SI(', si: 1, ')');D*/
 	while ((lr[lri + lb] != si) && (lr[lri] != 0)) {
 	    lri = lr[lri];
 	}
@@ -19416,7 +19418,7 @@ getoptions(void)
 	  FMHGD*/
       }
       else if ((cht == 'h') || (cht == '-')) {
-	  fprintf(errout, " *** dpic version 2018.08.15\n");
+	  fprintf(errout, " *** dpic version 2019.01.01\n");
 	  /*DGHMF
 	  writeln(errout,' Debug is enabled');
 	  FMHGD*/
