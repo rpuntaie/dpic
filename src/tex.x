@@ -25,6 +25,50 @@ begin
    writeln('\end{picture}' );
    (*D if debuglevel > 0 then writeln(log,'texpostlude done');D*)
    end;
+                                (* Test angle near 0 or pi/2 *)
+function iscorner(theta: real): boolean;
+begin
+   (*D if debuglevel = 2 then
+     writeln(log,'iscorner(',theta*180/pi:7:4,')=',
+       (abs(theta) < 0.001) or (abs(0.5*pi-abs(theta)) < 0.001)); D*)
+   iscorner := (abs(theta) < 0.001) or (abs(0.5*pi-abs(theta)) < 0.001)
+   end;
+
+                                (* Highest common factor of abs(x), abs(y) *)
+function hcf(x,y: integer): integer;
+var i: integer;
+begin
+   if x < 0 then x := -x;
+   if y < 0 then y := -y;
+   if y > x then begin i := y; y := x; x := i end;
+   while y > 0 do begin
+      i := y; y := x-(x div y)*y; x := i end;
+   if x = 0 then hcf := 1 else hcf := x
+   end;
+
+procedure wrslope( xp,yp: real; arrow: boolean );
+var i,ix,iy: integer;
+   r: real;
+begin
+   (*D if debuglevel > 0 then begin
+      write(log,'wrslope xp,yp: '); wpair(log,xp,yp) end; D*)
+   if (xp=0.0) and (yp=0.0) then begin xp := 1; yp := 0 end;
+   r := linlen(xp,yp);
+   if drawmode = Pict2e then i := 1000 (*4096*)
+   else if drawmode = tTeX then i := 453
+   else if arrow then i := 4
+   else i := 6;
+   iy := round((i+0.49999)*yp/r); ix := round((i+0.49999)*xp/r);
+   i := hcf(ix,iy);
+   iy := iy div i; ix := ix div i;
+   (*D if debuglevel > 0 then begin
+          write(log,' ix,iy:(',ix:1,',',iy:1,')'); write(log,' ',chr(123));
+          if ix = 0 then wfloat(log,abs(yp)/fsc) else wfloat(log,abs(xp)/fsc);
+          writeln(log,chr(125))
+          end; D*)
+   write( '(', ix:1, ',', iy:1, ')' );
+   if ix = 0 then wbrace( abs(yp)/fsc ) else wbrace( abs(xp)/fsc )
+   end;
 
 procedure arrowhead( pointx,pointy,tailx,taily: real );
 var x,y,r,ct: real;

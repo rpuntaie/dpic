@@ -45,6 +45,17 @@ begin
    (*D; if debuglevel > 0 then writeln(log,'svgpostlude done') D*)
    end;
 
+                                (* output substrings *)
+procedure space;
+begin
+   write(' ')
+   end;
+
+procedure quote;
+begin
+   write('"')
+   end;
+
 procedure svgsetstroke( lth: real );
 begin
    if lth <> gslinethick then begin

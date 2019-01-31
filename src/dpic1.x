@@ -8,13 +8,14 @@
 
 (* Recursive routines: snaptree FindExitPoint neswrec shift treedraw scaleobj *)
 
+                                (* Retrieve integer in first two buffer bytes *)
 function bval( buf:chbufp ): integer;
 begin
 (*P2CIP*)
    bval := ord(buf@[1])*(ordMAXCH+1) + ord(buf@[2])
 (*P2CP*)(*P2CC return (((int) buf[0]) << 7) + (int) buf[1] ; *)
    end;
-
+                                (* Store integer in first two buffer bytes *)
 procedure putbval( buf:chbufp; n:integer );
 (*P2CIP*) var i: integer; (*P2CP*)
 begin
@@ -26,7 +27,7 @@ begin
    buf@[2] := chr( n - i*(ordMAXCH+1) )
 (*P2CP*)(*P2CC buf[0] = (Char)(n>>7); buf[1] = (Char)(n % 128); *)
    end;
-
+                                (* Free the space used by the name string *)
 procedure deletename(*F(var head: strptr)F*);
 var pn,r: strptr;
    j: integer;
@@ -61,24 +62,24 @@ begin
       dispose(pn)
       end
    end;
-
+                                (* Store svalue in low 3 bits *)
 procedure setspec(var specv: integer; svalue: integer);
 begin
    specv := (specv div 8)*8 + (svalue - XLlinetype);
    (* if svalue = XLsolid then
       specv := (specv div 32)*32 + 16 + (specv mod 16) *)
    end;
-
+                                (* Store svalue only in low 3 bits *)
 procedure resetspec(var specv: integer; svalue: integer);
 begin
    specv := 0; setspec(specv, svalue)
    end;
-
+                                (* Set bit 4 to flag a segment with a parent *)
 procedure setthen(var specv: integer);
 begin
    specv := (specv div 16)*16 + 8 + (specv mod 8)
    end;
-
+                                (* For debug *)
 (*D
 procedure prtstval(st: integer);
 begin
@@ -303,7 +304,7 @@ begin
       end
    end;
 D*)
-
+                                (* Dispose of a tree of 1 or more objects *) 
 procedure deletetree(*F(var p: primitivep)F*);
 var r: primitivep;
     i: integer;
@@ -344,7 +345,7 @@ F*)
       p := r
       end
    end;
-
+                                (* Store arc strtang and arcang parameters *) 
 procedure setangles(var strtang,arcang:real; ctr:postype; xs,ys,xf,yf:real );
 var ra: real;  (* set arc angles given centre, start, end *)
 begin
@@ -354,7 +355,7 @@ begin
    else if (ra > 0.0) and (arcang < 0.0) then ra := ra-2.0*pi;
    arcang := ra
    end;
-
+                                (* Perform assignment operator *) 
 procedure eqop(var x: real; op: integer; y: real);
 var i,j: integer;
 begin
@@ -373,16 +374,17 @@ begin
       end
    end;
 
+                                (* Store int value in bits 9 and above *) 
 procedure setstval(var st: integer; value: integer);
 begin
    st := value*256 + (st mod 256)
    end;
-
+                                (* Recover int value from bits 9 and above *) 
 function getstval(st: integer): integer;
 begin
    getstval := st div 256
    end;
-
+                                (* Record application of object attribute *) 
 procedure setstflag(var st: integer; value: integer);
 begin
    case value of
@@ -397,9 +399,8 @@ begin
       XLdirecton: st := (st div 256)*256 + 128 + (st mod 128);
       otherwise
       end
-
    end;
-
+                                (* Test if attribute has been applied *) 
 function teststflag(st,value: integer): boolean;
 var b: boolean;
 begin
@@ -416,7 +417,11 @@ begin
       end;
    teststflag := b
    end;
-
+                                (* String equality:
+                                   0: identical
+                                   +k: string1 > string2 or len1 > len2
+                                   -k: string1 < string2 or len1 < len2
+                                   maxint: nil string or strings *) 
 function eqstring( seg1:chbufp; inx1,len1: chbufinx;
                    seg2:chbufp; inx2,len2: chbufinx): integer;
 var i,j,k: integer;
@@ -446,7 +451,7 @@ begin
       end;
    eqstring := k
    end;
-
+                                (* String equality of primitives *)
 function cmpstring( p1,p2: primitivep ): integer;
 begin
    if (p1 = nil) or (p2 = nil) then cmpstring := maxint
@@ -456,7 +461,7 @@ begin
       cmpstring := eqstring(p1@.textp@.segmnt,p1@.textp@.seginx,p1@.textp@.len,
                             p2@.textp@.segmnt,p2@.textp@.seginx,p2@.textp@.len)
    end;
-
+                                (* Match place name with stored places *)
 function findplace(p: primitivep; chb:chbufp; inx,length:chbufinx): primitivep;
 var pj: primitivep;
 begin
@@ -473,7 +478,7 @@ begin
       end;
    findplace := p
    end;
-
+                                (* Look for given macro name *)
 function findmacro( p:argp;
                      chb: chbufp; inx,length: chbufinx;
                      var last:argp ): argp;
@@ -490,7 +495,8 @@ begin
       else begin last := p; p := p@.nexta end;
    findmacro := p
    end;
-
+                                (* Hash of variable name:
+                                   (ord(chr(1))+ord(chr(n-1))) mod 10 *)
 function varhash( chb: chbufp; chbufx,length: chbufinx ): integer;
 var idx: integer;
 begin
@@ -501,7 +507,8 @@ begin
       end;
    varhash := idx - (idx div (HASHLIM+1))*(HASHLIM+1)
    end;
-
+                                (* Binary search for name in chain of stored
+                                   names *)
 function findname( eb:primitivep;
                    chb: chbufp; chbufx,length: chbufinx;
                    var last:strptr; var k: integer ): strptr;
@@ -548,7 +555,7 @@ begin
    if k = 0 then findname := leftptr else findname := nil
                          (*D; if debuglevel > 0 then writeln(log) D*)
    end;
-
+                                (* Get the value of a global variable *)
 function findvar(s: string; ln: integer): real;
 var i,k: integer;
    last,np: strptr;
@@ -558,7 +565,8 @@ begin
    np := findname(globalenv,tmpfmt,1,ln,last,k);
    if np = nil then findvar := 0 else findvar := np@.val
    end;
-
+                                (* Flag an object not found and complain to
+                                   stderr *)
 procedure marknotfound(eno:integer; chb:chbufp; inx,len:chbufinx);
 var i: integer;
 begin
@@ -576,7 +584,7 @@ begin
       end;
    writeln(errout)
    end;
-
+                                (* Search for variable in this and higer scope*)
 function glfindname( eb: primitivep; chb: chbufp;
             chbufx,length: chbufinx; var last:strptr; var k:integer ): strptr;
 var np: strptr;
@@ -591,7 +599,7 @@ begin
    if eb = nil then marknotfound(851,chb,chbufx,length);
    glfindname := np
    end;
-
+                                (* Create a string struct *)
 procedure newstr(*F(var sp: strptr)F*);
 begin
    new(sp);
@@ -601,8 +609,7 @@ begin
    (*D; if debuglevel > 0 then
       writeln(log,'newstr[',ordp(sp):1,']') D*)
    end;
-
-                                    (* put a string into freeseg *)
+                                (* Copy a string into freeseg *)
 procedure storestring( outstr:strptr;
                        srcbuf:chbufp; psrc,lsrc:chbufinx );
 var i,j: integer;
@@ -629,8 +636,7 @@ begin
       write(log,' from:'); snapname(srcbuf,psrc,lsrc);
       writeln( log ) end D*)
    end;
-
-                                    (* duplicate a strptr and copy the body *)
+                                (* Duplicate a strptr and copy the body *)
 procedure copystr( var sp:strptr; ip:strptr);
 begin
    if ip=nil then sp := nil else begin
@@ -638,8 +644,7 @@ begin
       storestring(sp,ip@.segmnt,ip@.seginx,ip@.len)
       end
    end;
-
-                                    (* append buf to *sp *)
+                                (* Append buf to *sp *)
 procedure appendstring(sp:strptr; buf:chbufp; px,ll:chbufinx);
 var i,j(*D,k D*): integer;
     tmpseg: chbufp;
@@ -691,14 +696,14 @@ begin (*D k := 0; D*)
       snapname(segmnt,seginx,len); writeln( log )
       end D*)
    end;
-
+                                (* Store or append string *)
 function putstring(ix:integer; sp:strptr; buf:chbufp; px,ll:chbufinx): integer;
 begin
    if ix <= 0 then storestring( sp, buf, px, ll )
    else           appendstring( sp, buf, px, ll );
    putstring := ix + 1
    end;
-
+                                (* Height of a primitive object *)
 function pheight(pr: primitivep ): real;
 var ph: real;
 begin
@@ -715,7 +720,7 @@ begin
       end;
    pheight := ph
    end;
-
+                                (* Width of a primitive object *)
 function pwidth(pr: primitivep ): real;
 var pw: real;
 begin
@@ -731,7 +736,7 @@ begin
       end;
    pwidth := pw
    end;
-
+                                (* The n, s, e, w values of a drawing tree *)
 procedure neswrec(ptm: primitivep);
 begin
    while ptm <> nil do begin
@@ -740,7 +745,7 @@ begin
       ptm := ptm@.next
       end
    end;
-
+                                (* Bounding box of a drawing tree *)
 procedure getnesw(ptm: primitivep);
 begin
    initnesw;
@@ -748,7 +753,7 @@ begin
    if south > north then begin south := 0.0; north := 0.0 end;
    if west > east then begin west := 0.0; east := 0.0 end
    end;
-
+                                (* Exit point of a primitive object *)
 procedure FindExitPoint( pr: primitivep; var pe: postype );
 begin
    if pr = nil then begin
@@ -808,7 +813,7 @@ begin
          end
       end
    end;
-
+                                (* Create and initialize a primitive object *)
 procedure newprim(var pr: primitivep; primtype: integer; envblk: primitivep);
 var i: integer;
 begin
@@ -868,7 +873,7 @@ HGM*)
          end
       end
    end; (* newprim *)
-
+                                (* Determine drawing direction at arc end *)
 procedure arcenddir(pr: primitivep);
 begin
    with pr@ do begin
@@ -890,7 +895,7 @@ begin
          end
       end
    end;
-
+                                (* Shift a tree by (x,y) *)
 procedure shift(pr: primitivep; x,y: real);
 begin
    (*D if debuglevel > 0 then begin
@@ -904,7 +909,7 @@ begin
       pr := next
       end
    end;
-
+                                (* Scale an object *)
 procedure scaleobj(pr: primitivep; s: real);
 begin
    while pr <> nil do with pr@ do begin
@@ -928,9 +933,9 @@ begin
       pr := next
       end
    end;
-
-(*        corner(prim,<corner>,xval,yval);
-                           Put the corner coordinates into xval,yval   *)
+                                (* corner(prim,<corner>,xval,yval);
+                                   Put the named-corner coordinates into
+                                   xval,yval   *)
 procedure corner(pr: primitivep; lexv: integer; var x,y: real);
 var pe: primitivep;
   sb: boolean;
@@ -1075,7 +1080,7 @@ begin
              wpair(log,x,y); writeln(log) end D*)
       end
    end;
-
+                                (* The nth (or nth last) enumerated object *)
 function nthprimobj(primp: primitivep; nth,objtype: integer): primitivep;
 var prp,pp: primitivep;
    i: integer;
@@ -1118,7 +1123,10 @@ begin
       end;
    nthprimobj := prp
    end;
-
+                                (* Reset environment vars:
+                                   n=0: all
+                                   n<0: scaled variables only
+                                   n>0: one var given by its lexical val*)
 procedure resetenv(envval: integer; envbl: primitivep);
 var i,last: environx;
 begin
@@ -1166,7 +1174,7 @@ begin
          end
       end
    end;
-
+                                (* Copy env vars to current scope *)
 procedure inheritenv(envbl: primitivep);
 var i: environx;
   pr: primitivep;
@@ -1180,7 +1188,7 @@ begin
       end
    else resetenv(0,envbl)
    end;
-
+                                (* Execute scale = x *)
 procedure resetscale(x: real; opr: integer; envbl: primitivep);
 var r,s: real;
    i: integer;
@@ -1211,7 +1219,7 @@ begin
    resetenv(0,envblock)
    (*D; if debuglevel > 0 then printobject(envblock) D*)
    end;
-
+                                (* Clearing memory at end of diagram *)
 procedure deletefreeargs(var a: argp);
 var na: argp;
 begin
@@ -1222,7 +1230,7 @@ begin
       a := na
       end
    end;
-
+                                (* Clearing memory at end of diagram *)
 procedure deletefreeinbufs(var p: fbufferp);
 var q: fbufferp;
 begin
@@ -1233,7 +1241,7 @@ begin
       p := q
       end
    end;
-
+                                (* Compute integer power of x *)
 function intpow(x: real; k: integer): real;
                                 (* 0^(-k) does not occur *)
 begin
@@ -1248,12 +1256,12 @@ begin
       end;
    intpow := x
    end;
-
+                                (* .PS xv yv
+                                sfact = nominal scale factor set by scale = ...
+                                xsc = effective scale factor to achieve correct
+                                  max picture size
+                                ie (size in inches)/(desired size in inches) *) 
 procedure getscale(xv,yv: real; lp: primitivep; var sfact,xsc: real);
-(* .PS xv yv
-   sfact = nominal scale factor set by scale = ...
-   xsc = effective scale factor to achieve correct max picture size
-   ie (size in inches)/(desired size in inches) *) 
 var gs: real;
     erno: integer;
     qp: primitivep;
@@ -1295,7 +1303,8 @@ begin
          wfloat(log,gs*sfact); writeln(log) end; D*)
    xsc := gs*sfact
    end;
-
+                                (* Attach primitive to chain of elements in this
+                                   scope *)
 procedure addelem(prold,prnew: primitivep);
 var pp,pq: primitivep;
 begin
@@ -1318,7 +1327,7 @@ begin
          snaptree(prold,0); writeln(log,' addelem done') end D*)
       end
    end;
-
+                                (* Copy primitive for use by then or same *)
 procedure copyprim(prin: primitivep; var prout: primitivep);
 (* Needed because assignment of variant records is unreliable *)
 var i: integer;
@@ -1375,7 +1384,7 @@ begin
          end
       end
    end;
-
+                                (* Delete temporary string *)
 procedure deletestringbox( var pr: primitivep );
 var prx: primitivep;
 begin
@@ -1390,7 +1399,7 @@ begin
       end;
    deletetree(pr)
    end;
-
+                                (* Append the int string to the name string*)
 procedure appendsuff(buf:chbufp; inx:chbufinx; var len:integer; x:real );
 var i,j,k: integer;
 begin
@@ -1409,7 +1418,8 @@ begin
       j := j-1
    until i = 0
    end;
-
+                                (* Append the suffix string to the name string
+                                   for one or two integers *)
 procedure addsuffix(buf:chbufp; var inx:chbufinx; var len:integer;
    np:integer );
 var i,j,k: integer;
@@ -1437,7 +1447,7 @@ begin
    (*D ; if debuglevel <> 0 then begin
       write(log,'postsuffix='); snapname(buf,inx,len); writeln(log) end D*)
    end; (* addsuffix *)
-
+                                (* Implement "then" or the "to" special case *)
 procedure appendthen(var pr: primitivep);
 var prp: primitivep;
 begin
@@ -1453,7 +1463,7 @@ begin
    setthen(prp@.spec);
    pr := prp
    end;
-
+                                (* Attribute up, down, left, right *)
 procedure lineardir( pr:primitivep; dy,dx: real; var state:integer );
 begin
    with pr@ do begin
@@ -1469,7 +1479,7 @@ begin
       end;
       setstflag(state,XLdirecton)
    end;
-
+                                (* Test for outline for outlined "string" *)
 function hasoutline(lx:integer; warn:boolean): boolean;
 var hs: boolean;
 begin
@@ -1478,7 +1488,7 @@ begin
   if (not hs) and warn then markerror(858);
   hasoutline := hs
   end;
-
+                                (* Test for shade for shaded "string" *)
 function hasshade(lx:integer; warn:boolean): boolean;
 var hs: boolean;
 begin
@@ -1489,7 +1499,7 @@ begin
   if (not hs) and warn then markerror(858);
   hasshade := hs
   end;
-
+                                (* The program equivalent of var = number *)
 procedure makevar(s: string; ln: integer; varval: real );
 var vn,lastvar,namptr: strptr;
    j,k: integer;
@@ -1530,8 +1540,9 @@ begin
       end;
    vn@.val := varval
    end;
-
-(*                   This is the syntactic action routine. *)
+                                (* This is the syntactic action routine:
+                                   Jump to production p operating on the stack
+                                   top elements *)
 procedure produce( newp: stackinx; p: integer );
 var
    lastc: char;
@@ -1550,9 +1561,9 @@ var
 begin (*produce*)
 (*D if (debuglevel > 0) then begin
       writeln(log);
-      write(log, 'Production(newp=',newp:1,
-                   ',lexval=',attstack@[newp].lexval:1,
-                   ',p=',p:1,')' );
+      write(log, 'Production(newp=',newp:1);
+      if p >= 0 then write(log,',lexval=',attstack@[newp].lexval:1);
+      write(log,',p=',p:1,')' );
       with attstack@[newp] do case p of
          primary4: begin write(log,' opr: ('); wfloat(log,xval);
             write(log,')') end;

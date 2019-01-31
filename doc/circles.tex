@@ -1,6 +1,6 @@
 % circles.m4
 \begin{tikzpicture}[scale=2.54]
-% dpic version 2018.05.10 option -g for TikZ and PGF 1.01
+% dpic version 2019.01.29 option -g for TikZ and PGF 1.01
 \ifx\dpiclw\undefined\newdimen\dpiclw\fi
 \global\def\dpicdraw{\draw[line width=\dpiclw]}
 \global\def\dpicstop{;}
@@ -9,9 +9,9 @@
 \draw (0.35,0) node{A};
 \dpicdraw[fill=white!95!black,line width=0.4bp,dotted](0.75,0.2) circle (0.088583in)\dpicstop
 \draw (0.75,0.2) node{B};
-\draw (0.59428,0.351128) node[above left=-1.5bp]{AB};
-\draw (0.69947,-0.019253) node[below right=-1.5bp]{BA};
-\draw (1.05,-0.35) node[below=-1.5bp]{\tt shade(0.5,lozenge(A,B))};
+\draw (0.59428,0.351128) node[above left=-2bp]{AB};
+\draw (0.69947,-0.019253) node[below right=-2bp]{BA};
+\draw (1.05,-0.35) node[below=-2bp]{\tt shade(0.5,lozenge(A,B))};
 \dpiclw=0.8bp
 \global\let\dpicshdraw=\dpicdraw\global\def\dpicdraw{}
 \global\def\dpicstop{--}

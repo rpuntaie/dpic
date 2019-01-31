@@ -15,6 +15,7 @@ begin
    writeln('\end{tikzpicture}')
    (*D; if debuglevel > 0 then writeln(log,'pgfpostlude done') D*)
    end;
+                                (* output substring *)
                                 (* np is always <> nil: *)
 procedure pgfwrtext(np: primitivep; tp: strptr; x,y: real );
 var A,B,L,R: boolean;

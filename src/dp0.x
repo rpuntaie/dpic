@@ -78,7 +78,7 @@ type
 
                                 (* Lalr machine types                 *)
     stackinx = 0..STACKMAX;
-    redubufrange = -REDUMAX..REDUMAX;
+    redubufrange = 0..REDUMAX;
     reduelem = (* packed *) record
        (*D oldtop, D*) newtop: stackinx;
        prod: production
@@ -288,7 +288,8 @@ type
     oldsymb: integer;           (* last lexical symbol                *)
     macros,args,freearg: argp;  (* macro and macro argument list      *)
     (*D currentmacro: argp; D*) (* last-found macro                   *)
-    stacktop, pseudotop, validtop, top: stackinx;
+    stacktop, validtop, top: stackinx;
+    pseudotop: integer;
     parsestack: @tparsestack;                 (* parse stack          *)
     parsestop: boolean;         (* parser flags                       *)
     startinx, lri, start: integer;

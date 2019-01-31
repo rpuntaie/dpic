@@ -75,7 +75,7 @@ procedure pointoutput(nw: boolean; txt: strptr; var ier: integer ); forward;
 (* include sysdep.h *)
 #include 'sysdep.h'
 
-(*P2CIP*)
+(*P2CIP*)                       (* For debug, the ordinal value of a pointer *)
    (*DF function ordp(p:pointer): PtrUInt;
    begin
       if p=nil then ordp := 0 else
@@ -157,6 +157,7 @@ begin
    datan := r
    end;
 
+                                (* like hypot() *)
 function linlen( x,y: real ): real;
 var xm,ym: real;
 begin
@@ -186,7 +187,7 @@ begin
       end
    (*D; if debuglevel > 0 then begin logaddr( buf ); writeln(log) end D*)
    end;
-                                (* Put buffers onto top of old-buffer stack *)
+                                (* Store buffers on top of old-buffer stack *)
 procedure disposebufs( var buf: fbufferp (*D; loc: integer D*));
 var bu: fbufferp;
 begin
@@ -233,19 +234,12 @@ begin
    flush(errout)
    (*DGHMF; if debuglevel > 0 then flush(log) FMHGD*)
    end;
-
-procedure deletebufs( var buf: fbufferp; mv: boolean );
+                                (* De-allocate buffer memory *)
+procedure deletebufs( var buf: fbufferp );
 var bu: fbufferp;
 begin
    (*D if debuglevel > 0 then write(log,' deletebufs dispose:'); D*)
-   if mv then begin
-      bu := buf;
-      while bu <> nil do begin
-         (*D if debuglevel > 0 then write(log,' up'); D*)
-         buf := bu;
-         bu := bu@.prevb
-         end
-      end;
+   if buf <> nil then while buf@.prevb <> nil do buf := buf@.prevb;
    while buf <> nil do begin
       bu := buf@.nextb;
       (*D if debuglevel > 0 then begin write(log,' '); logaddr(buf) end; D*)
@@ -257,7 +251,7 @@ begin
                                 (* We are finished *)
 procedure epilog;
 begin
-   deletebufs(inbuf,true);
+   deletebufs(inbuf);
    (*D if debuglevel > 0 then
       writeln(log,'dispose(chbuf)[',odp(chbuf):1,']'); D*)
    dispose(chbuf);
@@ -281,16 +275,20 @@ begin
       2: writeln(errout,'dpic data file dpic.tab not readable');
       (*P2 P*)
       3: writeln(errout,'maximum error count exceeded');
-      4: writeln(errout,'character buffer overflow: "CHBUFSIZ" exceeded');
+      4: writeln(errout,
+          'character buffer overflow: "CHBUFSIZ" (',CHBUFSIZ:1,') exceeded');
       5: writeln(errout,'end of file encountered on input');
       6: begin
-         writeln(errout,'too many pending actions, const "STACKMAX" exceeded,');
-         writeln(errout,' possibly caused by infinite recursion.')
+         writeln(errout,
+       'too many pending actions, const "STACKMAX" (',STACKMAX:1,') exceeded,');
+         writeln(errout,
+          ' possibly infinite recursion or a complex list or expression')
          end;
-      7: writeln(errout,'input too complex, const "REDUMAX" exceeded');
+      7: writeln(errout,
+          'input too complex, const "REDUMAX" (',REDUMAX:1,') exceeded');
       8: writeln(errout,'error recovery abandoned');
       9: writeln(errout,'subscript out of range');
-      otherwise writeln(errout,'unknown fatal error')
+      otherwise writeln(errout,'unclassified fatal error')
       end;
    (*P2CIP*)
    (*MGH goto 999 HGM*)
@@ -308,7 +306,8 @@ begin
    end;
 
 (*--------------------------------------------------------------------*)
-
+                                (* Substrings common to one or more
+                                   postprocessor *)
 procedure controls;
 begin
    writeln; write(' ..controls ')
@@ -328,17 +327,7 @@ procedure ddash;
 begin
    writeln; write(' --')
    end;
-
-procedure space;
-begin
-   write(' ')
-   end;
-
-procedure quote;
-begin
-   write('"')
-   end;
-
+                                (* Shading parameters for linear objects *)
 procedure getlinshade( nod:primitivep;
                     var tn:primitivep;
                     var ss,so:strptr; var fillval:real; var hshade:boolean );
@@ -356,28 +345,28 @@ begin
       end;
    if (ss <> nil) or (fillval >= 0.0) then hshade := true
    end;
-
-(* Arrowhead location (lex value) and number *)
+                                (* Arrowhead location or EMPTY in bit 4 ... *)
 function ahlex( atyp: integer): integer;
 begin
   ahlex := (atyp div 8)
   end;
-
+                                (* Arrowhead number in lower 3 bits *)
 function ahnum( atyp: integer): integer;
 begin
   ahnum := (atyp mod 8)
   end;
-
+                                (* Store arrowhead location or EMPTY *)
 function pahlex(atyp,alex: integer): integer;
 begin
   pahlex := (atyp mod 8) + (alex * 8)
   end;
-
+                                (* Store arrowhead number *)
 function pahnum(atyp,anum: integer): integer;
 begin
   pahnum := (atyp div 8) * 8 + (anum mod 8)  (* 0 < anum < 7 *)  
   end;
-
+                                (* Output float with trailing zeros trimmed in
+                                   the fraction part *)
 procedure wfloat( var iou: text; y: real );
 (*P2CIP*)
 var k: integer;
@@ -410,14 +399,14 @@ begin
    for (;(i>=0)&&(buf[i]!=' ');) i-- ;
    fprintf( *iou,"%s",&buf[i+1]); *)
    end;
-
+                                (* Output (x,y) *)
 procedure wpair( var iou: text; x,y: real );
 begin
    write(iou,'(');
    wfloat(iou,x); write(iou,','); wfloat(iou,y);
    write(iou,')')
    end;
-
+                                (* Output (x,y) with final scaling *)
 procedure wcoord( var iou: text; x,y: real );
 begin
    write(iou,'(');
@@ -425,12 +414,12 @@ begin
    wfloat(iou,y/fsc); write(iou,')')
    (*DGHMF ;flush(iou) FMHGD*)
    end;
-
+                                (* Output position as (x,y) with final scaling*)
 procedure wpos( pos: postype );
 begin
    wcoord(output, pos.xpos,pos.ypos )
    end;
-
+                                (* Output a string of characters from a strptr*)
 procedure wstring( var iou: text; p: strptr );
 var i: integer;
 begin
@@ -451,12 +440,13 @@ begin
    if p<>nil then with p@ do if segmnt<>nil then
       for i := seginx to seginx+len-1 do write(iou,segmnt@[i])
    end;
-
+                                (* Output leftbrace x rightbrace *)
 procedure wbrace( x: real );
 begin
    write('{'); wfloat(output,x); write('}')
    end;
-
+                                (* Store ljust rjust in bits 1, 2 and
+                                         below above in bits 3, 4 *)
 procedure setjust( tp: strptr; v: integer );
    var i: integer;
 begin
@@ -472,7 +462,8 @@ begin
          end
       end
    end;
-
+                                (* Test and return A(bove), B(elow),
+                                                   L(eft), R(ight) *) 
 procedure checkjust( tp: strptr; var A,B,L,R: boolean );
 var i: integer;
 begin
@@ -486,23 +477,15 @@ begin
       A := odd(i div 8)
       end
    end;
-(*                                  Test if ht of string has been set
-function checkht( tp: strptr ): boolean;
-var i: integer;
-begin
-   if tp=nil then checkht := false
-   else begin
-      i := round(tp@.val);
-      checkht := odd(i div 16)
-      end
-   end; *)
-
+                                (* Return linespec, i.e.,
+                                   <solid>, <dotted>, <dashed>, <invis>
+                                   from lowest 3 bits *)
 function lspec( n: integer): integer;
 begin
    (* if ((n div 16) mod 2) <> 0 then lspec := XLsolid
    else *) lspec := (n mod 8) + XLlinetype
    end;
-
+                                (* Linespec from tail of a multisegment line *)
 procedure getlinespec( nd:primitivep; var lsp:integer; var lastnd:primitivep);
 var tn: primitivep;
 begin
@@ -511,8 +494,8 @@ begin
    lastnd := tn;
    lsp := lspec(tn@.spec)
    end;
-
-
+                                (* Find the lowest block with environment
+                                   variables defined *)
 function findenv( p: primitivep ): primitivep;
 var q: primitivep;
 begin
@@ -530,7 +513,7 @@ begin
       flush(log) end; D*)
    findenv := p
    end;
-
+                                (* Get the value of an environment variable *)
 function venv(p: primitivep; ind: integer): real;
 var v: real;
 begin
@@ -541,7 +524,8 @@ begin
       end;
    venv := v
    end;
-
+                                (* Get the value of an environment variable
+                                   if it has not been set locally *)
 function qenv(p: primitivep; ind: integer; localval: real): real;
 var noval: real;
 begin
@@ -554,8 +538,9 @@ begin
   if localval <> noval then qenv := localval
   else qenv := venv(p,ind)
   end;
-
-(*        orig + mat(cs) * [x,y] *)
+                                (* Position from an affine transformation
+                                   orig + mat(cs) * [x,y] 
+                                   Position cs is (cos t, sin t) *)
 function affine(x,y: real; orig,cs: postype): postype;
 var tpos: postype;
 begin
@@ -563,7 +548,7 @@ begin
   tpos.ypos := orig.ypos + cs.ypos*x+cs.xpos*y;
   affine := tpos
   end;
-
+                                (* Get (cos t, sin t) of point wrt shaft *)
 function affang(point,shaft: postype): postype;
 var
   lgth: real;
@@ -577,12 +562,12 @@ begin
       end;
    affang := tpos
    end;
-
+                                (* Angle of the line from C to V *)
 function posangle(V,C: postype): real;
 begin
   posangle := datan(V.ypos-C.ypos,V.xpos-C.xpos)
   end;
-
+                                (* Initialize parameters for routine nesw *)
 procedure initnesw;
 begin
    south := distmax;
@@ -590,7 +575,8 @@ begin
    west := south;
    east := -west
    end;
-
+                                (* Values north, south, west, east for a string
+                                   accounting for ljust rjust above below *)
 procedure neswstring( pmp: primitivep; ht,wd: real );
 var A,B,L,R: boolean;
    x,y,offst: real;
@@ -614,7 +600,8 @@ begin
          end D*)
       end
    end;
-
+                                (* Values north, south, west, east for a line
+                                   or arrow *)
 procedure neswline( pmp: primitivep );
 var aht,awd: real;
    cs,cc,cd: postype;
@@ -648,7 +635,7 @@ begin
          end
       end
    end;
-
+                                (* Test if angle is within an arc segment *)
 function inarc(strt,fin,ang,arcang: real): boolean;
 var inarctmp: boolean;
 begin
@@ -672,7 +659,7 @@ begin
    inarc := inarctmp
    (*D; if debuglevel > 0 then writeln(log,' Inarc =',inarctmp) D*)
    end;
-
+                                (* Values north, south, east, west of an obj *)
 procedure nesw( ptmp: primitivep );
 var hight,wdth,sang,eang: real;
 begin
@@ -727,7 +714,8 @@ begin
          end D*)
       end
    end;
-
+                                (* Output \shortstack{line1\\ line2 ...}
+                                   if more than one text line, otherwise line1*)
 procedure texstacktext( np: primitivep; tp: strptr );
 var tx: strptr;
     A,B,L,R: boolean;
@@ -754,7 +742,7 @@ begin
       if tx <> nil then write('}')
       end
    end;
-
+                                (* Count the number of spline segments *)
 function primdepth( ptmp: primitivep ): integer;
 var dep: integer;
 begin
@@ -762,7 +750,7 @@ begin
    while ptmp <> nil do begin dep := dep+1; ptmp := ptmp@.son end;
    primdepth := dep
    end;
-
+                                (* Position P2 = (a*P1 + b*P2)/c (for arrows) *)
 procedure pprop( p1: postype; var p2: postype; a,b,c: real );
 begin
    if c <> 0.0 then begin
@@ -770,75 +758,25 @@ begin
       p2.ypos := (a*p1.ypos+b*p2.ypos)/c
       end
    end;
-
+                                (* Output P2 = (a*P1 + b*P2)/c (for arrows) *)
 procedure wprop( p1,p2: postype; a,b,c: real );
 begin
    pprop( p1,p2, a,b,c );  (* Note: p2 is not var *)
    wpos( p2 )
    end;
-
-function iscorner(theta: real): boolean;
-begin
-   (*D if debuglevel = 2 then
-     writeln(log,'iscorner(',theta*180/pi:7:4,')=',
-       (abs(theta) < 0.001) or (abs(0.5*pi-abs(theta)) < 0.001)); D*)
-   iscorner := (abs(theta) < 0.001) or (abs(0.5*pi-abs(theta)) < 0.001)
-   end;
-
-function hcf(x,y: integer): integer;
-var i: integer;
-begin
-   if x < 0 then x := -x;
-   if y < 0 then y := -y;
-   if y > x then begin i := y; y := x; x := i end;
-   while y > 0 do begin
-      i := y; y := x-(x div y)*y; x := i end;
-   if x = 0 then hcf := 1 else hcf := x
-   end;
-
-(*
-function iabs(i: integer): integer;
-begin
-  if i < 0 then iabs := -i else iabs := i
-  end;
-*)
-
-procedure wrslope( xp,yp: real; arrow: boolean );
-var i,ix,iy: integer;
-   r: real;
-begin
-   (*D if debuglevel > 0 then begin
-      write(log,'wrslope xp,yp: '); wpair(log,xp,yp) end; D*)
-   if (xp=0.0) and (yp=0.0) then begin xp := 1; yp := 0 end;
-   r := linlen(xp,yp);
-   if drawmode = Pict2e then i := 1000 (*4096*)
-   else if drawmode = tTeX then i := 453
-   else if arrow then i := 4
-   else i := 6;
-   iy := round((i+0.49999)*yp/r); ix := round((i+0.49999)*xp/r);
-   i := hcf(ix,iy);
-   iy := iy div i; ix := ix div i;
-   (*D if debuglevel > 0 then begin
-          write(log,' ix,iy:(',ix:1,',',iy:1,')'); write(log,' ',chr(123));
-          if ix = 0 then wfloat(log,abs(yp)/fsc) else wfloat(log,abs(xp)/fsc);
-          writeln(log,chr(125))
-          end; D*)
-   write( '(', ix:1, ',', iy:1, ')' );
-   if ix = 0 then wbrace( abs(yp)/fsc ) else wbrace( abs(xp)/fsc )
-   end;
-
+                                (* Test (bit 4) if this segment has a parent *)
 function isthen( pr: primitivep ): boolean;
 begin
    if pr = nil then isthen := false
    else isthen := ((pr@.spec div 8) mod 2) <> 0
    end;
-
+                                (* Test (bit 4) if this segment has no parent *)
 function firstsegment( pr: primitivep ): boolean;
 begin
    if pr = nil then firstsegment := false
    else firstsegment := ((pr@.spec div 8) mod 2) = 0
    end;
-
+                                (* Test shaded, filled, dashed, dotted, solid *)
 function drawn(node: primitivep; linesp: integer; fill: real): boolean;
 begin
    if node = nil then drawn := false
@@ -847,7 +785,7 @@ begin
       or ((fill>=0.0) and (fill<=1.0)) then drawn := true
    else drawn := false
    end;
-                                (* distance to P control point *)
+                                (* Distance to P control point *)
 function ahoffset(ht,wid,lti: real): real;
 begin
    if wid = 0.0 then ahoffset := 0.0
@@ -903,7 +841,7 @@ begin
        write(log,' x='); wfloat(log,x); write(log,' y='); wfloat(log,y);
        writeln(log) end D*)
    end;
-
+                                   (* Draw arc in segments for arc arrowheads *)
 procedure popgwarc( Ctr: postype; radius,startangle,endangle,ccw: real );
 var narcs,i: integer;
    c,s,cc,ss,arcangle: real;
@@ -1018,7 +956,8 @@ begin
       writeln(log)
       end D*)
    end;
-
+                                 (* Start of arc when there is an initial
+                                    arrowhead *)
 procedure startarc(n: primitivep; X0: postype; lth: real;
   var h,w: real);
 var x,y: real;
@@ -1037,7 +976,7 @@ begin
          end
       end
    end; 
-
+                                 (* End of arc when there is a final arrowhead*)
 procedure endarc(n: primitivep; X0: postype; lth: real; var h,w: real);
 var x,y: real;
 begin
@@ -1051,7 +990,7 @@ begin
       else |arcangle| := |arcangle|+x 
       end
    end;
-
+                                 (* Arc start point *)
 function arcstart(n: primitivep): postype;
 var X: postype;
 begin
@@ -1061,7 +1000,7 @@ begin
       end;
    arcstart := X
    end;
-
+                                 (* Arc end point *)
 function arcend( n: primitivep): postype;
 var X: postype;
 begin
@@ -1071,7 +1010,8 @@ begin
       end;
    arcend := X
    end;
-
+                                 (* These contain the production code for
+                                    the preprocessors *)
 (* include xfig.h *)
 #include 'xfig.h'
 
@@ -1100,8 +1040,7 @@ begin
 
 (* include tex.h *)
 #include 'tex.h'
-
-
+                                 (* Recursive output of the drawing-tree nodes*)
 procedure treedraw( node: primitivep );
 begin
    while node <> nil do begin
@@ -1171,7 +1110,7 @@ begin
       node := node@.parent
       end
    end; *)
-
+                                 (* Set up scale parameters and draw the tree *)
 procedure drawtree( n,s,e,w: real; eb: primitivep );
 var fsctmp: real;
 begin
@@ -1233,7 +1172,7 @@ begin
       end
    end;
 (* G end. G *)
-
+                                 (* The file of parse productions: *)
 (* include dpic1.p *)
 (*MGHF#include 'dpic1.p'FHGM*)
 
@@ -1353,12 +1292,12 @@ begin F*)
    openparse
    end;
 F*)
-
+                                 (* Printable character *)
 function isprint(ch: char): boolean;
 begin
    isprint := (ord(ch) >= 32) and (ord(ch) <= 126)
    end;
-
+                                 (* Output a character as printable *)
 procedure wchar( var iou: text; c: char );
 begin
    if isprint(c) then write(iou,c)
@@ -1850,7 +1789,8 @@ begin
       'a'..'i', 'j'..'r', 's'..'z'];
    uppercase := ['A'..'I', 'J'..'R', 'S'..'Z']
    end; (*P2CP*)
-
+                                (* Read the lexical and lalr tables when needed
+                                   for pascal or debug *)
 (*P2 IP*)
 procedure inittables;
 var
@@ -1919,7 +1859,7 @@ begin
    isupper := ch in uppercase
    end;
 (*P2CP*)
-
+                                (* Value of $+ *)
 function argcount(a: argp): integer;
 var i: integer;
 begin
@@ -1950,7 +1890,7 @@ begin
       else wrbuf(ar@.argbody,2,1) end; D*)
    findarg := ar
    end;
-
+                                (* Start reading from file for copy "file" *)
 (*P2CC #ifndef SAFE_MODE *)
 (*GHMF
 procedure pointinput FMHG*)(*F(txt: strptr)F*)(*GHMF;
@@ -1980,7 +1920,7 @@ begin
          end F*)
       (*GHMF end
    end; FMHG*)
-                                (* Redirect output *)
+                                (* Redirect output for print .. > "file" *)
 (*GHMF
 procedure pointoutput FMHG*)(*F(nw:boolean;txt:strptr;var ier:integer)F*)
 (*GHMF ;
@@ -2055,7 +1995,7 @@ begin
       if inputeof then write(log,'inputeof ');
       wchar(log,ch); writeln(log) end D*)
    end;
-
+                                (* Read exponent part of number *)
 procedure readexponent;
 var neg: boolean;
    k: integer;
@@ -2075,7 +2015,7 @@ begin
       else floatvalue := floatvalue*exp(k*ln10)
       end
    end; (* readexponent *)
-
+                                (* Read fraction part of number *)
 procedure readfraction;
 var x: real;
 begin
@@ -2086,7 +2026,7 @@ begin
       pushch
       end;
    end; (* readfraction *)
-
+                                (* Read number integer, fraction, exponent *)
 procedure readconst( initch: char);
 begin
    (*D if debuglevel=2 then begin writeln(log);
@@ -2127,7 +2067,7 @@ begin
       consoleflush
       end
    end; D*)
-                                (* Prepend a buffer on the left *)
+                                (* Prepend a buffer on the left of current buf*)
 function prebuf(buf: fbufferp): fbufferp;
 begin
    if buf@.prevb=nil then newbuf(buf@.prevb);
@@ -2189,7 +2129,6 @@ begin
    (*D; if debuglevel > 0 then begin
       writeln(log,' copyleft result'); wrbuf(buf,3,1) end D*)
    end;
-
                                 (* $n has been seen in a macro argument;
                                    copy the body into the tail of the input
                                    buffer *)
@@ -2322,7 +2261,6 @@ begin
    (*D; if debuglevel > 0 then with p1@ do begin
       write(log,' after defineargbody:'); wrbuf(p1,3,0) end D*)
    end;
-
                                 (* Check for macro name *)
 function ismacro(chb: chbufp; obi,chbi: chbufinx): boolean;
 var mac,lastp: argp;
@@ -2359,7 +2297,6 @@ begin
        writeln(log); writeln(log,'ismacro returning:',ism) end; D*)
    ismacro := ism
    end;
-
                                 (* Push an argument to the left of the
                                    input stream *)
 procedure copyarg(chb: chbufp; chbs,chbi: chbufinx);
@@ -2393,7 +2330,9 @@ begin
       end
    end;
                                 (* Find the next terminal.
-                                   Set lexsymb, lexval, and float value.
+                                   Set lexsymb (the terminal number),
+                                   newsymb (terminal number used for parsing),
+                                   and float value.
                                    Identify and handle all terminals
                                    of the form <...> in the grammar.
                                    Reads one character after the terminal end *)
@@ -2554,21 +2493,9 @@ begin (*lexical*)
                   terminalaccepted := false
                   end
                else (* if not isalnum(ch) then *) markerror(805)   (* $name *)
-               (* else begin
-                  repeat pushch until not isalnum(ch);
-                  backup;
-                  varptr := glfindname(envblock,chbuf,oldbufi+1,
-                     chbufi-oldbufi-1,lastp,k);
-                  if varptr=nil then markerror(805) else begin 
-                     j := round(varptr@.val); argstruct := findarg( args,j );
-                     if argstruct=nil then markerror(805)
-                     else if argstruct@.argbody<>nil then 
-                        copyleft(argstruct@.argbody,inbuf)
-                     end;
-                  terminalaccepted := false
-                  end *)
                end
             else if newsymb = XLdo then skipwhite
+                                (* &n or &A turns on debug logging if enabled *)
             (*D else if newsymb = XAND then begin
                chbufi := oldbufi;
                if debuglevel > 0 then consoleflush;
@@ -2707,13 +2634,6 @@ begin
 
 (*--------------------------------------------------------------------*)
 
-procedure bumptop( chk: stackinx; var sttop: stackinx);
-begin
-  (* D if chk<>sttop then
-     writeln(errout,'chk=',chk:4,' sttop=',sttop:4); D *)
-  if chk < STACKMAX then sttop := sttop+1 else fatal(6)
-  end;
-
 (*D
 procedure prattstack(j: integer);
 var i,k: integer;
@@ -2744,13 +2664,12 @@ begin
       for i := 1 to j do if attstack@[i].internal = nil then write(log,'    ')
          else write(log,attstack@[i].internal@.ptype:4);    writeln(log) end
    end; D*)
-
+                                (* Add a production to the reduction queue *)
 procedure doprod(*F(prno: integer)F*);
 begin
    redubuf[reduinx].prod := prno;
    reduinx := reduinx - 1
    end;
-
                                 (* Call the semantic action routine
                                    (produce) for the queued productions *)
 procedure advance;
@@ -2792,7 +2711,7 @@ begin (* perform reductions *)
     j := attstack@[stacktop-1].chbufx;
 
     (*D if (debuglevel > 0) and (redutop > 0) and (j < oldbufi) then begin
-       write(log,' advance: stacktop=',stacktop:1);
+       write(log,' advance: stacktop=',stacktop:1,' redutop=',redutop:1);
        write(log,' attstack@[stacktop-1](chbufx,length) = ');
        with attstack@[stacktop-1] do wpair(log,chbufx,length);
        writeln(log); write(log,' oldbufi=',oldbufi:1,' ');
@@ -2813,7 +2732,7 @@ begin (* perform reductions *)
         oldbufi := j
         end;
                                 (* shift *)
-    bumptop( stacktop,stacktop );
+    if stacktop < STACKMAX then stacktop := stacktop+1 else fatal(6);
     parsestack@[stacktop].table := startinx;
     stackattribute( stacktop );
                                 (* freeze stack, ready for new lookahead *)
@@ -2823,7 +2742,7 @@ begin (* perform reductions *)
     start := lri;
     redutop := 0
 end; (*advance*)
-
+                                (* Part of syntax error handling *)
 procedure backtrack(btop: stackinx; bstart: integer);
 begin
     stacktop := btop;
@@ -2833,11 +2752,12 @@ begin
     lri := bstart;
     redutop := 0
 end; (* backtrack *)
-
+                                (* Part of error handling and lookahead *)
 procedure pseudoshift;
 begin
-    bumptop( pseudotop,stacktop );
+    if stacktop < STACKMAX then stacktop := stacktop+1 else fatal(6);
     pseudotop := top + (stacktop - validtop);
+    if pseudotop > STACKMAX then fatal(6);
     parsestack@[pseudotop].table := startinx;
     stackattribute( pseudotop )
 end; (* pseudoshift *)
@@ -3005,7 +2925,6 @@ begin (* parse *)
    parsestack@[0].table := 0;
    parsestack@[0].link := 0;
    backtrack(top, start);
-   (*D stackhigh := top; D*)
    produce(1, -1);
                                 (* Main parse loop *)
    while not parsestop do begin
@@ -3016,7 +2935,7 @@ begin (* parse *)
       advance
       end
    end; (* parse *)
-
+                                (* Separate out the option character *)
 (*GHMF
 function optionchar(var fn: mstring ): char;
 var j,k: integer;
@@ -3115,10 +3034,16 @@ begin (* dpic *)
    new(attstack);
    tmpbuf := nil;
    tmpfmt := nil;
+   (*D for stackhigh:=0 to REDUMAX do redubuf[stackhigh].newtop:=STACKMAX; D*)
    parse;
    (*P2CIP*)
    (*MGH 999: HGM*)
    (*P2CP*)
+   (*D stackhigh := REDUMAX; oflag := -1; 
+     while stackhigh > oflag do
+       if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
+       else oflag := stackhigh;
+     writeln(errout,' stackhigh=',stackhigh:1); D*)
    epilog;
 
    end (* dpic *) .

@@ -481,7 +481,7 @@ typedef uchar environx;
 /* Lalr machine types */
 typedef uchar stackinx;
 
-typedef short redubufrange;
+typedef uchar redubufrange;
 
 typedef struct reduelem {
   /* packed */
@@ -680,7 +680,7 @@ int currprod;                     /* current production for error msgs */
 attribute *attstack;
 /*D stackhigh: integer;D*/
 redubufrange reduinx, redutop;
-reduelem redubuf[REDUMAX + REDUMAX + 1];           /* reduction buffer */
+reduelem redubuf[REDUMAX + 1];                     /* reduction buffer */
 double floatvalue;                   /* numerical value of floats read */
 primitive *envblock;             /* block containing the current scope */
 primitive *globalenv;                  /* the global environment block */
@@ -741,7 +741,8 @@ int oldsymb;                                    /* last lexical symbol */
 arg *macros, *args, *freearg;         /* macro and macro argument list */
 /*D currentmacro: argp; D*/
 /* last-found macro */
-stackinx stacktop, pseudotop, validtop, top;
+stackinx stacktop, validtop, top;
+int pseudotop;
 stackelm *parsestack;                                   /* parse stack */
 boolean parsestop;                                     /* parser flags */
 int startinx, lri, start;
@@ -919,6 +920,7 @@ datan(double y, double x)
 }
 
 
+/* like hypot() */
 double
 linlen(double x, double y)
 { double xm, ym;
@@ -970,7 +972,7 @@ newbuf(fbuffer **buf)
 }
 
 
-/* Put buffers onto top of old-buffer stack */
+/* Store buffers on top of old-buffer stack */
 void
 disposebufs(fbuffer **buf)
 { /*D; loc: integer D*/
@@ -1044,17 +1046,15 @@ consoleflush(void)
 }
 
 
+/* De-allocate buffer memory */
 void
-deletebufs(fbuffer **buf, boolean mv)
+deletebufs(fbuffer **buf)
 { fbuffer *bu;
 
   /*D if debuglevel > 0 then write(log,' deletebufs dispose:'); D*/
-  if (mv) {
-      bu = *buf;
-      while (bu != NULL) {
-	  /*D if debuglevel > 0 then write(log,' up'); D*/
-	  *buf = bu;
-	  bu = bu->prevb;
+  if ((*buf) != NULL) {
+      while ((*buf)->prevb != NULL) {
+	  *buf = (*buf)->prevb;
       }
   }
   while ((*buf) != NULL) {
@@ -1071,7 +1071,7 @@ deletebufs(fbuffer **buf, boolean mv)
 /* We are finished */
 void
 epilog(void)
-{ deletebufs(&inbuf, true);
+{ deletebufs(&inbuf);
   /*D if debuglevel > 0 then
      writeln(log,'dispose(chbuf)[',odp(chbuf):1,']'); D*/
   Free(chbuf);
@@ -1106,7 +1106,9 @@ fatal(int t)
     break;
 
   case 4:
-    fprintf(errout, "character buffer overflow: \"CHBUFSIZ\" exceeded\n");
+    fprintf(errout,
+	    "character buffer overflow: \"CHBUFSIZ\" (%ld) exceeded\n",
+	    (long)CHBUFSIZ);
     break;
 
   case 5:
@@ -1115,12 +1117,15 @@ fatal(int t)
 
   case 6:
     fprintf(errout,
-	    "too many pending actions, const \"STACKMAX\" exceeded,\n");
-    fprintf(errout, " possibly caused by infinite recursion.\n");
+	    "too many pending actions, const \"STACKMAX\" (%ld) exceeded,\n",
+	    (long)STACKMAX);
+    fprintf(errout,
+	    " possibly infinite recursion or a complex list or expression\n");
     break;
 
   case 7:
-    fprintf(errout, "input too complex, const \"REDUMAX\" exceeded\n");
+    fprintf(errout, "input too complex, const \"REDUMAX\" (%ld) exceeded\n",
+	    (long)REDUMAX);
     break;
 
   case 8:
@@ -1132,7 +1137,7 @@ fatal(int t)
     break;
 
   default:
-    fprintf(errout, "unknown fatal error\n");
+    fprintf(errout, "unclassified fatal error\n");
     break;
   }
   epilog();
@@ -1145,6 +1150,8 @@ fatal(int t)
 
 
 /*--------------------------------------------------------------------*/
+/* Substrings common to one or more
+   postprocessor */
 void
 controls(void)
 { printf("\n ..controls ");
@@ -1169,18 +1176,7 @@ ddash(void)
 }
 
 
-void
-space(void)
-{ putchar(' ');
-}
-
-
-void
-quote(void)
-{ putchar('"');
-}
-
-
+/* Shading parameters for linear objects */
 void
 getlinshade(primitive *nod, primitive **tn, nametype **ss, nametype **so,
 	    double *fillval, boolean *hshade)
@@ -1220,31 +1216,36 @@ getlinshade(primitive *nod, primitive **tn, nametype **ss, nametype **so,
 }
 
 
-/* Arrowhead location (lex value) and number */
+/* Arrowhead location or EMPTY in bit 4 ... */
 int
 ahlex(int atyp)
 { return (atyp >> 3);
 }
 
 
+/* Arrowhead number in lower 3 bits */
 int
 ahnum(int atyp)
 { return (atyp & 7);
 }
 
 
+/* Store arrowhead location or EMPTY */
 int
 pahlex(int atyp, int alex)
 { return ((atyp & 7) + (alex * 8));
 }
 
 
+/* Store arrowhead number */
 int
 pahnum(int atyp, int anum)
 { return (((atyp >> 3) * 8) + (anum & 7));                    /* 0 < anum < 7 */
 }
 
 
+/* Output float with trailing zeros trimmed in
+   the fraction part */
 void
 wfloat(FILE **iou, double y)
 { char buf[25];
@@ -1263,6 +1264,7 @@ wfloat(FILE **iou, double y)
 }
 
 
+/* Output (x,y) */
 void
 wpair(FILE **iou, double x, double y)
 { putc('(', *iou);
@@ -1273,6 +1275,7 @@ wpair(FILE **iou, double x, double y)
 }
 
 
+/* Output (x,y) with final scaling */
 void
 wcoord(FILE **iou, double x, double y)
 { putc('(', *iou);
@@ -1284,12 +1287,14 @@ wcoord(FILE **iou, double x, double y)
 }
 
 
+/* Output position as (x,y) with final scaling*/
 void
 wpos(postype pos)
 { wcoord(&output, pos.xpos, pos.ypos);
 }
 
 
+/* Output a string of characters from a strptr*/
 void
 wstring(FILE **iou, nametype *p)
 { int i, FORLIM;
@@ -1320,6 +1325,7 @@ wstring(FILE **iou, nametype *p)
 }
 
 
+/* Output leftbrace x rightbrace */
 void
 wbrace(double x)
 { putchar('{');
@@ -1328,6 +1334,8 @@ wbrace(double x)
 }
 
 
+/* Store ljust rjust in bits 1, 2 and
+         below above in bits 3, 4 */
 void
 setjust(nametype *tp, int v)
 { int i;
@@ -1361,6 +1369,8 @@ setjust(nametype *tp, int v)
 }
 
 
+/* Test and return A(bove), B(elow),
+                   L(eft), R(ight) */
 void
 checkjust(nametype *tp, boolean *A, boolean *B, boolean *L, boolean *R)
 { int i;
@@ -1380,16 +1390,9 @@ checkjust(nametype *tp, boolean *A, boolean *B, boolean *L, boolean *R)
 }
 
 
-/* Test if ht of string has been set
-function checkht( tp: strptr ): boolean;
-var i: integer;
-begin
-   if tp=nil then checkht := false
-   else begin
-      i := round(tp^.val);
-      checkht := odd(i div 16)
-      end
-   end; */
+/* Return linespec, i.e.,
+   <solid>, <dotted>, <dashed>, <invis>
+   from lowest 3 bits */
 int
 lspec(int n)
 { /* if ((n div 16) mod 2) <> 0 then lspec := XLsolid
@@ -1398,6 +1401,7 @@ lspec(int n)
 }
 
 
+/* Linespec from tail of a multisegment line */
 void
 getlinespec(primitive *nd, int *lsp, primitive **lastnd)
 { primitive *tn = nd;
@@ -1413,6 +1417,8 @@ getlinespec(primitive *nd, int *lsp, primitive **lastnd)
 }
 
 
+/* Find the lowest block with environment
+   variables defined */
 primitive *(
 findenv(primitive *p))
 { primitive *q = NULL;
@@ -1436,6 +1442,7 @@ findenv(primitive *p))
 }
 
 
+/* Get the value of an environment variable */
 double
 venv(primitive *p, int ind)
 { double v = 0.0;
@@ -1451,6 +1458,8 @@ venv(primitive *p, int ind)
 }
 
 
+/* Get the value of an environment variable
+   if it has not been set locally */
 double
 qenv(primitive *p, int ind, double localval)
 { double noval;
@@ -1482,7 +1491,9 @@ qenv(primitive *p, int ind, double localval)
 }
 
 
-/* orig + mat(cs) * [x,y] */
+/* Position from an affine transformation
+   orig + mat(cs) * [x,y]
+   Position cs is (cos t, sin t) */
 postype
 affine(double x, double y, postype orig, postype cs)
 { postype tpos;
@@ -1493,6 +1504,7 @@ affine(double x, double y, postype orig, postype cs)
 }
 
 
+/* Get (cos t, sin t) of point wrt shaft */
 postype
 affang(postype point, postype shaft)
 { double lgth;
@@ -1511,12 +1523,14 @@ affang(postype point, postype shaft)
 }
 
 
+/* Angle of the line from C to V */
 double
 posangle(postype V, postype C)
 { return (datan(V.ypos - C.ypos, V.xpos - C.xpos));
 }
 
 
+/* Initialize parameters for routine nesw */
 void
 initnesw(void)
 { south = distmax;
@@ -1526,6 +1540,8 @@ initnesw(void)
 }
 
 
+/* Values north, south, west, east for a string
+   accounting for ljust rjust above below */
 void
 neswstring(primitive *pmp, double ht, double wd)
 { boolean A, B, L, R;
@@ -1563,6 +1579,8 @@ neswstring(primitive *pmp, double ht, double wd)
 }
 
 
+/* Values north, south, west, east for a line
+   or arrow */
 void
 neswline(primitive *pmp)
 { double aht, awd;
@@ -1604,6 +1622,7 @@ neswline(primitive *pmp)
 }
 
 
+/* Test if angle is within an arc segment */
 boolean
 inarc(double strt, double fin, double ang, double arcang)
 { boolean inarctmp;
@@ -1645,6 +1664,7 @@ inarc(double strt, double fin, double ang, double arcang)
 }
 
 
+/* Values north, south, east, west of an obj */
 void
 nesw(primitive *ptmp)
 { double hight, wdth, sang, eang;
@@ -1765,6 +1785,8 @@ nesw(primitive *ptmp)
 }
 
 
+/* Output \shortstack{line1\\ line2 ...}
+   if more than one text line, otherwise line1*/
 void
 texstacktext(primitive *np, nametype *tp)
 { nametype *tx;
@@ -1809,6 +1831,7 @@ texstacktext(primitive *np, nametype *tp)
 }
 
 
+/* Count the number of spline segments */
 int
 primdepth(primitive *ptmp)
 { int dep = 0;
@@ -1821,6 +1844,7 @@ primdepth(primitive *ptmp)
 }
 
 
+/* Position P2 = (a*P1 + b*P2)/c (for arrows) */
 void
 pprop(postype p1, postype *p2, double a, double b, double c)
 { if (c != 0.0) {
@@ -1830,6 +1854,7 @@ pprop(postype p1, postype *p2, double a, double b, double c)
 }
 
 
+/* Output P2 = (a*P1 + b*P2)/c (for arrows) */
 void
 wprop(postype p1, postype p2, double a, double b, double c)
 { pprop(p1, &p2, a, b, c);                             /* Note: p2 is not var */
@@ -1837,94 +1862,7 @@ wprop(postype p1, postype p2, double a, double b, double c)
 }
 
 
-boolean
-iscorner(double theta)
-{ /*D if debuglevel = 2 then
-    writeln(log,'iscorner(',theta*180/pi:7:4,')=',
-      (abs(theta) < 0.001) or (abs(0.5*pi-abs(theta)) < 0.001)); D*/
-  return ((fabs(theta) < 0.001) || (fabs((0.5 * pi) - fabs(theta)) < 0.001));
-}
-
-
-int
-hcf(int x, int y)
-{ int i;
-
-  if (x < 0) {
-      x = -x;
-  }
-  if (y < 0) {
-      y = -y;
-  }
-  if (y > x) {
-      i = y;
-      y = x;
-      x = i;
-  }
-  while (y > 0) {
-      i = y;
-      y = x - ((x / y) * y);
-      x = i;
-  }
-  if (x == 0) {
-      return 1;
-  }
-  else {
-      return x;
-  }
-}
-
-
-/*
-function iabs(i: integer): integer;
-begin
-  if i < 0 then iabs := -i else iabs := i
-  end;
-*/
-void
-wrslope(double xp, double yp, boolean arrow)
-{ int i, ix, iy;
-  double r;
-
-  /*D if debuglevel > 0 then begin
-     write(log,'wrslope xp,yp: '); wpair(log,xp,yp) end; D*/
-  if ((xp == 0.0) && (yp == 0.0)) {
-      xp = 1.0;
-      yp = 0.0;
-  }
-  r = linlen(xp, yp);
-  if (drawmode == Pict2e) {
-      i = 1000;                                                         /*4096*/
-  }
-  else if (drawmode == tTeX) {
-      i = 453;
-  }
-  else if (arrow) {
-      i = 4;
-  }
-  else {
-      i = 6;
-  }
-  iy = (long)floor(((i + 0.49999) * yp / r) + 0.5);
-  ix = (long)floor(((i + 0.49999) * xp / r) + 0.5);
-  i = hcf(ix, iy);
-  iy /= i;
-  ix /= i;
-  /*D if debuglevel > 0 then begin
-         write(log,' ix,iy:(',ix:1,',',iy:1,')'); write(log,' ',chr(123));
-         if ix = 0 then wfloat(log,abs(yp)/fsc) else wfloat(log,abs(xp)/fsc);
-         writeln(log,chr(125))
-         end; D*/
-  printf("(%d,%d)", ix, iy);
-  if (ix == 0) {
-      wbrace(fabs(yp) / fsc);
-  }
-  else {
-      wbrace(fabs(xp) / fsc);
-  }
-}
-
-
+/* Test (bit 4) if this segment has a parent */
 boolean
 isthen(primitive *pr)
 { if (pr == NULL) {
@@ -1936,6 +1874,7 @@ isthen(primitive *pr)
 }
 
 
+/* Test (bit 4) if this segment has no parent */
 boolean
 firstsegment(primitive *pr)
 { if (pr == NULL) {
@@ -1947,6 +1886,7 @@ firstsegment(primitive *pr)
 }
 
 
+/* Test shaded, filled, dashed, dotted, solid */
 boolean
 drawn(primitive *node, int linesp, double fill)
 { if (node == NULL) {
@@ -1965,7 +1905,7 @@ drawn(primitive *node, int linesp, double fill)
 }
 
 
-/* distance to P control point */
+/* Distance to P control point */
 double
 ahoffset(double ht, double wid, double lti)
 { if (wid == 0.0) {
@@ -2045,6 +1985,7 @@ dahead(postype point, postype shaft, double ht, double wid, double ltu,
 }
 
 
+/* Draw arc in segments for arc arrowheads */
 void
 popgwarc(postype Ctr, double radius, double startangle, double endangle,
 	 double ccw)
@@ -2236,6 +2177,8 @@ arcahead(postype C, postype point, int atyp, double ht, double wid,
 }
 
 
+/* Start of arc when there is an initial
+   arrowhead */
 void
 startarc(primitive *n, postype X0, double lth, double *h, double *w)
 { double x, y;
@@ -2260,6 +2203,7 @@ startarc(primitive *n, postype X0, double lth, double *h, double *w)
 }
 
 
+/* End of arc when there is a final arrowhead*/
 void
 endarc(primitive *n, postype X0, double lth, double *h, double *w)
 { double x, y;
@@ -2282,6 +2226,7 @@ endarc(primitive *n, postype X0, double lth, double *h, double *w)
 }
 
 
+/* Arc start point */
 postype
 arcstart(primitive *n)
 { postype X;
@@ -2292,6 +2237,7 @@ arcstart(primitive *n)
 }
 
 
+/* Arc end point */
 postype
 arcend(primitive *n)
 { postype X;
@@ -2304,6 +2250,8 @@ arcend(primitive *n)
 }
 
 
+/* These contain the production code for
+   the preprocessors */
 /* include xfig.h */
 /* xfig.x */
 /* Output routines for xfig */
@@ -2801,6 +2749,19 @@ void
 svgpostlude(void)
 { printf("</g></svg>\n");
   /*D; if debuglevel > 0 then writeln(log,'svgpostlude done') D*/
+}
+
+
+/* output substrings */
+void
+space(void)
+{ putchar(' ');
+}
+
+
+void
+quote(void)
+{ putchar('"');
 }
 
 
@@ -5857,6 +5818,7 @@ pgfpostlude(void)
 }
 
 
+/* output substring */
 /* np is always <> nil: */
 void
 pgfwrtext(primitive *np, nametype *tp, double x, double y)
@@ -8486,6 +8448,90 @@ texpostlude(void)
 }
 
 
+/* Test angle near 0 or pi/2 */
+boolean
+iscorner(double theta)
+{ /*D if debuglevel = 2 then
+    writeln(log,'iscorner(',theta*180/pi:7:4,')=',
+      (abs(theta) < 0.001) or (abs(0.5*pi-abs(theta)) < 0.001)); D*/
+  return ((fabs(theta) < 0.001) || (fabs((0.5 * pi) - fabs(theta)) < 0.001));
+}
+
+
+/* Highest common factor of abs(x), abs(y) */
+int
+hcf(int x, int y)
+{ int i;
+
+  if (x < 0) {
+      x = -x;
+  }
+  if (y < 0) {
+      y = -y;
+  }
+  if (y > x) {
+      i = y;
+      y = x;
+      x = i;
+  }
+  while (y > 0) {
+      i = y;
+      y = x - ((x / y) * y);
+      x = i;
+  }
+  if (x == 0) {
+      return 1;
+  }
+  else {
+      return x;
+  }
+}
+
+
+void
+wrslope(double xp, double yp, boolean arrow)
+{ int i, ix, iy;
+  double r;
+
+  /*D if debuglevel > 0 then begin
+     write(log,'wrslope xp,yp: '); wpair(log,xp,yp) end; D*/
+  if ((xp == 0.0) && (yp == 0.0)) {
+      xp = 1.0;
+      yp = 0.0;
+  }
+  r = linlen(xp, yp);
+  if (drawmode == Pict2e) {
+      i = 1000;                                                         /*4096*/
+  }
+  else if (drawmode == tTeX) {
+      i = 453;
+  }
+  else if (arrow) {
+      i = 4;
+  }
+  else {
+      i = 6;
+  }
+  iy = (long)floor(((i + 0.49999) * yp / r) + 0.5);
+  ix = (long)floor(((i + 0.49999) * xp / r) + 0.5);
+  i = hcf(ix, iy);
+  iy /= i;
+  ix /= i;
+  /*D if debuglevel > 0 then begin
+         write(log,' ix,iy:(',ix:1,',',iy:1,')'); write(log,' ',chr(123));
+         if ix = 0 then wfloat(log,abs(yp)/fsc) else wfloat(log,abs(xp)/fsc);
+         writeln(log,chr(125))
+         end; D*/
+  printf("(%d,%d)", ix, iy);
+  if (ix == 0) {
+      wbrace(fabs(yp) / fsc);
+  }
+  else {
+      wbrace(fabs(xp) / fsc);
+  }
+}
+
+
 void
 arrowhead(double pointx, double pointy, double tailx, double taily)
 { double x, y, r, ct;
@@ -9055,6 +9101,7 @@ texdraw(primitive *node)
 }  /* texdraw */
 
 
+/* Recursive output of the drawing-tree nodes*/
 void
 treedraw(primitive *node)
 { while (node != NULL) {
@@ -9164,6 +9211,7 @@ begin
       node := node^.parent
       end
    end; */
+/* Set up scale parameters and draw the tree */
 void
 drawtree(double n, double s, double e, double w, primitive *eb)
 { double fsctmp;
@@ -9248,6 +9296,7 @@ drawtree(double n, double s, double e, double w, primitive *eb)
 
 
 /* G end. G */
+/* The file of parse productions: */
 /* include dpic1.p */
 /* G module dpic1; G */
 /* include dp0.h */
@@ -9255,12 +9304,14 @@ drawtree(double n, double s, double e, double w, primitive *eb)
 /* include sysdep.h */
 /* G#include 'sysdep.h'G */
 /* Recursive routines: snaptree FindExitPoint neswrec shift treedraw scaleobj */
+/* Retrieve integer in first two buffer bytes */
 int
 bval(Char *buf)
 { return (((int) buf[0]) << 7) + (int) buf[1] ;
 }
 
 
+/* Store integer in first two buffer bytes */
 void
 putbval(Char *buf, int n)
 { /* D
@@ -9269,6 +9320,7 @@ putbval(Char *buf, int n)
 }
 
 
+/* Free the space used by the name string */
 void
 deletename(nametype **head)
 { /*F(var head: strptr)F*/
@@ -9329,6 +9381,7 @@ deletename(nametype **head)
 }
 
 
+/* Store svalue in low 3 bits */
 void
 setspec(int *specv, int svalue)
 { *specv = (((*specv) >> 3) * 8) + svalue - XLlinetype;
@@ -9337,6 +9390,7 @@ setspec(int *specv, int svalue)
 }
 
 
+/* Store svalue only in low 3 bits */
 void
 resetspec(int *specv, int svalue)
 { *specv = 0;
@@ -9344,12 +9398,14 @@ resetspec(int *specv, int svalue)
 }
 
 
+/* Set bit 4 to flag a segment with a parent */
 void
 setthen(int *specv)
 { *specv = (((*specv) >> 4) * 16) + ((*specv) & 7) + 8;
 }
 
 
+/* For debug */
 /*D
 procedure prtstval(st: integer);
 begin
@@ -9574,6 +9630,7 @@ end;
       end
    end;
 D*/
+/* Dispose of a tree of 1 or more objects */
 void
 deletetree(primitive **p)
 { /*F(var p: primitivep)F*/
@@ -9654,6 +9711,7 @@ F*/
 }
 
 
+/* Store arc strtang and arcang parameters */
 void
 setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 	  double xf, double yf)
@@ -9671,6 +9729,7 @@ setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 }
 
 
+/* Perform assignment operator */
 void
 eqop(double *x, int op, double y)
 { int i, j;
@@ -9718,18 +9777,21 @@ eqop(double *x, int op, double y)
 }
 
 
+/* Store int value in bits 9 and above */
 void
 setstval(int *st, int value)
 { *st = (value * 256) + ((*st) & 255);
 }
 
 
+/* Recover int value from bits 9 and above */
 int
 getstval(int st)
 { return (st >> 8);
 }
 
 
+/* Record application of object attribute */
 void
 setstflag(int *st, int value)
 { switch (value) {
@@ -9773,6 +9835,7 @@ setstflag(int *st, int value)
 }
 
 
+/* Test if attribute has been applied */
 boolean
 teststflag(int st, int value)
 { boolean b = false;
@@ -9815,6 +9878,11 @@ teststflag(int st, int value)
 }
 
 
+/* String equality:
+   0: identical
+   +k: string1 > string2 or len1 > len2
+   -k: string1 < string2 or len1 < len2
+   maxint: nil string or strings */
 int
 eqstring(Char *seg1, chbufinx inx1, chbufinx len1, Char *seg2, chbufinx inx2,
 	 chbufinx len2)
@@ -9866,6 +9934,7 @@ eqstring(Char *seg1, chbufinx inx1, chbufinx len1, Char *seg2, chbufinx inx2,
 }
 
 
+/* String equality of primitives */
 int
 cmpstring(primitive *p1, primitive *p2)
 { if ((p1 == NULL) || (p2 == NULL)) {
@@ -9884,6 +9953,7 @@ cmpstring(primitive *p1, primitive *p2)
 }
 
 
+/* Match place name with stored places */
 primitive *(
 findplace(primitive *p, Char *chb, chbufinx inx, chbufinx length))
 { primitive *pj = NULL;
@@ -9912,6 +9982,7 @@ findplace(primitive *p, Char *chb, chbufinx inx, chbufinx length))
 }
 
 
+/* Look for given macro name */
 arg *(
 findmacro(arg *p, Char *chb, chbufinx inx, chbufinx length, arg **last))
 { arg *pj = NULL;
@@ -9940,6 +10011,8 @@ findmacro(arg *p, Char *chb, chbufinx inx, chbufinx length, arg **last))
 }
 
 
+/* Hash of variable name:
+   (ord(chr(1))+ord(chr(n-1))) mod 10 */
 int
 varhash(Char *chb, chbufinx chbufx, chbufinx length)
 { int idx;
@@ -9956,6 +10029,8 @@ varhash(Char *chb, chbufinx chbufx, chbufinx length)
 }
 
 
+/* Binary search for name in chain of stored
+   names */
 nametype *(
 findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx length,
 	 nametype **last, int *k))
@@ -10032,6 +10107,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx length,
 }
 
 
+/* Get the value of a global variable */
 double
 findvar(Char *s, int ln)
 { int i, k;
@@ -10053,6 +10129,8 @@ findvar(Char *s, int ln)
 }
 
 
+/* Flag an object not found and complain to
+   stderr */
 void
 marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
 { int i;
@@ -10074,6 +10152,7 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
 }
 
 
+/* Search for variable in this and higer scope*/
 nametype *(
 glfindname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx length,
 	   nametype **last, int *k))
@@ -10098,6 +10177,7 @@ glfindname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx length,
 }
 
 
+/* Create a string struct */
 void
 newstr(nametype **sp)
 { /*F(var sp: strptr)F*/
@@ -10115,7 +10195,7 @@ newstr(nametype **sp)
 }
 
 
-/* put a string into freeseg */
+/* Copy a string into freeseg */
 void
 storestring(nametype *outstr, Char *srcbuf, chbufinx psrc, chbufinx lsrc)
 { int i, j;
@@ -10153,7 +10233,7 @@ storestring(nametype *outstr, Char *srcbuf, chbufinx psrc, chbufinx lsrc)
 }
 
 
-/* duplicate a strptr and copy the body */
+/* Duplicate a strptr and copy the body */
 void
 copystr(nametype **sp, nametype *ip)
 { if (ip == NULL) {
@@ -10166,7 +10246,7 @@ copystr(nametype **sp, nametype *ip)
 }
 
 
-/* append buf to *sp */
+/* Append buf to *sp */
 void
 appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 {  /*D k := 0; D*/
@@ -10250,6 +10330,7 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 }
 
 
+/* Store or append string */
 int
 putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 { if (ix <= 0) {
@@ -10262,6 +10343,7 @@ putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 }
 
 
+/* Height of a primitive object */
 double
 pheight(primitive *pr)
 { double ph;
@@ -10308,6 +10390,7 @@ pheight(primitive *pr)
 }
 
 
+/* Width of a primitive object */
 double
 pwidth(primitive *pr)
 { double pw;
@@ -10351,6 +10434,7 @@ pwidth(primitive *pr)
 }
 
 
+/* The n, s, e, w values of a drawing tree */
 void
 neswrec(primitive *ptm)
 { while (ptm != NULL) {
@@ -10363,6 +10447,7 @@ neswrec(primitive *ptm)
 }
 
 
+/* Bounding box of a drawing tree */
 void
 getnesw(primitive *ptm)
 { initnesw();
@@ -10378,6 +10463,7 @@ getnesw(primitive *ptm)
 }
 
 
+/* Exit point of a primitive object */
 void
 FindExitPoint(primitive *pr, postype *pe)
 { if (pr == NULL) {
@@ -10525,6 +10611,7 @@ FindExitPoint(primitive *pr, postype *pe)
 }
 
 
+/* Create and initialize a primitive object */
 void
 newprim(primitive **pr, int primtype, primitive *envblk)
 { int i;
@@ -10652,6 +10739,7 @@ newprim(primitive **pr, int primtype, primitive *envblk)
 }  /* newprim */
 
 
+/* Determine drawing direction at arc end */
 void
 arcenddir(primitive *pr)
 { if (pr->Upr.Uline.endpos.ypos > 0.0) {
@@ -10704,6 +10792,7 @@ arcenddir(primitive *pr)
 }
 
 
+/* Shift a tree by (x,y) */
 void
 shift(primitive *pr, double x, double y)
 { primitive *With;
@@ -10730,6 +10819,7 @@ shift(primitive *pr, double x, double y)
 }
 
 
+/* Scale an object */
 void
 scaleobj(primitive *pr, double s)
 { primitive *With;
@@ -10771,7 +10861,8 @@ scaleobj(primitive *pr, double s)
 
 
 /* corner(prim,<corner>,xval,yval);
-                           Put the corner coordinates into xval,yval */
+   Put the named-corner coordinates into
+   xval,yval */
 void
 corner(primitive *pr, int lexv, double *x, double *y)
 { primitive *pe;
@@ -11115,6 +11206,7 @@ corner(primitive *pr, int lexv, double *x, double *y)
 }
 
 
+/* The nth (or nth last) enumerated object */
 primitive *(
 nthprimobj(primitive *primp, int nth, int objtype))
 { primitive *prp = NULL;
@@ -11174,6 +11266,10 @@ nthprimobj(primitive *primp, int nth, int objtype))
 }
 
 
+/* Reset environment vars:
+   n=0: all
+   n<0: scaled variables only
+   n>0: one var given by its lexical val*/
 void
 resetenv(int envval, primitive *envbl)
 { environx i, last;
@@ -11310,6 +11406,7 @@ resetenv(int envval, primitive *envbl)
 }
 
 
+/* Copy env vars to current scope */
 void
 inheritenv(primitive *envbl)
 { environx i;
@@ -11329,6 +11426,7 @@ inheritenv(primitive *envbl)
 }
 
 
+/* Execute scale = x */
 void
 resetscale(double x, int opr, primitive *envbl)
 { double r, s;
@@ -11371,6 +11469,7 @@ inittwo(void)
 }
 
 
+/* Clearing memory at end of diagram */
 void
 deletefreeargs(arg **a)
 { arg *na;
@@ -11385,6 +11484,7 @@ deletefreeargs(arg **a)
 }
 
 
+/* Clearing memory at end of diagram */
 void
 deletefreeinbufs(fbuffer **p)
 { fbuffer *q;
@@ -11399,6 +11499,7 @@ deletefreeinbufs(fbuffer **p)
 }
 
 
+/* Compute integer power of x */
 double
 intpow(double x, int k)
 { /* 0^(-k) does not occur */
@@ -11428,13 +11529,14 @@ intpow(double x, int k)
 }
 
 
+/* .PS xv yv
+sfact = nominal scale factor set by scale = ...
+xsc = effective scale factor to achieve correct
+  max picture size
+ie (size in inches)/(desired size in inches) */
 void
 getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
-{ /* .PS xv yv
-     sfact = nominal scale factor set by scale = ...
-     xsc = effective scale factor to achieve correct max picture size
-     ie (size in inches)/(desired size in inches) */
-  double gs = 1.0;
+{ double gs = 1.0;
   int erno = 0;
   primitive *qp;
 
@@ -11485,6 +11587,8 @@ getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
 }
 
 
+/* Attach primitive to chain of elements in this
+   scope */
 void
 addelem(primitive *prold, primitive *prnew)
 { primitive *pp, *pq;
@@ -11516,6 +11620,7 @@ addelem(primitive *prold, primitive *prnew)
 }
 
 
+/* Copy primitive for use by then or same */
 void
 copyprim(primitive *prin, primitive **prout)
 { /* Needed because assignment of variant records is unreliable */
@@ -11598,6 +11703,7 @@ copyprim(primitive *prin, primitive **prout)
 }
 
 
+/* Delete temporary string */
 void
 deletestringbox(primitive **pr)
 { primitive *prx;
@@ -11622,6 +11728,7 @@ deletestringbox(primitive **pr)
 }
 
 
+/* Append the int string to the name string*/
 void
 appendsuff(Char *buf, chbufinx inx, int *len, double x)
 { int i, j, k;
@@ -11652,6 +11759,8 @@ appendsuff(Char *buf, chbufinx inx, int *len, double x)
 }
 
 
+/* Append the suffix string to the name string
+   for one or two integers */
 void
 addsuffix(Char *buf, chbufinx *inx, int *len, int np)
 {                                                             /*DGHF ordp FHGD*/
@@ -11695,6 +11804,7 @@ addsuffix(Char *buf, chbufinx *inx, int *len, int np)
 }  /* addsuffix */
 
 
+/* Implement "then" or the "to" special case */
 void
 appendthen(primitive **pr)
 { primitive *prp;
@@ -11715,6 +11825,7 @@ appendthen(primitive **pr)
 }
 
 
+/* Attribute up, down, left, right */
 void
 lineardir(primitive *pr, double dy, double dx, int *state)
 { if (!(teststflag(*state, XLto) | teststflag(*state, XLdirecton))) {
@@ -11742,6 +11853,7 @@ lineardir(primitive *pr, double dy, double dx, int *state)
 }
 
 
+/* Test for outline for outlined "string" */
 boolean
 hasoutline(int lx, boolean warn)
 { boolean hs;
@@ -11759,6 +11871,7 @@ hasoutline(int lx, boolean warn)
 }
 
 
+/* Test for shade for shaded "string" */
 boolean
 hasshade(int lx, boolean warn)
 { boolean hs;
@@ -11785,6 +11898,7 @@ hasshade(int lx, boolean warn)
 }
 
 
+/* The program equivalent of var = number */
 void
 makevar(Char *s, int ln, double varval)
 { nametype *vn, *lastvar, *namptr;
@@ -11835,7 +11949,9 @@ makevar(Char *s, int ln, double varval)
 }
 
 
-/* This is the syntactic action routine. */
+/* This is the syntactic action routine:
+   Jump to production p operating on the stack
+   top elements */
 void
 produce(stackinx newp, int p)
 { nametype *lastvar, *namptr;
@@ -11858,9 +11974,9 @@ produce(stackinx newp, int p)
 
   /*D if (debuglevel > 0) then begin
         writeln(log);
-        write(log, 'Production(newp=',newp:1,
-                     ',lexval=',attstack^[newp].lexval:1,
-                     ',p=',p:1,')' );
+        write(log, 'Production(newp=',newp:1);
+        if p >= 0 then write(log,',lexval=',attstack^[newp].lexval:1);
+        write(log,',p=',p:1,')' );
         with attstack^[newp] do case p of
            primary4: begin write(log,' opr: ('); wfloat(log,xval);
               write(log,')') end;
@@ -16049,12 +16165,14 @@ begin F*/
    openparse
    end;
 F*/
+/* Printable character */
 boolean
 isprint_(Char ch)
 { return ((ch >= 32) && (ch <= 126));
 }
 
 
+/* Output a character as printable */
 void
 wchar(FILE **iou, Char c)
 { if (isprint_(c)) {
@@ -17708,6 +17826,8 @@ backup(void)
 
 
 /*--------------------------------------------------------------------*/
+/* Read the lexical and lalr tables when needed
+   for pascal or debug */
 /*--------------------------------------------------------------------*/
 /* Copy ch char into chbuf and get new ch */
 void
@@ -17735,6 +17855,7 @@ readlatex(void)
 
 
 /* Pascal C-equivalents */
+/* Value of $+ */
 int
 argcount(arg *a)
 { int i = 0;
@@ -17786,6 +17907,7 @@ findarg(arg *arlst, int k))
 }
 
 
+/* Start reading from file for copy "file" */
 #ifndef SAFE_MODE
 void
 pointinput(nametype *txt)
@@ -17846,7 +17968,7 @@ pointinput(nametype *txt)
 }
 
 
-/* Redirect output */
+/* Redirect output for print .. > "file" */
 void
 pointoutput(boolean nw, nametype *txt, int *ier)
 { /*F(nw:boolean;txt:strptr;var ier:integer)F*/
@@ -17973,6 +18095,7 @@ readstring(void)
 }
 
 
+/* Read exponent part of number */
 void
 readexponent(void)
 { boolean neg;
@@ -18007,6 +18130,7 @@ readexponent(void)
 }  /* readexponent */
 
 
+/* Read fraction part of number */
 void
 readfraction(void)
 { double x = 10.0;
@@ -18019,6 +18143,7 @@ readfraction(void)
 }  /* readfraction */
 
 
+/* Read number integer, fraction, exponent */
 void
 readconst(Char initch)
 { /*D if debuglevel=2 then begin writeln(log);
@@ -18066,7 +18191,7 @@ begin
       consoleflush
       end
    end; D*/
-/* Prepend a buffer on the left */
+/* Prepend a buffer on the left of current buf*/
 fbuffer *(
 prebuf(fbuffer *buf))
 { fbuffer *With;
@@ -18501,7 +18626,9 @@ insertarg(void)
 
 
 /* Find the next terminal.
-   Set lexsymb, lexval, and float value.
+   Set lexsymb (the terminal number),
+   newsymb (terminal number used for parsing),
+   and float value.
    Identify and handle all terminals
    of the form <...> in the grammar.
    Reads one character after the terminal end */
@@ -18748,25 +18875,13 @@ lexical(void)
 		      terminalaccepted = false;
 		  }
 		  else {
-		      /* else begin
-		         repeat pushch until not isalnum(ch);
-		         backup;
-		         varptr := glfindname(envblock,chbuf,oldbufi+1,
-		            chbufi-oldbufi-1,lastp,k);
-		         if varptr=nil then markerror(805) else begin
-		            j := round(varptr^.val); argstruct := findarg( args,j );
-		            if argstruct=nil then markerror(805)
-		            else if argstruct^.argbody<>nil then
-		               copyleft(argstruct^.argbody,inbuf)
-		            end;
-		         terminalaccepted := false
-		         end */
 		      markerror(805);
 		      /* if not isalnum(ch) then */
 		      /* $name */
 		  }
 	      }
 	      else if (newsymb == XLdo) {
+		  /* &n or &A turns on debug logging if enabled */
 		  /*D else if newsymb = XAND then begin
 		     chbufi := oldbufi;
 		     if debuglevel > 0 then consoleflush;
@@ -18982,19 +19097,6 @@ readfor(fbuffer *p0, int attx, fbuffer **p2)
 
 
 /*--------------------------------------------------------------------*/
-void
-bumptop(stackinx chk, stackinx *sttop)
-{ /* D if chk<>sttop then
-     writeln(errout,'chk=',chk:4,' sttop=',sttop:4); D */
-  if (chk < STACKMAX) {
-      (*sttop)++;
-  }
-  else {
-      fatal(6);
-  }
-}
-
-
 /*D
 procedure prattstack(j: integer);
 var i,k: integer;
@@ -19027,10 +19129,11 @@ begin
       for i := 1 to j do if attstack^[i].internal = nil then write(log,'    ')
          else write(log,attstack^[i].internal^.ptype:4); writeln(log) end
    end; D*/
+/* Add a production to the reduction queue */
 void
 doprod(int prno)
 { /*F(prno: integer)F*/
-  redubuf[reduinx + REDUMAX].prod_ = prno;
+  redubuf[reduinx].prod_ = prno;
   reduinx--;
 }
 
@@ -19054,7 +19157,7 @@ advance(void)
      end; D*/
   reduinx = 1;
   while (reduinx <= redutop) {
-      With = &redubuf[reduinx + REDUMAX];
+      With = &redubuf[reduinx];
       /*D if debuglevel > 1 then begin
          j := newtop; if oldtop > newtop then j := oldtop;
          writeln(log,'Attstack for next production:');
@@ -19079,17 +19182,17 @@ advance(void)
      not required */
   j = attstack[stacktop-1].chbufx;
   /*D if (debuglevel > 0) and (redutop > 0) and (j < oldbufi) then begin
-     write(log,' advance: stacktop=',stacktop:1);
+     write(log,' advance: stacktop=',stacktop:1,' redutop=',redutop:1);
      write(log,' attstack^[stacktop-1](chbufx,length) = ');
      with attstack^[stacktop-1] do wpair(log,chbufx,length);
      writeln(log); write(log,' oldbufi=',oldbufi:1,' ');
      snapname(chbuf,0,chbufi); writeln(log)
      end;D*/
   if ((redutop > 0) && (j < oldbufi) &&
-      (redubuf[redutop + REDUMAX].prod_ != closeblock1) &&
-      (redubuf[redutop + REDUMAX].prod_ != suffix3) &&
-      (redubuf[redutop + REDUMAX].prod_ != suffix2) &&
-      (redubuf[redutop + REDUMAX].prod_ != suffix1)) {
+      (redubuf[redutop].prod_ != closeblock1) &&
+      (redubuf[redutop].prod_ != suffix3) &&
+      (redubuf[redutop].prod_ != suffix2) &&
+      (redubuf[redutop].prod_ != suffix1)) {
       FORLIM = chbufi - oldbufi;
       /*D if debuglevel > 0 then begin write(log,
         'chbuf(', oldbufi:1, ':', chbufi-1:1, ') =');
@@ -19102,7 +19205,12 @@ advance(void)
       oldbufi = j;
   }
   /* shift */
-  bumptop(stacktop, &stacktop);
+  if (stacktop < STACKMAX) {
+      stacktop++;
+  }
+  else {
+      fatal(6);
+  }
   parsestack[stacktop].table = startinx;
   stackattribute(stacktop);
   /* freeze stack, ready for new lookahead */
@@ -19114,6 +19222,7 @@ advance(void)
 }  /*advance*/
 
 
+/* Part of syntax error handling */
 void
 backtrack(stackinx btop, int bstart)
 { stacktop = btop;
@@ -19125,10 +19234,19 @@ backtrack(stackinx btop, int bstart)
 }  /* backtrack */
 
 
+/* Part of error handling and lookahead */
 void
 pseudoshift(void)
-{ bumptop(pseudotop, &stacktop);
+{ if (stacktop < STACKMAX) {
+      stacktop++;
+  }
+  else {
+      fatal(6);
+  }
   pseudotop = top + stacktop - validtop;
+  if (pseudotop > STACKMAX) {
+      fatal(6);
+  }
   parsestack[pseudotop].table = startinx;
   stackattribute(pseudotop);
 }  /* pseudoshift */
@@ -19149,7 +19267,7 @@ queue(int rs_, int p)
       else {
 	  fatal(7);
       }
-      With = &redubuf[redutop + REDUMAX];
+      With = &redubuf[redutop];
       /*D oldtop := stacktop; D*/
       stacktop -= rs_;
       With->newtop = stacktop;
@@ -19316,7 +19434,6 @@ parse(void)
   parsestack[0].table = 0;
   parsestack[0].link = 0;
   backtrack(top, start);
-  /*D stackhigh := top; D*/
   produce(1, -1);
   /* Main parse loop */
   while (!parsestop) {
@@ -19331,6 +19448,7 @@ parse(void)
 }  /* parse */
 
 
+/* Separate out the option character */
 Char
 optionchar(Char *fn)
 { int j = 1, k = FILENAMELEN + 1;
@@ -19475,7 +19593,13 @@ int main(int argc, Char *argv[])
   attstack = Malloc(sizeof(attstacktype));
   tmpbuf = NULL;
   tmpfmt = NULL;
+  /*D for stackhigh:=0 to REDUMAX do redubuf[stackhigh].newtop:=STACKMAX; D*/
   parse();
+  /*D stackhigh := REDUMAX; oflag := -1;
+    while stackhigh > oflag do
+      if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
+      else oflag := stackhigh;
+    writeln(errout,' stackhigh=',stackhigh:1); D*/
   epilog();
   if (input != NULL) {
       fclose(input);

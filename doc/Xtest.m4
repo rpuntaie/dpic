@@ -1,9 +1,9 @@
 .PS
 #
-# Xtest.pic
+# Xtest.pic derived from Xtest.m4 (Uses Circuit_macros library)
 # To produce Xtest.svg (the sed filter deletes the external latex lines):
 #   sed -e '/^\\/d' Xtest.pic | dpic -v > Xtest.svg
-
+s_init(Xtest)sinclude(dpic-doc.dim)
 
 scale = 72                      # set the scale to points (bp)
 
@@ -29,8 +29,7 @@ scale = 72                      # set the scale to points (bp)
 if dpicopt == optPGF then {
   command "\font\testfont=ptmr at 100bp"
 # command "s_init(Xtest)sinclude(dpic-doc.dim)"
-  X: "\boxdims{Xtest_1}{\testfont X}" \
- wid 72.47075*(scale/72.27) ht 67.5524*(scale/72.27)+0.0*(scale/72.27) with .s at Grid.S
+  X: s_box(\testfont X) with .s at Grid.S
   }
 if dpicopt == optSVG then { textht = 100
   X: "X" wid 72 with .s at Grid.S
