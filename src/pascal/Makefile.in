@@ -74,6 +74,7 @@ SED0=sed $(DEBUG) $(COMINC) -e 's/@/^/g' \
 
 begin:
 	rm -f *.p
+	mkdir -p $(DDIR)
 	make $(DDIR)/dpic
 
 $(DDIR)/dpic: $(OBJECTS)

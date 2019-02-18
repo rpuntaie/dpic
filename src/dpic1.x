@@ -1422,7 +1422,7 @@ begin
                                    for one or two integers *)
 procedure addsuffix(buf:chbufp; var inx:chbufinx; var len:integer;
    np:integer );
-var i,j,k: integer;
+var i: integer;
 begin
    (*D if debuglevel <> 0 then begin writeln(log,
      'addsuffix(buf:chbufp; var inx:chbufinx; var len:integer; np:integer)');

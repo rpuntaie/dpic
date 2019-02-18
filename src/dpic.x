@@ -96,7 +96,7 @@ procedure pointoutput(nw: boolean; txt: strptr; var ier: integer ); forward;
 
 (*DFGHM function odp(p:pointer): integer; MHGFD*)
 (*D begin
-      odp := abs(ordp(p)) mod 10000
+      odp := ordp(p) mod 10000
       end; D*)
 
                                 (* Numerical utilities: *)
@@ -258,12 +258,8 @@ begin
    (*D if debuglevel > 0 then begin
          writeln(log,'stackhigh=',stackhigh:1);
          writeln(log,'Dpic log ends');
-         writeln(log) end; D*)
-                                (* Seems needed for some Cygwin machines: *)
-   (* GH consoleflush;
-   flush(stdout) HG *)
+         writeln(log); flush(log) end; D*)
    end;
-
                                 (* Unrecoverable errors *)
 procedure fatal( t: integer );
 begin
@@ -2874,67 +2870,6 @@ begin
     until success or parsestop;
     if parsestop then fatal(8)
 end; (* syntaxerror *)
-
-                                (* Initialize the semantic actions, the
-                                   parse state, and lexical state; then
-                                   parse to end of input, managing the
-                                   parse stack. *)
-procedure parse;
-begin (* parse *)
-   initrandom;
-
-   new(chbuf);
-   (*D if debuglevel > 0 then
-      writeln(log,'new(chbuf)[',odp(chbuf):1,']'); D*)
-   (*P2 IP*) inittables; (*P2 P*)
-   (*P2CIP*) initchars; (*P2CP*)
-   entrytv[ordNL] := XNL;
-   entrytv[ordCR] := XNL;       (* treat ^M as line end *)
-
-   errcount := 0;
-                                (* change for debugging *)
-   (* linesignal := 0; *)
-   (*DGHMF trace := false;
-   if trace and (oflag = 0) then openlogfile; FMHGD*)
-
-   new(parsestack);
-   produce(1, -2);
-   printstate := 0;
-
-                                (* lexical initializations, see also
-                                   production -1 *)
-   ch := ' ';
-   lineno := 0;
-   chbufi := 0;
-   oldbufi := 0;
-   newsymb := XNL;
-   oldsymb := XNL;
-   lexstate := 0;
-   macros := nil;
-   args := nil;
-   (*D currentmacro := nil; D*)
-   forbufend := false;
-   instr := false;
-
-   stackattribute( 0 );
-
-                                (* parser initializations *)
-   parsestop := false;
-   top := 0;
-   start := 5;
-   parsestack@[0].table := 0;
-   parsestack@[0].link := 0;
-   backtrack(top, start);
-   produce(1, -1);
-                                (* Main parse loop *)
-   while not parsestop do begin
-      lexical;
-      (*D if trace then
-         writeln(log, ' SYM:', newsymb: 3, ' STATE:', lri: 3);D*)
-      if not lookahead(newsymb) then syntaxerror;
-      advance
-      end
-   end; (* parse *)
                                 (* Separate out the option character *)
 (*GHMF
 function optionchar(var fn: mstring ): char;
@@ -3006,7 +2941,7 @@ begin
             writeln(errout,'     -v SVG output');
             writeln(errout,'     -x xfig output');
             writeln(errout,
-        '     -z safe mode (disable sh, copy, and print to file)');
+             '     -z safe mode (disable sh, copy, and print to file)');
             fatal(0)
             end
          else begin
@@ -3030,20 +2965,76 @@ begin (* dpic *)
       (*P2CC #endif *)
    (*GHMF getoptions; FMHG*)
    openfiles;
+                                (* Initialize the semantic actions, the
+                                   parse state, and the lexical state *)
    inputeof := false;
    new(attstack);
    tmpbuf := nil;
    tmpfmt := nil;
    (*D for stackhigh:=0 to REDUMAX do redubuf[stackhigh].newtop:=STACKMAX; D*)
-   parse;
+   initrandom;
+
+   new(chbuf);
+   (*D if debuglevel > 0 then
+      writeln(log,'new(chbuf)[',odp(chbuf):1,']'); D*)
+   (*P2 IP*) inittables; (*P2 P*)
+   (*P2CIP*) initchars; (*P2CP*)
+   entrytv[ordNL] := XNL;
+   entrytv[ordCR] := XNL;       (* treat ^M as line end *)
+
+   errcount := 0;
+                                (* change for debugging *)
+   (* linesignal := 0; *)
+   (*DGHMF trace := false;
+   if trace and (oflag = 0) then openlogfile; FMHGD*)
+
+   new(parsestack);
+   produce(1, -2);
+   printstate := 0;
+
+                                (* lexical initializations, see also
+                                   production -1 *)
+   ch := ' ';
+   lineno := 0;
+   chbufi := 0;
+   oldbufi := 0;
+   newsymb := XNL;
+   oldsymb := XNL;
+   lexstate := 0;
+   macros := nil;
+   args := nil;
+   (*D currentmacro := nil; D*)
+   forbufend := false;
+   instr := false;
+
+   stackattribute( 0 );
+
+                                (* parser initializations *)
+   parsestop := false;
+   top := 0;
+   start := 5;
+   parsestack@[0].table := 0;
+   parsestack@[0].link := 0;
+   backtrack(top, start);
+   produce(1, -1);
+                                (* Main parse loop: parse to end of input,
+                                   managing the parse stack. *)
+   while not parsestop do begin
+      lexical;
+      (*D if trace then
+         writeln(log, ' SYM:', newsymb: 3, ' STATE:', lri: 3);D*)
+      if not lookahead(newsymb) then syntaxerror;
+      advance
+      end;
    (*P2CIP*)
    (*MGH 999: HGM*)
    (*P2CP*)
-   (*D stackhigh := REDUMAX; oflag := -1; 
-     while stackhigh > oflag do
-       if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
-       else oflag := stackhigh;
-     writeln(errout,' stackhigh=',stackhigh:1); D*)
-   epilog;
+   (*D if debuglevel > 0 then begin
+      stackhigh := REDUMAX; oflag := -1; 
+      while stackhigh > oflag do
+        if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
+        else oflag := stackhigh
+      end; D*)
+   epilog
 
    end (* dpic *) .

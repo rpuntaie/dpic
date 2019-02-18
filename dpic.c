@@ -840,7 +840,7 @@ extern int access(Char *f, int n);
 /*DM function ordp(p:pointer): integer; external; MD*/
 /*DFGHM function odp(p:pointer): integer; MHGFD*/
 /*D begin
-      odp := abs(ordp(p)) mod 10000
+      odp := ordp(p) mod 10000
       end; D*/
 /* Numerical utilities: */
 double
@@ -1078,10 +1078,7 @@ epilog(void)
   /*D if debuglevel > 0 then begin
         writeln(log,'stackhigh=',stackhigh:1);
         writeln(log,'Dpic log ends');
-        writeln(log) end; D*/
-  /* Seems needed for some Cygwin machines: */
-  /* GH consoleflush;
-  flush(stdout) HG */
+        writeln(log); flush(log) end; D*/
 }
 
 
@@ -19392,62 +19389,6 @@ syntaxerror(void)
 }  /* syntaxerror */
 
 
-/* Initialize the semantic actions, the
-   parse state, and lexical state; then
-   parse to end of input, managing the
-   parse stack. */
-void
-parse(void)
-{ initrandom();
-  chbuf = Malloc(sizeof(chbufarray));
-  /*D if debuglevel > 0 then
-     writeln(log,'new(chbuf)[',odp(chbuf):1,']'); D*/
-  entrytv[ordNL] = XNL;
-  entrytv[ordCR] = XNL;                               /* treat ^M as line end */
-  errcount = 0;
-  /* change for debugging */
-  /* linesignal := 0; */
-  /*DGHMF trace := false;
-  if trace and (oflag = 0) then openlogfile; FMHGD*/
-  parsestack = Malloc(sizeof(tparsestack));
-  produce(1, -2);
-  printstate = 0;
-  /* lexical initializations, see also
-     production -1 */
-  ch = ' ';
-  lineno = 0;
-  chbufi = 0;
-  oldbufi = 0;
-  newsymb = XNL;
-  oldsymb = XNL;
-  lexstate = 0;
-  macros = NULL;
-  args = NULL;
-  /*D currentmacro := nil; D*/
-  forbufend = false;
-  instr = false;
-  stackattribute(0);
-  /* parser initializations */
-  parsestop = false;
-  top = 0;
-  start = 5;
-  parsestack[0].table = 0;
-  parsestack[0].link = 0;
-  backtrack(top, start);
-  produce(1, -1);
-  /* Main parse loop */
-  while (!parsestop) {
-      lexical();
-      /*D if trace then
-         writeln(log, ' SYM:', newsymb: 3, ' STATE:', lri: 3);D*/
-      if (!lookahead(newsymb)) {
-	  syntaxerror();
-      }
-      advance();
-  }
-}  /* parse */
-
-
 /* Separate out the option character */
 Char
 optionchar(Char *fn)
@@ -19589,17 +19530,67 @@ int main(int argc, Char *argv[])
 #endif
   getoptions();
   openfiles();
+  /* Initialize the semantic actions, the
+     parse state, and the lexical state */
   inputeof = false;
   attstack = Malloc(sizeof(attstacktype));
   tmpbuf = NULL;
   tmpfmt = NULL;
   /*D for stackhigh:=0 to REDUMAX do redubuf[stackhigh].newtop:=STACKMAX; D*/
-  parse();
-  /*D stackhigh := REDUMAX; oflag := -1;
-    while stackhigh > oflag do
-      if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
-      else oflag := stackhigh;
-    writeln(errout,' stackhigh=',stackhigh:1); D*/
+  initrandom();
+  chbuf = Malloc(sizeof(chbufarray));
+  /*D if debuglevel > 0 then
+     writeln(log,'new(chbuf)[',odp(chbuf):1,']'); D*/
+  entrytv[ordNL] = XNL;
+  entrytv[ordCR] = XNL;                               /* treat ^M as line end */
+  errcount = 0;
+  /* change for debugging */
+  /* linesignal := 0; */
+  /*DGHMF trace := false;
+  if trace and (oflag = 0) then openlogfile; FMHGD*/
+  parsestack = Malloc(sizeof(tparsestack));
+  produce(1, -2);
+  printstate = 0;
+  /* lexical initializations, see also
+     production -1 */
+  ch = ' ';
+  lineno = 0;
+  chbufi = 0;
+  oldbufi = 0;
+  newsymb = XNL;
+  oldsymb = XNL;
+  lexstate = 0;
+  macros = NULL;
+  args = NULL;
+  /*D currentmacro := nil; D*/
+  forbufend = false;
+  instr = false;
+  stackattribute(0);
+  /* parser initializations */
+  parsestop = false;
+  top = 0;
+  start = 5;
+  parsestack[0].table = 0;
+  parsestack[0].link = 0;
+  backtrack(top, start);
+  produce(1, -1);
+  /* Main parse loop: parse to end of input,
+     managing the parse stack. */
+  while (!parsestop) {
+      lexical();
+      /*D if trace then
+         writeln(log, ' SYM:', newsymb: 3, ' STATE:', lri: 3);D*/
+      if (!lookahead(newsymb)) {
+	  syntaxerror();
+      }
+      advance();
+  }
+  /*D if debuglevel > 0 then begin
+     stackhigh := REDUMAX; oflag := -1;
+     while stackhigh > oflag do
+       if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
+       else oflag := stackhigh
+     end; D*/
   epilog();
   if (input != NULL) {
       fclose(input);
