@@ -84,18 +84,19 @@ PRELIM = parserr.i lxcst.h dp0.h controlerr.i sysdep.h \
    mfp.h mpo.h svg.h pgf.h pst.h pdf.h ps.h tex.h xfig.h \
    $(DPICTABL)
 
-CMPRS = awk '{ b=b" "$$0; if(length(b) > 60){print b; b=""}}; END{print b}'
+CMPR = awk '{ b=b" "$$0; if(length(b) > 60){print b; b=""}}; END{print b}'
 lxcst.h: ../lxcst.v lexedit1 lexedit2
 	cat ../lxcst.v | sed -e '/^(\* /d' \
-    | $(SED) | sed -f lexedit1 | sed -f lexedit2 | $(CMPRS) > lxcst.h
+    | $(SED) | sed -f lexedit1 | sed -f lexedit2 | $(CMPR) > lxcst.h
 
 $(DPICTABL): parstabl lextable
-	cat lextable parstabl > $(DPICTABL)
+	if test $(INC) != F ; then cat lextable parstabl > $(DPICTABL) ; fi
 
 TABLES = parstab lextable
 PARSCONSTS = parscst.i parscdc.i
 LEXERRORS = parserr.i
 LEXEDIT = lexedit lexedit1 lexedit2
+LEXINCLUDES = entryhp.h entrytv.h lxhp.h lxnp.h lxtv.h lxch.h
 
 $(TABLES) $(PARSCONSTS) $(LEXERRORS) $(LEXEDIT): ../dpic.bnf \
       ../lexremoves ../nullprods ../lxcst.v
@@ -103,6 +104,8 @@ $(TABLES) $(PARSCONSTS) $(LEXERRORS) $(LEXEDIT): ../dpic.bnf \
 	for name in $(TABLES) $(PARSCONSTS) $(LEXERRORS) $(LEXEDIT) PG.out ; do \
       cp ../tables/$$name . ; done
 	sed -e 's%^.*\*/ *%%' -e 's%, *% %g' parstab > parstabl
+	if test $(INC) = F ; then \
+      sed -e 's%^.*\*/ *%%' -e '/^ *$$/d' parstab > parstab.h ; fi
 	awk -f ../mkerrs.awk PG.out \
       | sed -e 's/<END>/.PE/' -e 's/<START>/.PS/' -e 's/<endfor>/}/' \
             -e 's/ <ERROR>//' -e 's/rand <func1> <func2>/function/' \
@@ -115,6 +118,10 @@ $(TABLES) $(PARSCONSTS) $(LEXERRORS) $(LEXEDIT): ../dpic.bnf \
             -e 's/<\([a-zA-Z][a-zA-Z]*\)>/\1/g' \
       > parserr.i
 	rm -f parserr
+	if test $(INC) = F ; then \
+      (cd ..; make lxch.h) ; \
+	  for name in $(LEXINCLUDES) ; do \
+        $(CMPR) ../$$name > $$name ; done; fi
 
 controlerr.i: lexedit parserr.i
 	sed -e "s%^%/%" -e "s% *$$%/d%" ../lexremoves > xxx

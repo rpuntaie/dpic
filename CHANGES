@@ -1,8 +1,9 @@
 Distribution dates other than those shown correspond to changes (usually of
-documentation) not involving functionality.
+documentation) not involving run-time functionality.
 
 2019 01 01 Small edits of the manual and README. Error message tweaks. Fixed
-           a bug in doc/Makefile. Workaround for 64-bit fpc compiler.
+           a bug in doc/Makefile. Workaround for 64-bit fpc compiler. Compiled
+           tables with fpc pascal.
 2018 08 15 Modified debug output; bug fix for long macros within for loops.
 2018 07 30 Allow double subscripts; reorder p2clib.c code for Mac compilation. 
 2018 05 15 Revised SVG code so that the ht attribute sets absolute size

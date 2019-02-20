@@ -1,6 +1,6 @@
 /* dpic translator program. */
 /* BSD Licence:
-    Copyright (c) 2018, J. D. Aplevich
+    Copyright (c) 2019, J. D. Aplevich
     All rights reserved.
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -22,9 +22,27 @@
     OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
     ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-/* Comments within D ... D pairs are (Pascal) debug statements that are
+/* Source-code files:
+    dp0.x global constants, types, variables, and data structures
+    dpic.x options, open files, parse routines, lexical analysis,
+                error messages, buffer management, macros, for loops,
+                interface to semantic actions, and common utilities
+    dpic1.x semantic actions, construct the parse tree
+    mpo.x pdf.x ps.x svg.x tex.x mfp.x mps.x pgf.x pst.x xfig.x
+                back-end routines to output postprocessor commands
+    sysdep.x definitions of system routines
+    dpic.bnf the grammar for production of parse and lexical tables
+*/
+/* Compiler and preprocessing directives in comments:
+   Comments within D ... D pairs are (pascal) debug statements that are
    activated by the Makefile if debug is enabled. Comments within other
-   uppercase pairs are activated for specific operating systems or compilers.
+   uppercase pairs are activated for specific conversion or compilers.
+   The two can be combined; e.g. MHG activates code for the M, H, and G
+   compilers, and DMGH activates for any of these compilers with debug.
+   M designates code for p2c conversion to C (originally M was for for DEC MIPS)
+   G the GNU gpc compiler prior to version 20050331
+   H the GNU gpc compiler 20050331 or later
+   F Free pascal compiler current version
    Pascal between P2CIP ... P2CP comment pairs is ignored during p2c conversion.
    P2 IP and P2 P comments are converted to P2CIP ... P2CP for some compilers.
    C code in P2CC ... comments is included by p2c.
@@ -42,6 +60,9 @@
 /* Some PC versions of p2c crash on Pascal
    const declarations at low levels.
    All consts should be in dp0.x */
+/* F = free pascal fpc
+   G,H = old, current gpc
+   M = p2c code */
 
 #define distmax         3.40282347e+38         /*assumes at least IEEE single */
 #define MaxReal         distmax
@@ -623,6 +644,13 @@ typedef struct XLabelprimitive {
   int direction, spec, ptype;
 } XLabelprimitive;
 
+/* Example sizes with C compiler:
+      size of boxprimitive=112
+      size of block primitive=200
+      size of circleprimitive=96
+      size of ellipseprimitive=104
+      size of lineprimitive=136
+      size of labelprimitive=80 */
 /* Attribute stack types */
 
 typedef struct attribute {
@@ -678,7 +706,7 @@ int lineno;                               /* current input line number */
 int currprod;                     /* current production for error msgs */
 /* Production variables */
 attribute *attstack;
-/*D stackhigh: integer;D*/
+/*D ii,stackhigh: integer;D*/
 redubufrange reduinx, redutop;
 reduelem redubuf[REDUMAX + 1];                     /* reduction buffer */
 double floatvalue;                   /* numerical value of floats read */
@@ -711,24 +739,46 @@ nametype *stream, *cx;           /* pdf stream storage and current seg */
 int pdfoffs[8];                              /* pdf output byte counts */
 /* Global tables for easy C conversion.
    Alternative: use run-time space */
+/*F =( F*/
+/*F#include 'parstab.h'
+    ) F*/
 short lr[lrmax + 1]={
 #include "parstab.i" 
       };
+/* assumes ordMINCH = 0: */
+/*F =( F*/
+/*F#include 'entryhp.h'
+    ) F*/
 lxinx entryhp[ordMAXCH + 1]={
 #include "entryhp.h"
-      };                   /* assumes ordMINCH = 0 */
+      };
+/*F =( F*/
+/*F#include 'lxhp.h'
+    ) F*/
 lxinx lxhp[lxmax + 1]={
 #include "lxhp.h"
       };
+/*F =( F*/
+/*F#include 'lxnp.h'
+    ) F*/
 lxinx lxnp[lxmax + 1]={
 #include "lxnp.h"
       };
+/*F =( F*/
+/*F#include 'lxtv.h'
+    ) F*/
 symbol lxtv[lxmax + 1]={
 #include "lxtv.h"
       };
+/*F =( F*/
+/*F#include 'entrytv.h'
+    ) F*/
 symbol entrytv[ordMAXCH + 1]={
 #include "entrytv.h"
       };
+/*F =( F*/
+/*F#include 'lxch.h'
+    ) F*/
 Char lxch[lxmax + 1]={
 #include "lxch.h"
       };
@@ -1076,9 +1126,14 @@ epilog(void)
      writeln(log,'dispose(chbuf)[',odp(chbuf):1,']'); D*/
   Free(chbuf);
   /*D if debuglevel > 0 then begin
-        writeln(log,'stackhigh=',stackhigh:1);
-        writeln(log,'Dpic log ends');
-        writeln(log); flush(log) end; D*/
+     stackhigh := REDUMAX; oflag := -1;
+     while stackhigh > oflag do
+        if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
+        else oflag := stackhigh;
+     writeln(log,'stackhigh=',stackhigh:1);
+     writeln(log,'Dpic log ends');
+     writeln(log); flush(log)
+     end; D*/
 }
 
 
@@ -16158,9 +16213,10 @@ begin F*/
 /*F
       if IOResult<>0 then fatal(1) F*/
 /*DF; if oflag>0 then writeln(log,'Input file: ',ParamStr(argct)) FD*/
-/*F end;
-   openparse
-   end;
+/*F end; F*/
+/* openparse */
+/*F
+end;
 F*/
 /* Printable character */
 boolean
@@ -19500,12 +19556,12 @@ getoptions(void)
 	  fatal(0);
       }
       else {
-	  fprintf(errout, " *** dpic terminating: Unknown option \"");
+	  fprintf(errout, " *** dpic terminating: Unknown option ");
 	  if (isprint_(cht)) {
-	      fprintf(errout, "%c\"\n", cht);
+	      fprintf(errout, "\"%c\"\n", cht);
 	  }
 	  else {
-	      fprintf(errout, "char(%d)\"\n", cht);
+	      fprintf(errout, "\"char(%d)\"\n", cht);
 	  }
 	  fatal(0);
       }
@@ -19536,11 +19592,10 @@ int main(int argc, Char *argv[])
   attstack = Malloc(sizeof(attstacktype));
   tmpbuf = NULL;
   tmpfmt = NULL;
-  /*D for stackhigh:=0 to REDUMAX do redubuf[stackhigh].newtop:=STACKMAX; D*/
   initrandom();
   chbuf = Malloc(sizeof(chbufarray));
-  /*D if debuglevel > 0 then
-     writeln(log,'new(chbuf)[',odp(chbuf):1,']'); D*/
+  /*D if debuglevel > 0 then writeln(log,'new(chbuf)[',odp(chbuf):1,']');
+      for ii:=0 to REDUMAX do redubuf[ii].newtop:=STACKMAX; D*/
   entrytv[ordNL] = XNL;
   entrytv[ordCR] = XNL;                               /* treat ^M as line end */
   errcount = 0;
@@ -19585,12 +19640,6 @@ int main(int argc, Char *argv[])
       }
       advance();
   }
-  /*D if debuglevel > 0 then begin
-     stackhigh := REDUMAX; oflag := -1;
-     while stackhigh > oflag do
-       if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
-       else oflag := stackhigh
-     end; D*/
   epilog();
   if (input != NULL) {
       fclose(input);

@@ -2,7 +2,7 @@
 
 (* BSD Licence:
 
-    Copyright (c) 2018, J. D. Aplevich
+    Copyright (c) 2019, J. D. Aplevich
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -29,17 +29,36 @@
     ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *)
 
-(* Comments within D ... D pairs are (Pascal) debug statements that are
+(* Source-code files:
+    dp0.x       global constants, types, variables, and data structures
+    dpic.x      options, open files, parse routines, lexical analysis,
+                error messages, buffer management, macros, for loops,
+                interface to semantic actions, and common utilities
+    dpic1.x     semantic actions, construct the parse tree
+    mpo.x pdf.x ps.x svg.x tex.x mfp.x mps.x pgf.x pst.x xfig.x
+                back-end routines to output postprocessor commands
+    sysdep.x    definitions of system routines
+    dpic.bnf    the grammar for production of parse and lexical tables
+*)
+
+(* Compiler and preprocessing directives in comments:
+   Comments within D ... D pairs are (pascal) debug statements that are
    activated by the Makefile if debug is enabled. Comments within other
-   uppercase pairs are activated for specific operating systems or compilers.
+   uppercase pairs are activated for specific conversion or compilers.
+   The two can be combined; e.g. MHG activates code for the M, H, and G
+   compilers, and DMGH activates for any of these compilers with debug.
+   M designates code for p2c conversion to C (originally M was for for DEC MIPS)
+   G the GNU gpc compiler prior to version 20050331
+   H the GNU gpc compiler 20050331 or later
+   F Free pascal compiler current version
    Pascal between P2CIP ... P2CP comment pairs is ignored during p2c conversion.
    P2  IP and P2  P comments are converted to P2CIP ... P2CP for some compilers.
    C code in P2CC ... comments is included by p2c.
    *)
 
 (*GHMF
-program dpic(input,output,errout,copyin,redirect
-   (*P2 IP*) ,dpictabl (*P2 P*)
+program dpic(input,output,errout,copyin,redirect FMHG*)
+   (*P2 IP*) (*MHG ,dpictabl GHM*) (*P2 P*) (*GHMF
    (*D,log D*)); FMHG*)
 
 (*P2CIP*)
@@ -256,9 +275,14 @@ begin
       writeln(log,'dispose(chbuf)[',odp(chbuf):1,']'); D*)
    dispose(chbuf);
    (*D if debuglevel > 0 then begin
-         writeln(log,'stackhigh=',stackhigh:1);
-         writeln(log,'Dpic log ends');
-         writeln(log); flush(log) end; D*)
+      stackhigh := REDUMAX; oflag := -1; 
+      while stackhigh > oflag do
+         if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
+         else oflag := stackhigh;
+      writeln(log,'stackhigh=',stackhigh:1);
+      writeln(log,'Dpic log ends');
+      writeln(log); flush(log)
+      end; D*)
    end;
                                 (* Unrecoverable errors *)
 procedure fatal( t: integer );
@@ -1205,20 +1229,21 @@ begin
 
                                 (* If pascal, open the parse table file *)
 (*P2 IP*) 
-(*GHF procedure openparse; FHG*)
-(*DGHF var i,j: integer; FHGD*)
-(*GHF begin
+(*GH procedure openparse; HG*)
+(*DGH var i,j: integer; HGD*)
+(*GH begin
    if length(ParamStr(0)) > FILENAMELEN-5 then fatal(2)
-   else infname := ParamStr(0) + '.tab' + chr(0); FHG*)
-   (*DGHF if oflag > 0 then begin
+   else infname := ParamStr(0) + '.tab' + chr(0); HG*)
+   (*DGH if oflag > 0 then begin
       write(log,'Tables: '); j := FILENAMELEN+1; i := 1;
       while i < j do if infname[i]=chr(0) then j := i else begin
          write(log,infname[i]); i := i+1 end;
-      writeln(log); flush(log) end; FHGD*)
+      writeln(log); flush(log) end; HGD*)
    (*GH if access(infname,4) < 0 then fatal(2) else reset(dpictabl,infname) HG*)
-   (*F assign(dpictabl,infname); F*) {$I-} (*F reset(dpictabl); F*) {$I+} (*F
-   if IOResult<>0 then fatal(2) F*)
-   (*GHF end; FHG*)
+   (* F assign(dpictabl,infname); F *)
+   { $I- } (* F reset(dpictabl); F *) { $I+ } (* F
+   if IOResult<>0 then fatal(2) F *)
+   (*GH end; HG*)
 (*M procedure openparse;
 var i,j: integer;
 begin
@@ -1284,8 +1309,8 @@ begin F*)
       assign(input,ParamStr(argct)); F*) {$I-} (*F reset(input); F*) {$I+} (*F
       if IOResult<>0 then fatal(1) F*)
       (*DF; if oflag>0 then writeln(log,'Input file: ',ParamStr(argct)) FD*)
-      (*F end;
-   openparse
+      (*F end; F*)
+   (* openparse *) (*F
    end;
 F*)
                                  (* Printable character *)
@@ -1787,13 +1812,14 @@ begin
    end; (*P2CP*)
                                 (* Read the lexical and lalr tables when needed
                                    for pascal or debug *)
-(*P2 IP*)
+(*P2 IP*) (*MGH
 procedure inittables;
 var
     cc, ch1: char;
     i: integer;
-begin (* inittables *)
+begin HGM*) (* inittables *)
                                 (* Initialize and read in lexical tree *)
+(*MGH
     for i := ordMINCH to ordMAXCH do begin
        entryhp[i] := 0;
        entrytv[i] := 0
@@ -1808,8 +1834,8 @@ begin (* inittables *)
 
     for i := 0 to lxmax do
         readln(dpictabl, cc, lxch[i], lxnp[i], lxhp[i], lxtv[i]);
-
-                                (* lalr parser table *)
+    HGM*)
+                                (* lalr parser table *) (*MGH
     i := 0;
     while i <= lrmax do begin
        read(dpictabl, lr[i], lr[i+next], lr[i+kind]);
@@ -1821,7 +1847,7 @@ begin (* inittables *)
        if eoln(dpictabl) then readln(dpictabl);
        i := i+5
        end
-   end; (* inittables *)(*P2 P*)
+   end; HGM*) (* inittables *)(*P2 P*)
 
 (*--------------------------------------------------------------------*)
 
@@ -2945,9 +2971,9 @@ begin
             fatal(0)
             end
          else begin
-            write(errout,' *** dpic terminating: Unknown option "');
-            if isprint(cht) then writeln(errout,cht,'"')
-            else writeln(errout,'char(',ord(cht):1,')"');
+            write(errout,' *** dpic terminating: Unknown option ');
+            if isprint(cht) then writeln(errout,'"',cht,'"')
+            else writeln(errout,'"char(',ord(cht):1,')"');
             fatal(0)
             end;
          argct := argct+1
@@ -2971,13 +2997,12 @@ begin (* dpic *)
    new(attstack);
    tmpbuf := nil;
    tmpfmt := nil;
-   (*D for stackhigh:=0 to REDUMAX do redubuf[stackhigh].newtop:=STACKMAX; D*)
    initrandom;
 
    new(chbuf);
-   (*D if debuglevel > 0 then
-      writeln(log,'new(chbuf)[',odp(chbuf):1,']'); D*)
-   (*P2 IP*) inittables; (*P2 P*)
+   (*D if debuglevel > 0 then writeln(log,'new(chbuf)[',odp(chbuf):1,']');
+       for ii:=0 to REDUMAX do redubuf[ii].newtop:=STACKMAX; D*)
+   (*P2 IP*) (*HGM inittables; MGH*) (*P2 P*)
    (*P2CIP*) initchars; (*P2CP*)
    entrytv[ordNL] := XNL;
    entrytv[ordCR] := XNL;       (* treat ^M as line end *)
@@ -3029,12 +3054,6 @@ begin (* dpic *)
    (*P2CIP*)
    (*MGH 999: HGM*)
    (*P2CP*)
-   (*D if debuglevel > 0 then begin
-      stackhigh := REDUMAX; oflag := -1; 
-      while stackhigh > oflag do
-        if redubuf[stackhigh].newtop=STACKMAX then stackhigh := stackhigh-1
-        else oflag := stackhigh
-      end; D*)
    epilog
 
    end (* dpic *) .

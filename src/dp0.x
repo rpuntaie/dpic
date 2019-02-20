@@ -5,6 +5,9 @@
                                    const declarations at low levels.
                                    All consts should be in dp0.x *)
 
+                                (* F = free pascal fpc
+                                   G,H = old, current gpc
+                                   M = p2c code                       *)
 const
    (*MF distmax = 3.40282347e+38; FM*) (*assumes at least IEEE single *)
    (*MF MaxReal = distmax; FM*)
@@ -24,10 +27,10 @@ const
 (*GHMF#include 'parscst.i'FMHG*)
 
 (* include parscdc.i *)
-#include 'parscdc.i'
+(*GHMF#include 'parscdc.i'FMHG*)
 
 (* include lxcst.h *)
-#include 'lxcst.h'
+(*GHMF#include 'lxcst.h'FMHG*)
 
                                 (* Machine constants                  *)
                                 (* Assume ASCII; forget EBCDIC        *)
@@ -162,6 +165,13 @@ type
    XLabelprimitive = packed record
       PRIMbase
       ptype: integer end; *)
+(* Example sizes with C compiler:
+      size of boxprimitive=112
+      size of block primitive=200
+      size of circleprimitive=96
+      size of ellipseprimitive=104
+      size of lineprimitive=136
+      size of labelprimitive=80 *)
 (*SpecialSizeOf primitive.XLbox=sizeof(XLboxprimitive) *)
 (*SpecialSizeOf primitive.XLstring=sizeof(XLboxprimitive) *)
 (*SpecialSizeOf primitive.XBLOCK=sizeof(primitive) *)
@@ -197,7 +207,7 @@ type
     (* tabch, nlch, crch, etxch: char; *)
 
 (* File names                                                         *)
-    (*P2 IP*) dpictabl: text; (*G asmname 'dpic_table'; G*)
+    (*P2 IP*) (*GHM dpictabl: text; MHG*) (*G asmname 'dpic_table'; G*)
     (*P2CP input, output: text; *)
     (*GHMF errout: text; FMHG*)(*G asmname 'std_err'; G*)
     (*GHMF copyin: text; FMHG*)(*G asmname 'copy_in'; G*)
@@ -237,7 +247,7 @@ type
 
                                 (* Production variables               *)
     attstack: @attstacktype;
-    (*D stackhigh: integer;D*)
+    (*D ii,stackhigh: integer;D*)
     reduinx,redutop: redubufrange;
     redubuf: array [redubufrange] of reduelem; (* reduction buffer    *)
 
@@ -273,13 +283,28 @@ type
 
                                 (* Global tables for easy C conversion.
                                    Alternative: use run-time space    *)
-    lr: array[0..lrmax] of integer;
-    entryhp: array[0..ordMAXCH] of lxinx;  (* assumes ordMINCH = 0    *)
-    lxhp: array[lxinx] of lxinx;
-    lxnp: array[lxinx] of lxinx;
-    lxtv: array[lxinx] of symbol;
-    entrytv: array[0..ordMAXCH] of symbol;
-    lxch: array[lxinx] of char;
+    lr: array[0..lrmax] of integer (*F =( F*)
+(*F#include 'parstab.h'
+    ) F*);
+                                (* assumes ordMINCH = 0:    *)
+    entryhp: array[0..ordMAXCH] of lxinx (*F =( F*)
+(*F#include 'entryhp.h'
+    ) F*);
+    lxhp: array[lxinx] of lxinx (*F =( F*)
+(*F#include 'lxhp.h'
+    ) F*);
+    lxnp: array[lxinx] of lxinx (*F =( F*)
+(*F#include 'lxnp.h'
+    ) F*);
+    lxtv: array[lxinx] of symbol (*F =( F*)
+(*F#include 'lxtv.h'
+    ) F*);
+    entrytv: array[0..ordMAXCH] of symbol (*F =( F*)
+(*F#include 'entrytv.h'
+    ) F*);
+    lxch: array[lxinx] of char (*F =( F*)
+(*F#include 'lxch.h'
+    ) F*);
                                 (* integer debugging constants        *)
     (*D debuglevel, linesignal: integer; D*)
     (*D trace: boolean; D*)     (* used for debugging the parser      *)
