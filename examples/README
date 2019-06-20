@@ -17,7 +17,6 @@ make overlay
 make pdfoverlay
 make metapost
 make xfig
-make svg
 
 ... or, you can type 'make all' and stand well back.
 

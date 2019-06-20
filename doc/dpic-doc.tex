@@ -228,6 +228,10 @@ processing by \LaTeX\ or as pdf for processing by pdflatex.  Inkscape
 will also export a tex file from which labels can be formatted and
 overlaid on the imported eps or pdf.
 
+The {\tt -z} option disables the commands that access external files.
+These commands can be permanently disabled by the use of a compile-time
+option.
+
 In all cases, arbitrary postprocessor commands (that is, arbitrary \PSTricks,
 SVG, \Postscript, or other commands) can be inserted into the dpic output
 directly from the source.
@@ -235,9 +239,12 @@ This possibility adds considerable power for manipulating diagram
 elements.
 % at the expense of integrating them into normal dpic output.
 
-The {\tt -z} option disables the commands that access external files.
-These commands can be permanently disabled by the use of a compile-time
-option.
+The use of output formats meant to be processed by \LaTeX\ is quite different
+from the other formats.  If a word processor is not part of the process,
+the selection and formatting of text in a diagram 
+must be accomplished by inserting postprocessor commands into the output.
+Dpic knows nothing of text formatting except for SVG output, for which
+basic sizing and placement are provided.
 
 The file Examples.txt contains a minimal example of each of these
 options except {\tt -z}.  Consult the appropriate manual for processing
@@ -263,8 +270,14 @@ process the following:
 
 \subsection{Lexical error messages}
   Lexical error messages are generated automatically, and state the
-lexical value that was found and what was expected.  Some
-slightly less than obvious expected lexical values are:
+lexical value that was found at or immediately before the error.
+Dpic attempts to display the line containing the offending input in an
+error message, which is not possible if the line has been completely scanned.
+Adding one or two semicolons at the end of the line often assists in
+finding the error.
+
+\iffalse
+Some slightly less than obvious expected lexical values are:
 
 \begin{tabbing}
 \quad\=\hbox{\tt<primitiv>\ }\= \kill
@@ -273,6 +286,7 @@ slightly less than obvious expected lexical values are:
 \> {\tt primitiv} \> {\tt box}, {\tt circle}, {\tt ellipse}, {\tt arc},
    {\tt line}, {\tt arrow}, {\tt move}, {\tt spline}
 \end{tabbing}
+\fi
 
 \section{Dpic programming}
 Pic is a simple language with a good ratio of power to complexity, so
@@ -525,7 +539,7 @@ A macro argument is referenced as {\tt\$}$n$,
 where $n$ must be an integer and
 may not be an integer expression.  Consequently, the following does
 not work in a \dpic macro:
-\ntt{for i=1 to \$+ do \tLB\ c[i] = \$i \tRB}\\
+\ntt{for j=1 to \$+ do \tLB\ c[j] = \$j \tRB}\\
 Instead, use the dpic statement
 \ntt{exec {\sl string}}\\
 which executes the contents of {\sl string} as if it were
@@ -533,7 +547,7 @@ the current input line.
 Since
 \ntt{sprintf("{\sl format}",{\sl expression},$\ldots$)}\\
 behaves like a string, the following works:
-\ntt{for i=1 to \$+ do \tLB\ exec sprintf("c[i] = \$\%g",i) \tRB}
+\ntt{for j=1 to \$+ do \tLB\ exec sprintf("c[j] = \$\%g",j); \tRB}
 
 Macro arguments are passed verbatim, as for example,
 {\tt function(x,y+z)}, inside which {\tt \$1} is replaced by {\tt x}
@@ -582,6 +596,13 @@ For example,
 \ntt{\quad print "A",}
 \ntt{\quad print "B")}\\
 executes the second alternative (the third argument) and prints B.
+
+Another place where a semicolon can assist is in a
+construction such as the following:
+\ntt{if (sh "test -f fileA.pic")==0 then \tLB $\;$ copy "FileA.pic"; \tRB \tBS}
+\ntt{else \tLB $\;$ copy "fileB.pic"; \tRB}\\
+The semicolons ensure that the {\tt copy} commands complete before exiting
+the braces.
 
 \subsection{Hiding variables}
 As mentioned in \SR{Scope:}, locations inside a block are accessible
@@ -690,7 +711,7 @@ them in single quote pairs.
 Some simple applications of m4 macros are illustrated in the subsections
 that follow.
 
-\subsubsection{Branching}
+\subsubsection{M4 branching}
 As an illustration of m4 macros, suppose that commands
 that are specific to the postprocessor must be generated.
 Then the macro
@@ -720,7 +741,7 @@ below:
 \ntt{  m4postprocessor,svg,`{\sl SVG code}',}
 \ntt{  `{\sl default code}')}
 
-\subsubsection{Perpendiculars}
+\subsubsection{Extending pic: perpendiculars}
 The Circuit\_macros {\tt vperp} macro illustrates how m4 macros can extend
 the pic language.  The purpose is to generate a pair of values representing
 the unit vector perpendicular to a given line, say.
@@ -805,8 +826,7 @@ Similarly, {\tt P} and {\tt P[3]} are distinct labels.
 Writing the subscript as {\tt [{\sl position}]} for any defined
 position is the same as {\tt [{\sl position}.x, {\sl position}.y]}.
 In cases where a double-subscripted variable or label is part of a macro
-argument, it is wise to protect the comma in the subscript
-with parentheses
+argument, protect the comma in the subscript with parentheses
 by writing, for example, {\tt x[(i,j)]} instead of {\tt x[i,j]}.
 
 \pagebreak
@@ -1366,8 +1386,8 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   operators {\tt !}, {\tt \&\&}, {\tt ||}, {\tt ==}, {\tt !=}, {\tt >=},
   {\tt <=}, {\tt <}, and {\tt >}, so judicious use of
   parentheses may sometimes be in order.
-  Dpic also requires comparisons to be put in parentheses in numerical
-  expressions; e.g., 
+  Dpic also requires comparisons and logical operations to be put in
+  parentheses in numerical expressions; e.g., 
   \ntt{x = ("{\sl text1}" == "{\sl text2}")}
 
   The construct {\tt x<A,B>} is intended to have the same meaning as
@@ -1471,7 +1491,7 @@ arguments can be arbitrary expressions rather than the constants shown.
   evaluates to a string containing the required final backslash.
 
   Both dpic and gpic allow logical comparison of strings.
-  Put the comparison in parentheses if it is to be used in a numerical
+  Put the comparison in parentheses if it is to be used in an
   expression.
 
   String height and width are unscaled on final output from dpic since
@@ -1963,7 +1983,9 @@ in {\tt <} {\tt >} pairs are generated internally.  Equated tokens
 \end{verbatim}
 
 
-The expanded dpic grammar follows, with the production number on the left:
+The expanded dpic grammar follows, with the production number on the left.
+The bison version of the distribution differs slightly but is equivalent
+for correct input.
 \begin{verbatim}
     0   METAGOAL = input "<EOF>" 
 

@@ -1,0 +1,240 @@
+
+$accept: input $end
+
+input: %empty
+     | input picture NL
+
+picture: start NL elementlist optnl XEND
+
+NL: XNL
+  | error
+
+start: XSTART
+     | XSTART term
+     | XSTART term term
+
+elementlist: %empty
+           | element
+           | elementlist NL element
+
+term: factor
+    | term Xmult factor
+    | term Xdiv factor
+    | term Xpercent factor
+
+element: namedobj
+       | XLabel suffix XCOLON position
+       | assignlist
+       | XLdirecton
+       | XLaTeX
+       | command
+       | lbrace elementlist optnl XRBRACE
+       | ifpart
+       | elsehead elementlist optnl XRBRACE
+       | for XRBRACE
+       | XLcommand stringexpr
+       | XLexec stringexpr
+
+lbrace: XLBRACE
+
+namedobj: object
+        | XLabel suffix XCOLON object
+
+suffix: %empty
+      | XBRACKETL expression XBRACKETR
+      | XBRACKETL position XBRACKETR
+
+position: pair
+        | expression XLbetween position XLand position
+        | expression XLof XLthe XLway XLbetween position XLand position
+        | expression XLT position Xcomma position XLcompare shift
+
+assignlist: assignment
+          | assignlist Xcomma assignment
+
+command: XLprint expression redirect
+       | XLprint position redirect
+       | XLprint stringexpr redirect
+       | XLreset
+       | XLreset resetlist
+       | systemcmd
+       | XLcopy stringexpr
+       | defhead XRBRACE
+       | XLundefine XLname
+       | XLundefine XLabel
+
+optnl: %empty
+     | NL
+
+ifpart: ifhead elementlist optnl XRBRACE
+
+elsehead: ifpart XLelse XLBRACE
+
+for: forhead elementlist optnl
+   | for forincr elementlist optnl
+
+stringexpr: string
+          | stringexpr Xplus string
+
+string: XLstring
+      | sprintf Xrparen
+
+assignment: XLname suffix XEQ assignrhs
+          | XLenvvar XEQ assignrhs
+
+assignrhs: expression
+         | assignment
+
+expression: term
+          | Xplus term
+          | Xminus term
+          | expression Xplus term
+          | expression Xminus term
+
+ifhead: setlogic logexpr XLthen XLBRACE
+
+setlogic: XLif
+
+logexpr: logprod
+       | logexpr XOROR logprod
+
+forhead: XFOR assignlist XLto expression do XLBRACE
+
+forincr: XLendfor
+
+do: XLdo
+  | by expression XLdo
+
+by: XLby
+  | XLby Xmult
+
+redirect: %empty
+        | XLcompare stringexpr
+        | XLcompare XLcompare stringexpr
+
+resetlist: XLenvvar
+         | resetlist Xcomma XLenvvar
+
+systemcmd: XLsh stringexpr
+
+defhead: XLdefine XLname optnl XLBRACE
+       | XLdefine XLabel optnl XLBRACE
+
+sprintf: XLsprintf Xlparen stringexpr
+       | XLsprintf Xlparen stringexpr Xcomma exprlist
+
+exprlist: expression
+        | expression Xcomma exprlist
+
+object: block
+      | object XLht expression
+      | object XLwid expression
+      | object XLrad expression
+      | object XLdiam expression
+      | object XLthick expression
+      | object XLscaled expression
+      | object XLdirecton optexp
+      | object XLlinetype optexp
+      | object XLchop optexp
+      | object XLfill optexp
+      | object XLarrowhd optexp
+      | object XLthen
+      | object XLcw
+      | object XLccw
+      | object XLsame
+      | object stringexpr
+      | object XLby position
+      | object XLfrom position
+      | object XLto position
+      | object XLat position
+      | object XLtextpos
+      | object XLcolrspec stringexpr
+      | objectwith XLat position
+      | objectwith XLcorner XLat position
+      | objectwith pair XLat position
+      | XLcontinue
+
+openblock: XBRACKETL
+
+block: XLprimitiv optexp
+     | stringexpr
+     | openblock closeblock XBRACKETR
+     | XBLOCK
+
+optexp: %empty
+      | expression
+
+closeblock: elementlist optnl
+
+objectwith: object XLwith
+          | objectwith Xdot XLabel suffix
+          | objectwith Xdot nth primobj
+
+pair: expression Xcomma expression
+    | location shift
+
+nth: ncount XLnth
+   | ncount XLnth XLlast
+   | XLlast
+
+primobj: XLprimitiv
+       | XBLOCK
+       | XLstring
+       | XBRACKETL XBRACKETR
+
+shift: %empty
+     | shift Xplus location
+     | shift Xminus location
+
+location: Xlparen position Xrparen
+        | Xlparen position Xcomma position Xrparen
+        | place
+        | location Xmult factor
+        | location Xdiv factor
+
+place: placename
+     | placename XLcorner
+     | XLcorner placename
+     | XLcorner XLof placename
+     | XLHere
+
+factor: primary
+      | XNOT primary
+      | primary Xcaret factor
+
+placename: XLabel suffix
+         | nth primobj
+         | placename Xdot XLabel suffix
+         | placename Xdot nth primobj
+
+ncount: XLfloat
+      | XSLQ expression XSRQ
+      | XLBRACE expression XRBRACE
+
+logprod: logval
+       | logprod XANDAND logval
+
+logval: lcompare
+      | stringexpr XLT stringexpr
+      | expression XLT expression
+
+lcompare: expression
+        | stringexpr
+        | lcompare XLcompare expression
+        | lcompare XLcompare stringexpr
+
+primary: XLenvvar
+       | XLname suffix
+       | XLfloat
+       | Xlparen logexpr Xrparen
+       | location XLdx
+       | location XLdy
+       | placename XLparam
+       | XLrand Xlparen Xrparen
+       | XLrand Xlparen expression Xrparen
+       | XLfunc1 Xlparen expression Xrparen
+       | XLfunc2 Xlparen expression Xcomma expression Xrparen
+       | Xlparen assignlist Xrparen
+       | Xlparen systemcmd Xrparen
+
+

@@ -2,6 +2,9 @@
 Dpic is an implementation of the pic "little language" for creating line
 drawings and illustrations for documents, web pages, and other uses.
 
+This file applies to versions of dpic later than June 15, 2019, which contain
+C source exclusively.
+
 Copying: 
 The files in this distribution are copyright (c) 2019, J. D. Aplevich,
 and are distributed under the licence at the end of this file, except for
@@ -12,24 +15,24 @@ Complete sources are available as a git repository at
 https://gitlab.com/aplevich/dpic
 
 Unix installation:
-   Type `./configure' to generate a Makefile, then `make' to compile the
-   sources.  Type `make install' or, if necessary, `sudo make install' to
-   install the executable in /usr/bin, a man page in /usr/share/man/man1,
-   and dpic-doc.pdf in /usr/share/dpic.  Typing `make PREFIX=local install'
-   puts the files in /usr/local instead of /usr.  To install the executable
-   only, type `make installdpic' and to install the documents only, type
-   `make installdocs'.
-
-   The configure script attempts to identify whether specific compiler
-   options are required to process C but not all compilers have identical
-   options or libraries so you may have to change the Makefile by hand
-   accordingly.  You might also look at the file Makefile.default, and
-   use it instead.
+   Type `make' to compile the sources, which are C99 compatible.
+   Type
+    `make install' or `sudo make install'
+   as necessary, to install the executable in /usr/bin, a man page
+   in /usr/share/man/man1,
+   and dpic-doc.pdf in /usr/share/dpic.  Typing
+    `make PREFIX=local install'
+   puts the files in /usr/local instead of /usr.
+   To install the executable only, type
+    `make installdpic'
+   and to install the documents only, type
+    `make installdocs'.
+   To compile in safe mode, with debug enabled, or with MinGW, DJGPP,
+   or other non-Linux compiler, refer to the top of the Makefile.
 
 Web-server installation:
-   You probably should disable the sh and copy commands in dpic for security
-   reasons.  Uncomment the SAFEMODE definition in Makefile or invoke
-   ./configure above as ./configure --enable-safemode.
+   You probably should disable the sh and copy commands in dpic for
+   security reasons.  Uncomment the SAFEMODE definition in Makefile.
    If you do not do this, the -z command-line option has the same effect
    (see below).
 
@@ -43,7 +46,6 @@ Installation on a non-unix PC:
       gcc   -O  -c  dpic.c
       gcc   -O  -c  p2clib.c
       gcc -o dpic dpic.o p2clib.o -lm
-
 
 Dpic usage:
 
@@ -90,32 +92,14 @@ Testing:
       \end{figure}
       \end{document}
 
-You can also do the tests in the examples directory (see below for
-the distribution directory structure).
-
-           |-doc------
-           |
-           |-examples-|-sources-
-           |          
- dpic-DATE-|          |-Pgen----|-src--
-           |          |
-           |-src------|-p2c-----|-src--
-                      |
-                      |-pascal--|-test-
-                      |-tables--
-
-Typing "make" in the pascal directory converts the proto-pascal in
-the src directory to pascal that is compatible either with GNU pascal
-(gpc) or with Free Pascal (fpc) and compiles the source, placing the
-executable and the required tables in the pascal/test directory.
+You can also do the tests in the doc/examples directory.
 
 Bugs:
    If you discover a bug, please check that your version is the latest.
    Feel free to send bug reports.  Dpic has been relatively solid but,
    by definition, it hasn't been tested for all possible illegal input,
    and the distribution has undergone changes for portability, simplicity,
-   and to include the pascal source.  The distributed version is tested
-   using pascal compilers and gcc on cygwin32 and cygwin64 machines.
+   and to distribute the source as C code.
 
    When inconsistencies between dpic and gpic are found, I usually check
    to see whether dpic should be changed to conform but there are small
@@ -125,24 +109,6 @@ Bugs:
 Version:
    The version of dpic is the date the source was created, printed as a
    comment in dpic output.
-
-Source:
-   The source code was originally written and maintained in Pascal to
-   run on IBM VM/CMS and DEC VMS operating systems, but it has been
-   moved several times over the years and has evolved considerably.
-   The Pascal is translated to C by P2C, then changed to simplify
-   reading and compilation and to run on a variety of platforms.
-   Proto-Pascal source files are included here in the src directory.
-   Selected lines are uncommented automatically for translation to C or
-   for Pascal compilation.  GNU pascal and Free Pascal are supported
-   currently.  A parser generator such as the ubiquitous yacc was not
-   readily available when dpic was first written so a different tool
-   was employed and has been retained for its good error messaging and
-   recovery. If source files in the src directory are changed, the
-   Makefile compiles, as necessary, the pascal to C translator and
-   the parser generator with its output filters and runs them to produce
-   new files in the formats requred.  These tools are included here for
-   the sole purpose of generating dpic C source.
 
 -------------------------------------------------------------------
 BSD Licence:
