@@ -379,19 +379,6 @@ fatal (int t) {
   case 5:
     fprintf (errout, "end of file encountered on input\n");
     break;
-  case 6:
-    fprintf (errout,
-	     "too many pending actions, const \"STACKMAX\" (%ld) exceeded,\n",
-	     (long) STACKMAX);
-    fprintf (errout,
-	     " possibly infinite recursion or a complex list or expression\n");
-    break;
-/*
-  case 7:
-    fprintf(errout, "input too complex, const \"REDUMAX\" (%ld) exceeded\n",
-	    (long)REDUMAX);
-    break;
- */
   case 8:
     fprintf (errout, "error recovery abandoned\n");
     break;
@@ -567,11 +554,10 @@ disposeargs (arg ** ar) {
 void
 exitmacro (void) {
   arg *aa;
+#ifdef DDEBUG
   int i;
   fbuffer *With;
   int FORLIM;
-
-#ifdef DDEBUG
   if (debuglevel > 0) {
     fprintf (log_, " exitmacro ");
     if (currentmacro == NULL) {
@@ -579,9 +565,7 @@ exitmacro (void) {
     } else if (currentmacro->argbody->carray != NULL) {
       With = currentmacro->argbody;
       FORLIM = -With->attrib;
-      for (i = 1; i <= FORLIM; i++) {
-	wchar (&log_, With->carray[i]);
-      }
+      for (i = 1; i <= FORLIM; i++) { wchar (&log_, With->carray[i]); }
     }
     putc ('\n', log_);
     currentmacro = NULL;
@@ -2353,7 +2337,6 @@ main (int argc, Char * argv[]) {
 
   /* lexical initializations, see also
      production -1 */
-  attx = 0;
   ch = ' ';
   lineno = 0;
   chbufi = 0;

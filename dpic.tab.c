@@ -5121,8 +5121,8 @@ yyreturn:
 int
 yyerror(char *s)
 {
-/* 	fprintf( stderr,"%s\n",s ); */
   markerror(799);
+  return 0;
   }
 
 /* Get and initialize a buffer from the
@@ -5210,7 +5210,6 @@ inittwo(void)
 void
 preproduce(int p)
 {
-  int i;
   switch (p) {
   case -2:
     inittwo();
@@ -5249,10 +5248,11 @@ static const char *const lexterms[] = {
 void
 markerror(int emi) {
   int inx, j, k;
-  fbuffer *thisbuf, *lastbuf, *With;
+  fbuffer *thisbuf, *lastbuf;
                                    /* Do not count warnings */
   if (emi < 900) { errcount++; }
 #ifdef DDEBUG
+  fbuffer *With;
   if (debuglevel > 0) {
     fprintf(log_, "*** markerror");
     wrbufaddr(inbuf, 0);
@@ -5943,7 +5943,6 @@ printobject(primitive *primp)
 void
 prattribute(char *label, attribute *a)
 {
-  int i, k;
   fprintf(log_, "attribute %s[%d]:", label, ordp(a));
   fprintf(log_, "\n lexval %4d", a->lexval);
   fprintf(log_, "  state %4d", a->state);

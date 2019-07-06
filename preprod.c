@@ -1,15 +1,14 @@
 /* preprod.c debugging code inserted into dpic.tab.c if debug is activated */
 #ifdef DDEBUG
+
 extern void prvars (primitive *);
-/* extern void prattstack(attribute *,attribute *); */
 
 #include "parscst.h"
-attribute *With, *Wx;
+
 int p, newp;
 p = yyn;
 if (debuglevel > 0) {
   newp = 1 - yylen;
-  With = &(yyval);		/*&attstack[newp]; */
 
   fprintf (log_, "\nProduction(newp=%d", newp);
   if (p >= 0) {

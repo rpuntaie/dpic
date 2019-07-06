@@ -111,7 +111,7 @@ A few pic-language extensions unique to dpic
 are implemented for specific purposes.
 
 .SH "LANGUAGE SUMMARY"
-Input consists of a sequence of lines.
+Input consists of a sequence of ASCII text lines.
 The first line of a picture is
 .B ".PS"
 and the last is

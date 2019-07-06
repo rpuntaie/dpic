@@ -68,8 +68,7 @@ Origin: Here                   # Position names are capitalized
   
   line invis from 2nd last line.start to 2nd last line.end ;    {"$ R$" \
      at last [].s below };  
-   [  circle rad (0.04*linewid)  fill 0 
-  ] with .c at Here
+   [  circle rad (0.04*linewid)  fill 0    ] with .c at Here
   move to last [].c
    {                           # Save the current position and direction
       line invis  down to (Here,Origin)
@@ -92,8 +91,7 @@ Origin: Here                   # Position names are capitalized
      at last [].l rjust }; {"$ -$" \
      at last [].s rjust below }; ;   {"$ C$" \
      at last [].e ljust };  
-      [  circle rad (0.04*linewid)  fill 0 
-  ] with .c at Here
+      [  circle rad (0.04*linewid)  fill 0    ] with .c at Here
   move to last [].c
       }                        # Restore position and direction
    line  right elen*2/3
