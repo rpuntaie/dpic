@@ -1,9 +1,9 @@
 .PS
 # Spiral.m4 (Uses Circuit_macros library)
-# threeD_init Version 8.9.3: TikZ PGF m4 macro settings.
+# threeD_init Version 9.0.1: TikZ PGF m4 macro settings.
   
 # threeD_init begin
-  # gen_init Version 8.9.3: TikZ PGF m4 macro settings.
+  # gen_init Version 9.0.1: TikZ PGF m4 macro settings.
   
 
   define rpoint__ {
@@ -41,7 +41,9 @@
 # threeD_init end
 # For this manual we have a local copy of dpictools.pic; normally
 # we would invoke the macro NeedDpicTools
-copy "dpictools.pic"
+# copy "dpictools.pic"
+if "dpictools" != "1" then {
+  copy "/cygdrive/d/Dwight/lib/dpictools.pic" }   
 
   azimuth = 15                     # Set view angles in degrees
   elevation = 35
@@ -111,42 +113,7 @@ define Radiusvis { $2 = (((((cos((-2*turns*$1*dtor_)))*((cos((-$1*dtor_)))*(crad
     if xs*xf < 0 then {
       findroot( Radiusvis, theta-dt,theta,1e-8,x ) # Find the transition pt
       n+=1; P[n]: ((cos(m4rot))*(  ((sin(-m4azim))*((cos((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))+(cos(-m4azim))*(  (sin((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))))-((sin(m4rot))*(  ((cos(m4elev))*(crad  -((sin((-x*dtor_)))*(crad)))-((sin(m4elev))*(((cos(-m4azim))*((cos((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))-((sin(-m4azim))*(  (sin((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad))))))))))),        ((sin(m4rot))*(  ((sin(-m4azim))*((cos((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))+(cos(-m4azim))*(  (sin((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))))+(cos(m4rot))*(  ((cos(m4elev))*(crad  -((sin((-x*dtor_)))*(crad)))-((sin(m4elev))*(((cos(-m4azim))*((cos((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))-((sin(-m4azim))*(  (sin((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad))))))))))
-      if xs < 0 then { define dfitpoints {
-  if "$3"=="" then { m_dfit=0 } else { m_dfit=$3 }
-  if "$5"=="" then { mP_dfit=0 } else { mP_dfit=$5 }
-  n_dfit = $2; np_dfit = n_dfit-m_dfit
-  $4[mP_dfit]: $1[m_dfit]
-  for i_dfit=m_dfit+1 to n_dfit-1 do {
-    $4[mP_dfit+i_dfit-m_dfit]: $1[i_dfit]*(4/3) }
-  $4[mP_dfit+np_dfit]: $1[n_dfit]
-  $4[mP_dfit+1]: $4[mP_dfit+1]-$4[mP_dfit+0]/6    # forward substitution
-  d_dfit[1] = 1
-  for i_dfit = 2 to np_dfit-1 do { $4[mP_dfit+i_dfit]: \
-    $4[mP_dfit+i_dfit]-$4[mP_dfit+i_dfit-1]/d_dfit[i_dfit-1]/6
-    d_dfit[i_dfit] = 1-1/d_dfit[i_dfit-1]/36 }
-  for i_dfit= np_dfit-1 to 1 by -1 do {    # backward substitution
-    $4[mP_dfit+i_dfit]: \
-    ($4[mP_dfit+i_dfit]-$4[mP_dfit+i_dfit+1]/6)/d_dfit[i_dfit] }
-  }  
-define case_dfit { exec sprintf("$%g",floor($1+0.5)+1); }
-define dfitcurve { if "$4"=="" then { m_dfit=0 } else { m_dfit=$4 }
-  n_dfit = $2; np_dfit = n_dfit-m_dfit
-  M4P_[0]: $1[m_dfit]
-  case_dfit( min(max(np_dfit,-1),3)+1,
-    spline 0.551784 $3 from M4P_[0] to M4P_[0],
-    spline 0.551784 $3 from M4P_[0] to $1[n_dfit],
-    M4P_[3]: $1[n_dfit]; Q_dfit: (M4P_[3]-M4P_[0])/4 
-    M4P_[1]: $1[m_dfit+1]-Q_dfit; M4P_[2]: $1[m_dfit+1]+Q_dfit
-    spline 0.551784 $3 from M4P_[0] to M4P_[1] then to M4P_[2] then to M4P_[3],
-     
-dfitpoints($1,$2,$4,M4P_,0)
-                                  # draw using computed control points
-    spline 0.551784 $3 from M4P_[0] to 11/32 between M4P_[0] and M4P_[1] \
-       then to 5/32 between M4P_[1] and M4P_[2]
-    for i_dfit=2 to np_dfit-2 do { continue to M4P_[i_dfit] }
-    continue to 27/32 between M4P_[np_dfit-2] and M4P_[np_dfit-1] \
-      then to 21/32 between M4P_[np_dfit-1] and M4P_[np_dfit] \
-      then to M4P_[np_dfit]) } 
+      if xs < 0 then { 
   dfitcurve(P,n,dashed)  } else { 
   dfitcurve(P,n)  }
       P[0]: P[n]

@@ -119,6 +119,7 @@ typedef struct postype {
   double xpos, ypos;
 } postype;
 
+                            /* Data structures for drawn primitives */
 #define PRIMbase \
   nametype *name, *textp, *outlinep, *shadedp; \
   struct primitive *parent, *son, *next_; \
@@ -151,6 +152,7 @@ typedef struct postype {
       int atype; \
     } Uline
 
+                            /* General and block primitives */
 typedef struct primitive {
   PRIMbase;
   union {
@@ -194,6 +196,7 @@ typedef struct XLabelprimitive {
   PRIMbase;
 } XLabelprimitive;
 
+                            /* Parse stack production attributes */
 typedef struct attribute {
   chbufinx chbufx;
   int toklen;
@@ -203,7 +206,7 @@ typedef struct attribute {
   int lexval, state;
 } attribute;
 
-/* File names                                                         */
+                            /* External files                 */
 FILE *input, *output, *errout, *copyin, *redirect;
 
 #ifdef DDEBUG
@@ -223,7 +226,7 @@ boolean safemode;		/* disable sh and copy                */
 
                         /* Lexical analyzer character buffer  */
 Char *chbuf;
-chbufinx chbufi, oldbufi;	/* character buffer indices           */
+chbufinx chbufi, oldbufi;	/* character buffer indices       */
 
                         /* Lexical variables                  */
 Char ch;			    /* current character                  */
@@ -232,21 +235,19 @@ int lexsymb;			/* lexical value                      */
 int lexstate;			/* 0..4: <.PS; .PS; in pic; .PE; >.PE */
 boolean inlogic;		/* set < to <compare> in context      */
 boolean instr;			/* set while reading a string         */
+double floatvalue;		/* numerical value of float read      */
 fbuffer *inbuf, *savebuf, *freeinbuf, *topbuf;
 
-                        /* Parser variables */
 int oldsymb;			/* last lexical symbol                */
-arg *macros, *args, *freearg;	/* macro and macro argument list      */
+arg *macros, *args, *freearg;	/* lists of macros and args   */
 
                         /* Error handling                     */
 int errcount;			/* becomes nonzero when errors found  */
 int lineno;			    /* current input line number          */
 int currprod;			/* current production for error msgs  */
 
-/* Production variables               */
-attribute forattr;
-
-double floatvalue;		/* numerical value of floats read     */
+						/* Production variables               */
+attribute forattr;      /* to set up for loop                 */
 primitive *envblock;	/* block containing the current scope */
 primitive *tail;		/* for tree branches                  */
 primitive *globalenv;	/* the global environment block       */
@@ -254,12 +255,12 @@ double dptextratio;		/* text parameters for SVG,PDF,PS     */
 double dpPPI;			/* pixels per inch                    */
 
 double north, south, east, west;
-double xfheight;		/* for calculating xfig and svg coords */
+double xfheight;		/* for calculating xfig and svg coords*/
 Char *freeseg;			/* segment open to store strings      */
 short freex;			/* next free location                 */
 Char *tmpbuf;			/* buffer for snprintf or sprintf     */
 Char *tmpfmt;			/* snprintf, findvar buffer           */
-double scale, fsc;		/* scale factor and final scale factor */
+double scale, fsc;		/* scale factor and final scale factor*/
 int splcount, spltot;	/* spline depth counter               */
 int pdfobjcount;		/* pdf objects                        */
 primitive *snode;		/* temporary node storage             */

@@ -405,8 +405,8 @@ be mentioned.
 General-purpose macro definitions can be stored in files external to the
 diagram source and read in automatically.
 In particular, the author has written a package
-called Circuit\_macros for drawing electric circuits
-and other diagrams using dpic and m4 \cite{Aplevich09},
+called Circuit\_macros~\cite{Aplevich09} for drawing electric circuits
+and other diagrams using dpic and m4,
 from which examples will be taken.
 
 %\subsection{Dpic macros}
@@ -458,7 +458,9 @@ thus, executing the following
 gives {\tt y} the internal value of {\tt v}.
 Notice that {\tt y} must be defined prior to macro expansion.
 
-The use of macros will be illustrated in the following examples.
+The use of macros will be illustrated in the following examples, for which
+source can be found in the {\tt dpictools.pic} file in the
+Circuit\_macros distribution~\cite{Aplevich09}.
 
 \subsubsection{Finding roots}
 A root finder is a powerful tool for determining where lines or
@@ -597,8 +599,7 @@ For example,
 \ntt{\quad print "B")}\\
 executes the second alternative (the third argument) and prints B.
 
-Another place where a semicolon can assist is in a
-construction such as the following:
+Semicolons are also required in a construction such as the following:
 \ntt{if (sh "test -f fileA.pic")==0 then \tLB $\;$ copy "FileA.pic"; \tRB \tBS}
 \ntt{else \tLB $\;$ copy "fileB.pic"; \tRB}\\
 The semicolons ensure that the {\tt copy} commands complete before exiting

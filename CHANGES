@@ -12,3 +12,5 @@ documentation) not involving run-time functionality.
            accommodate bison; some p2c idiosyncrasies remain. The result
            is functionally identical to the previous version for correct
            input.
+
+           A configure file (only needed for MinGW) added.

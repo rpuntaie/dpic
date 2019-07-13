@@ -1,4 +1,4 @@
-/* Main routines */
+							/* Main routines */
 #include "dpic.h"
 
 extern boolean inarc (double, double, double, double);
@@ -9,8 +9,7 @@ extern int lspec (int);
 extern postype affang (postype, postype);
 extern postype affine (double, double, postype, postype);
 extern primitive *(findenv (primitive *));
-extern void checkjust (nametype *, boolean *, boolean *, boolean *,
-		       boolean *);
+extern void checkjust (nametype *, boolean *, boolean *, boolean *, boolean *);
 extern void getlinespec (primitive *, int *, primitive **);
 extern void initnesw (void);
 extern void markerror (int);
@@ -29,13 +28,13 @@ extern void snapname (Char *, chbufinx, chbufinx);
 extern void wlogfl (Char *, double, int);
 extern void wrbufaddr (fbuffer *, int);
 extern void wrbuf (fbuffer *, int, int);
-arg *currentmacro;		/* last-found macro                   */
+arg *currentmacro;		    /* last-found macro                   */
 #endif
 
-/* #include "lxcst.h" */
+							/* the parser                         */
 #include "dpic.tab.h"
 
-/* Lexical tables */
+							/* Lexical tables                     */
 symbol entrytv[ordMAXCH + 1] = {
 #include "entrytv.h"
 };
@@ -63,8 +62,8 @@ Char lxch[lxmax + 1] = {
 int P_argc;
 char **P_argv;
 
-/* Parser variables */
-int oldsymb;			/* last lexical symbol                */
+							/* Parser variables */
+int oldsymb;			    /* last lexical symbol                */
 arg *macros, *args, *freearg;	/* macro and macro argument list      */
 
 #ifdef DDEBUG
@@ -75,7 +74,7 @@ odp (void *p) {
 #endif
 
 /*--------------------------------------------------------------------*/
-/* Numerical utilities: */
+							/* Numerical utilities: */
 double
 principal (double x, double r) {
   while (x > r) {
@@ -141,12 +140,11 @@ datan (double y, double x) {
   return r;
 }
 
-/* like hypot() */
+							/* like hypot()                     */
 double
 linlen (double x, double y) {
   double xm, ym;
-
-  /* linlen := sqrt( x*x + y*y ) */
+							/* linlen := sqrt( x*x + y*y ) */
   if (fabs (x) > fabs (y)) {
     xm = fabs (x);
     ym = y / xm;
@@ -163,10 +161,8 @@ linlen (double x, double y) {
 }
 
 /*--------------------------------------------------------------------*/
-/* Some common utilities                                              */
-
-/* Substrings common to one or more
-   postprocessor */
+							/* Some common utilities */ 
+							/* Substrings common to one or more postprocessor */
 void
 controls (void) {
   printf ("\n ..controls ");
@@ -187,32 +183,32 @@ ddash (void) {
   printf ("\n --");
 }
 
-/* Arrowhead location or EMPTY in bit 4 ... */
+							/* Arrowhead location or EMPTY in bit 4 ... */
 int
 ahlex (int atyp) {
   return (atyp >> 3);
 }
 
-/* Arrowhead number in lower 3 bits */
+							/* Arrowhead number in lower 3 bits */
 int
 ahnum (int atyp) {
   return (atyp & 7);
 }
 
-/* Store arrowhead location or EMPTY */
+							/* Store arrowhead location or EMPTY */
 int
 pahlex (int atyp, int alex) {
   return ((atyp & 7) + (alex * 8));
 }
 
-/* Store arrowhead number */
+							/* Store arrowhead number */
 int
 pahnum (int atyp, int anum) {
   return (((atyp >> 3) * 8) + (anum & 7));	/* 0 < anum < 7 */
 }
 
-/* Output float with trailing zeros trimmed in
-   the fraction part */
+							/* Output float with trailing zeros trimmed in
+                               the fraction part */
 void
 wfloat (FILE ** iou, double y) {
   char buf[25];
@@ -234,7 +230,7 @@ wfloat (FILE ** iou, double y) {
   fprintf (*iou, "%s", &buf[i + 1]);
 }
 
-/* Output a string of characters from a strptr*/
+							/* Output a string of characters from a strptr*/
 void
 wstring (FILE ** iou, nametype * p) {
   int i, FORLIM;
@@ -250,8 +246,8 @@ wstring (FILE ** iou, nametype * p) {
   }
 }
 
-/* Store ljust rjust in bits 1, 2 and
-         below above in bits 3, 4 */
+							/* Store ljust rjust in bits 1, 2 and
+                                     below above in bits 3, 4 */
 void
 setjust (nametype * tp, int v) {
   int i;
@@ -284,7 +280,7 @@ setjust (nametype * tp, int v) {
   }
 }
 
-/* Position P2 = (a*P1 + b*P2)/c (for arrows) */
+							/* Position P2 = (a*P1 + b*P2)/c (for arrows) */
 void
 pprop (postype p1, postype * p2, double a, double b, double c) {
   if (c != 0.0) {
@@ -293,7 +289,7 @@ pprop (postype p1, postype * p2, double a, double b, double c) {
   }
 }
 
-/* Test (bit 4) if this segment has a parent */
+							/* Test (bit 4) if this segment has a parent */
 boolean
 isthen (primitive * pr) {
   if (pr == NULL) {
@@ -303,7 +299,7 @@ isthen (primitive * pr) {
   }
 }
 
-/* Draw arc in segments for arc arrowheads */
+							/* Draw arc in segments for arc arrowheads */
 void
 popgwarc (postype Ctr, double radius, double startangle, double endangle,
 	  double ccw) {
@@ -342,7 +338,7 @@ popgwarc (postype Ctr, double radius, double startangle, double endangle,
 
 /*--------------------------------------------------------------------*/
 
-/* We are finished */
+							/* We are finished */
 void
 epilog (void) {
   Free (chbuf);
@@ -352,7 +348,7 @@ void
 consoleflush (void) {
 }
 
-/* Unrecoverable errors */
+							/* Unrecoverable errors */
 void
 fatal (int t) {
   if (t != 0) {
@@ -360,7 +356,7 @@ fatal (int t) {
   }
   switch (t) {
   case 0:
-    /* blank case */
+							/* blank case */
     break;
   case 1:
     fprintf (errout, "input file not readable\n");
@@ -408,7 +404,7 @@ fatal (int t) {
 }
 
 #ifdef DDEBUG
-/* The log file is only for debugging */
+							/* The log file is only for debugging */
 void
 openlogfile (void) {
   if (log_ != NULL) {
@@ -427,7 +423,7 @@ openlogfile (void) {
 }
 #endif
 
-/* Check if a file is accessible */
+							/* Check if a file is accessible */
 int
 checkfile (Char * ifn, boolean isverbose) {
   int cf;
@@ -458,19 +454,19 @@ checkfile (Char * ifn, boolean isverbose) {
   return cf;
 }
 
-/* Open the error stream */
+							/* Open the error stream */
 void
 openerror (void) {
   errout = stderr;
 }
 
-/* Printable character */
+							/* Printable character */
 boolean
 isprint_ (Char ch) {
   return ((ch >= 32) && (ch <= 126));
 }
 
-/* Output a character as printable */
+							/* Output a character as printable */
 void
 wchar (FILE ** iou, Char c) {
   if (isprint_ (c)) {
@@ -498,14 +494,14 @@ wchar (FILE ** iou, Char c) {
 
 /*--------------------------------------------------------------------*/
 
-/* Initialize random number routine */
+							/* Initialize random number routine */
 void
 initrandom (void) {
   time_t seed;
   srandom (time (&seed));
 }
 
-/* Store buffers on top of old-buffer stack */
+							/* Store buffers on top of old-buffer stack */
 void
 disposebufs (fbuffer ** buf) {
   fbuffer *bu;
@@ -550,7 +546,7 @@ disposeargs (arg ** ar) {
   *ar = NULL;
 }
 
-/* End of macro found */
+							/* End of macro found */
 void
 exitmacro (void) {
   arg *aa;
@@ -578,7 +574,7 @@ exitmacro (void) {
   disposeargs (&aa);
 }
 
-/* Read a line from the input */
+							/* Read a line from the input */
 void
 readline (FILE ** infname) {
   int ll, c;
@@ -620,7 +616,7 @@ readline (FILE ** infname) {
   }
 }
 
-/* Get the next line and set lexstate */
+							/* Get the next line and set lexstate */
 void
 nextline (Char lastchar) {
   int i;
@@ -648,7 +644,7 @@ nextline (Char lastchar) {
       }
       readline (&input);
     }
-    /* Check for .PS, .PE, and zero length */
+							/* Check for .PS, .PE, and zero length */
     With = inbuf;
 
     if (With->savedlen >= 1) {
@@ -681,7 +677,7 @@ nextline (Char lastchar) {
 	}
       }
     }
-    /* Dump the line if not between .PS and .PE */
+							/* Dump the line if not between .PS and .PE */
     if ((lexstate == 0) && (!inputeof)) {
       With = inbuf;
       FORLIM = With->savedlen;
@@ -696,8 +692,8 @@ nextline (Char lastchar) {
   } while (!((inbuf->savedlen > 0) || inputeof));
 }
 
-/* Read the next char into ch, accounting for
-   strings and end of buffer */
+							/* Read the next char into ch, accounting for
+                               strings and end of buffer */
 void
 inchar (void) {
   fbuffer *tp;
@@ -793,7 +789,7 @@ inchar (void) {
       }
     }
   }
-  /* This is not a loop */
+							/* This is not a loop */
   if (forbufend || inputeof) {
     ch = nlch;
   } else {
@@ -813,7 +809,7 @@ inchar (void) {
 #endif
 }				/* inchar */
 
-/* skip to end of the current input line */
+							/* skip to end of the current input line */
 void
 skiptoend (void) {
   boolean skip = true;
@@ -842,7 +838,7 @@ skiptoend (void) {
   }
 }
 
-/* Move back in chbuf */
+							/* Move back in chbuf */
 void
 backup (void) {
   fbuffer *With;
@@ -853,7 +849,7 @@ backup (void) {
 
 /*--------------------------------------------------------------------*/
 
-/* Copy ch char into chbuf and get new ch */
+							/* Copy ch char into chbuf and get new ch */
 void
 pushch (void) {
   chbuf[chbufi] = ch;
@@ -862,11 +858,11 @@ pushch (void) {
   } else {
     fatal (4);
   }
-  /* Leave 1 location free at the end of chbuf^ */
+							/* Leave 1 location free at the end of chbuf^ */
   inchar ();
 }				/*pushch */
 
-/* Read complete line into chbuf */
+							/* Read complete line into chbuf */
 void
 readlatex (void) {
   while (ch != nlch) {
@@ -875,7 +871,7 @@ readlatex (void) {
   newsymb = XLaTeX;
 }
 
-/* Value of $+ */
+							/* Value of $+ */
 int
 argcount (arg * a) {
   int i = 0;
@@ -891,7 +887,7 @@ argcount (arg * a) {
   return i;
 }
 
-/* Find the k-th argument */
+							/* Find the k-th argument */
 arg *(findarg (arg * arlst, int k)) {
   arg *ar;
   int i = 1;
@@ -943,7 +939,7 @@ trimname (Char * fn, int len) {
   return fnbuf;
 }
 
-/* Start reading from file for copy "file" */
+							/* Start reading from file for copy "file" */
 #ifndef SAFE_MODE
 void
 pointinput (nametype * txt) {
@@ -998,7 +994,7 @@ pointinput (nametype * txt) {
   inbuf = NULL;
 }
 
-/* Redirect output for print .. > "file" */
+							/* Redirect output for print .. > "file" */
 void
 pointoutput (boolean create, nametype * txt, int *ier) {
   int i, FORLIM;
@@ -1065,7 +1061,7 @@ pointoutput (boolean create, nametype * txt, int *ier) {
 
 #endif
 
-/* Read string terminal into chbuf */
+							/* Read string terminal into chbuf */
 void
 readstring (void) {
   int n;
@@ -1140,7 +1136,7 @@ readstring (void) {
 #endif
 }
 
-/* Read exponent part of number */
+							/* Read exponent part of number */
 void
 readexponent (void) {
   boolean neg;
@@ -1171,7 +1167,7 @@ readexponent (void) {
   }
 }				/* readexponent */
 
-/* Read fraction part of number */
+							/* Read fraction part of number */
 void
 readfraction (void) {
   double x = 10.0;
@@ -1183,7 +1179,7 @@ readfraction (void) {
   }
 }				/* readfraction */
 
-/* Read number integer, fraction, exponent */
+							/* Read number integer, fraction, exponent */
 void
 readconst (Char initch) {
   floatvalue = 0.0;
@@ -1202,7 +1198,7 @@ readconst (Char initch) {
   if ((ch == 'e') || (ch == 'E')) {
     readexponent ();
   }
-  /* A rather odd way to allow inch units */
+							/* A rather odd way to allow inch units */
   if (ch == 'i') {
     pushch ();
   }
@@ -1240,7 +1236,7 @@ prlex (boolean acc) {
 }
 #endif
 
-/* Prepend a buffer on the left of current buf*/
+							/* Prepend a buffer on the left of current buf*/
 fbuffer *(prebuf (fbuffer * buf)) {
   fbuffer *With;
 
@@ -1256,7 +1252,7 @@ fbuffer *(prebuf (fbuffer * buf)) {
   return (buf->prevb);
 }
 
-/* Push macro or arg or string from mac into
+							/* Push macro or arg or string from mac into
    the head of the input stream */
 void
 copyleft (fbuffer * mac, fbuffer ** buf, int attr) {
@@ -1343,8 +1339,8 @@ copyleft (fbuffer * mac, fbuffer ** buf, int attr) {
   With->carray[With->readx - 1] = nlch;
 }
 
-/*  $n has been seen in a macro argument;
-   copy the body into the tail of the input buffer */
+							/*  $n has been seen in a macro argument;
+   							copy the body into the tail of the input buffer */
 void
 copyright (fbuffer * mac, fbuffer ** buf) {
   fbuffer *ml;
@@ -1397,7 +1393,7 @@ copyright (fbuffer * mac, fbuffer ** buf) {
 #endif
 }
 
-/* Check the current char for line continuation */
+							/* Check the current char for line continuation */
 void
 skipcontinue (boolean instrg) {
   Char c;
@@ -1434,7 +1430,7 @@ skipcontinue (boolean instrg) {
   }
 }
 
-/* Skip white space characters */
+							/* Skip white space characters */
 void
 skipwhite (void) {		/* D if debuglevel = 2 then writeln(log, 'skipwhite: ' ); D */
   while ((ch == etxch) || (ch == nlch) || (ch == tabch) || (ch == ' ')) {
@@ -1448,7 +1444,7 @@ skipwhite (void) {		/* D if debuglevel = 2 then writeln(log, 'skipwhite: ' ); D 
   }
 }
 
-/* Stash the current argument into the arg
+							/* Stash the current argument into the arg
    struct*/
 void
 defineargbody (int *parenlevel, fbuffer ** p2) {
@@ -1546,11 +1542,11 @@ defineargbody (int *parenlevel, fbuffer ** p2) {
   *p2 = p1;
 }
 
-/* String equality:
-   0: identical
-   +k: string1 > string2 or len1 > len2
-   -k: string1 < string2 or len1 < len2
-   maxint: nil string or strings */
+							/* String equality:
+							   0: identical
+							   +k: string1 > string2 or len1 > len2
+							   -k: string1 < string2 or len1 < len2
+							   maxint: nil string or strings */
 int
 eqstring (Char * seg1, chbufinx inx1, chbufinx len1, Char * seg2,
 	  chbufinx inx2, chbufinx len2) {
@@ -1604,7 +1600,7 @@ eqstring (Char * seg1, chbufinx inx1, chbufinx len1, Char * seg2,
   return k;
 }
 
-/* Look for given macro name */
+							/* Look for given macro name */
 arg
   *(findmacro
     (arg * p, Char * chb, chbufinx inx, chbufinx toklen, arg ** last)) {
@@ -1639,8 +1635,8 @@ arg
   return p;
 }
 
-/* Get and initialize an arg from the
-   old-arg stack or make a new one */
+							/* Get and initialize an arg from the
+   								old-arg stack or make a new one */
 void
 newarg (arg ** ar) {
   arg *With;
@@ -1661,7 +1657,7 @@ newarg (arg ** ar) {
 #endif
 }
 
-/* Check for macro name */
+							/* Check for macro name */
 boolean
 ismacro (Char * chb, chbufinx obi, chbufinx chbi) {
   arg *mac, *lastp, *ar;
@@ -1722,8 +1718,8 @@ ismacro (Char * chb, chbufinx obi, chbufinx chbi) {
   return ism;
 }
 
-/* Push an argument to the left of the
-   input stream */
+							/* Push an argument to the left of the
+   								input stream */
 void
 copyarg (Char * chb, chbufinx chbs, chbufinx chbi) {
   int n = 0;
@@ -1742,7 +1738,7 @@ copyarg (Char * chb, chbufinx chbs, chbufinx chbi) {
   }
 }
 
-/* Check for $+ or copy arg */
+							/* Check for $+ or copy arg */
 boolean
 insertarg (void) {
   int icx;
@@ -1765,13 +1761,13 @@ insertarg (void) {
   }
 }
 
-/* Find the next terminal.
-   Set lexsymb (terminal lexical value),
-   newsymb (terminal number used for parsing),
-   and float value.
-   Identify and generate all terminals
-   of the form <...> in the grammar.
-   Reads one character after the terminal end */
+							/* Find the next terminal.
+   								Set lexsymb (terminal lexical value),
+   								newsymb (terminal number used for parsing),
+   								and float value.
+   								Identify and generate all terminals
+   								of the form <...> in the grammar.
+   								Reads one character after the terminal end */
 int
 yylex (attribute * a0) {
   int lxix;
@@ -1779,11 +1775,11 @@ yylex (attribute * a0) {
   boolean terminalaccepted, looping;
   fbuffer *With;
 
-  /* argstruct: argp;
+							/* argstruct: argp;
      j,k: integer;
      varptr,lastp: strptr; */
 
-  /* floatvalue = 0.0; */
+							/* floatvalue = 0.0; */
   lexsymb = -1;
   do {
     terminalaccepted = true;
@@ -1791,7 +1787,7 @@ yylex (attribute * a0) {
     while ((ch == ' ') || (ch == tabch)) {
       inchar ();
     }
-    /* lexstate is
+	/* lexstate is
        0 before .PS or after .PE
        1 when .PS found
        2 between .PS and .PE
@@ -1829,12 +1825,12 @@ yylex (attribute * a0) {
       terminalaccepted = false;
     }
 
-    /* Use the lexical tables to identify
-       terminals, checking for macro names */
+							/* Use the lexical tables to identify
+       							terminals, checking for macro names */
     else {
       firstch = ch;
       pushch ();
-      /* Continuation, comment, constant, latex */
+							/* Continuation, comment, constant, latex */
       With = inbuf;
       if (firstch == bslch) {
 	if ((ch == nlch) || (ch == '#')) {
@@ -1852,7 +1848,7 @@ yylex (attribute * a0) {
       } else if ((firstch == '.') && (With->readx == 3) &&
 		 (inbuf->prevb == NULL) && (newsymb != (-2))) {
 	readlatex ();
-      } else {			/* Search in the lexical tree */
+      } else {			    /* Search in the lexical tree */
 	newsymb = entrytv[abs (firstch)];
 	lxix = entryhp[abs (firstch)];
 	while (lxix != 0) {
@@ -1870,10 +1866,10 @@ yylex (attribute * a0) {
 	    lxix = lxnp[lxix];
 	  }
 	}
-	/* Insert argument or macro */
+							/* Insert argument or macro */
 	if ((isupper (firstch) != 0) &&
 	    ((isalnum (ch) != 0) || (ch == '_') || (ch == '$'))) {
-	  /* Label */
+							/* Label */
 	  looping = true;
 	  while (looping) {
 	    if (ch == '$') {
@@ -1891,7 +1887,7 @@ yylex (attribute * a0) {
 	  }
 	} else if (((isalnum (firstch) != 0) || (firstch == '_')) &&
 		   ((isalnum (ch) != 0) || (ch == '_') || (ch == '$'))) {
-	  /* variable name */
+							/* variable name */
 	  looping = true;
 	  while (looping) {
 	    if (ch == '$') {
@@ -1915,7 +1911,7 @@ yylex (attribute * a0) {
 	  ch = nlch;
 	  terminalaccepted = false;
 	}
-	/* Skip after designated terminals */
+							/* Skip after designated terminals */
 	else if ((newsymb == XNL) &&
 		 ((oldsymb == XLelse) || (oldsymb == XLBRACE) ||
 		  (oldsymb == XLthen) || (oldsymb == XCOLON) ||
@@ -1928,7 +1924,7 @@ yylex (attribute * a0) {
 	  lexsymb = newsymb;
 	  newsymb = XEQ;
 	}
-	/* Multiple-valued terminals */
+							/* Multiple-valued terminals */
 	else if (newsymb > XLcorner) {
 	  lexsymb = newsymb;
 	  if (newsymb > XLenvvar) {
@@ -1995,7 +1991,7 @@ yylex (attribute * a0) {
 	}
 #endif
 	else if ((newsymb == 0) && (isupper (firstch) != 0)) {
-	  /* Label, second possibility */
+							/* Label, second possibility */
 	  if (ismacro (chbuf, oldbufi, chbufi)) {
 	    terminalaccepted = false;
 	  } else {
@@ -2003,7 +1999,7 @@ yylex (attribute * a0) {
 	  }
 	} else if ((newsymb == 0) &&
 		   ((isalnum (firstch) != 0) || (firstch == '_'))) {
-	  /* name, second possibility */
+							/* name, second possibility */
 	  if (ismacro (chbuf, oldbufi, chbufi)) {
 	    terminalaccepted = false;
 	  } else {
@@ -2040,7 +2036,7 @@ yylex (attribute * a0) {
   }
   oldsymb = newsymb;
 
-  /* create the attribute */
+							/* create the attribute */
   a0->chbufx = oldbufi;
   a0->toklen = chbufi - oldbufi;
   a0->prim = NULL;
@@ -2058,8 +2054,8 @@ yylex (attribute * a0) {
 
 /*--------------------------------------------------------------------*/
 
-/* Skip white to next left brace, accounting
-   for strings */
+							/* Skip white to next left brace, accounting
+  								 for strings */
 void
 skiptobrace (void) {
   int bracelevel = 1;
@@ -2107,7 +2103,7 @@ skiptobrace (void) {
 
 /*--------------------------------------------------------------------*/
 
-/* De-allocate buffer memory */
+							/* De-allocate buffer memory */
 void
 deletebufs (fbuffer ** buf) {
   fbuffer *bu;
@@ -2125,7 +2121,7 @@ deletebufs (fbuffer ** buf) {
   }
 }
 
-/* Open required input and outputs */
+							/* Open required input and outputs */
 
 void
 P_sun_argv (char *s, int len, int n) {
@@ -2184,8 +2180,7 @@ openfiles (void) {
 #endif
 }
 
-/* Separate out the option character */
-
+							/* Separate out the option character */
 Char
 optionchar (Char * fn) {
   int j = 1, k = FILENAMELEN + 1;
@@ -2200,13 +2195,13 @@ optionchar (Char * fn) {
     return '\0';
   } else if (fn[j - 1] == '-') {
     return (fn[j]);
-    /* if fn[j+2] <> ' ' then for k:=j+2 to FILENAMELEN do fn[k-j-1] := fn[k] */
+	/* if fn[j+2] <> ' ' then for k:=j+2 to FILENAMELEN do fn[k-j-1] := fn[k] */
   } else {
     return '\0';
   }
 }
 
-/* Set safe mode and one of 12 output formats.
+							/* Set safe mode and one of 12 output formats.
    The version date is set during
    preprocessing */
 
@@ -2253,7 +2248,6 @@ getoptions (void) {
       safemode = true;
     }
 #ifdef DDEBUG
-    /* else if (cht == 'y') { linesignal = 2; } */
     else if (isdigit (cht)) {
       oflag = cht - '0';
     }
@@ -2312,8 +2306,8 @@ main (int argc, Char * argv[]) {
 #endif
   getoptions ();
   openfiles ();
-  /* Initialize the semantic actions, the
-     parse state, and the lexical state */
+							/* Initialize the semantic actions, the
+     							parse state, and the lexical state */
   inputeof = false;
   tmpbuf = NULL;
   tmpfmt = NULL;
@@ -2329,14 +2323,14 @@ main (int argc, Char * argv[]) {
   entrytv[ordCR] = XNL;		/* treat ^M as line end */
 
   errcount = 0;
-  /* change for debugging */
-  /* linesignal := 0; */
+							/* change for debugging */
+							/* linesignal := 0; */
 
   preproduce (-2);
   printstate = 0;
 
-  /* lexical initializations, see also
-     production -1 */
+							/* lexical initializations, see also
+     							production -1 */
   ch = ' ';
   lineno = 0;
   chbufi = 0;
@@ -2386,4 +2380,3 @@ main (int argc, Char * argv[]) {
     exit (EXIT_FAILURE);
 }				/* dpic */
 
-/* End. */

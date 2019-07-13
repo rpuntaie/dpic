@@ -14,38 +14,8 @@ licence version 3.0 http://creativecommons.org/licenses/by/3.0/.
 Complete sources are available as a git repository at
 https://gitlab.com/aplevich/dpic
 
-Unix installation:
-   Type `make' to compile the sources, which are C99 compatible.
-   Type
-    `make install' or `sudo make install'
-   as necessary, to install the executable in /usr/bin, a man page
-   in /usr/share/man/man1,
-   and dpic-doc.pdf in /usr/share/dpic.  Typing
-    `make PREFIX=local install'
-   puts the files in /usr/local instead of /usr.
-   To install the executable only, type
-    `make installdpic'
-   and to install the documents only, type
-    `make installdocs'.
-   To compile in safe mode, with debug enabled, or with MinGW, DJGPP,
-   or other non-Linux compiler, refer to the top of the Makefile.
-
-Web-server installation:
-   You probably should disable the sh and copy commands in dpic for
-   security reasons.  Uncomment the SAFEMODE definition in Makefile.
-   If you do not do this, the -z command-line option has the same effect
-   (see below).
-
-Installation on a non-unix PC:
-   If you do not wish to compile the program, copy dpic.exe from the
-   distribution Windows directory into your folder of executable files.
-   Note that this version will search for files using PC format for the
-   file path; that is, with backslash separators.
-
-   Otherwise, commands equivalent to the following should do the trick:
-      gcc   -O  -c  dpic.c
-      gcc   -O  -c  p2clib.c
-      gcc -o dpic dpic.o p2clib.o -lm
+Installation:
+   See the INSTALL file.
 
 Dpic usage:
 

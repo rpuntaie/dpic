@@ -1,9 +1,7 @@
 .PS
 # Spiral.m4 (Uses Circuit_macros library)
 threeD_init
-# For this manual we have a local copy of dpictools.pic; normally
-# we would invoke the macro NeedDpicTools
-copy "dpictools.pic"
+NeedDpicTools
 
   azimuth = 15                     # Set view angles in degrees
   elevation = 35

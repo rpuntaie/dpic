@@ -37,16 +37,16 @@ DOCDIR = $(DESTDIR)/$(PREFIX)/share/doc/dpic
 
 #-----------------------------------------------------------------------
 
-DEFS=   
-LIBS += -lm 
+DEFS= @defrand@ @defno_snprintf@ @safe_mode@
+LIBS += -lm @iberty@
 
-CC=gcc
+CC=@CC@
 CFLAGS += $(DEBUG) $(SAFEMODE) $(DEFS) -O
 LDFLAGS += $(LIBS)
 CPPFLAGS +=
 
 #DATE = `date +%Y.%m.%d`
-DATE=2019.06.20
+DATE=@VERSION@
 
 #-----------------------------------------------------------------------
 

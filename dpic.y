@@ -183,8 +183,9 @@ typedef double envarray[XLlastenv - XXenvvar];
 
 %start input
 
-/* Tokens all have identifiers in order to keep their existing numerical values.
-   Do not change the following two lines: */
+							/* Tokens all have identifiers in order to preserve
+							   their existing numerical values.
+							   Do not change the following two lines: */
 /* start tokens */
 
 %token	XEOF 1
@@ -420,7 +421,7 @@ picture	:	start NL elementlist optnl XEND /* picture1 */
 		    south = 0.0; }
 	      else if ((envblock != NULL) &&
 	        ((drawmode == SVG) || (drawmode == PDF) || (drawmode == PS))) {
-		                                /* linethick/2 in drawing units*/
+							/* linethick/2 in drawing units*/
 		    r = (envblock->envinx(XLlinethick) / 2 / 72)
                 * envblock->envinx(XLscale);
 #ifdef DDEBUG
@@ -433,7 +434,7 @@ picture	:	start NL elementlist optnl XEND /* picture1 */
 			  wfloat(&log_,     r - south);
               fprintf(log_, ")\n"); fflush(log_); }
 #endif
-		      /* shift .sw to (r,r) */
+							/* shift .sw to (r,r) */
 		      shift(envblock, (2 * r) - west, (2 * r) - south);
 		      north += (3 * r) - south;
 		      east += (3 * r) - west;
@@ -708,14 +709,14 @@ position	:	pair /* position1 */
     	  $$.yval = $3.yval + (r * ($5.yval - $3.yval)); }
 
 		| expression XLof XLthe XLway XLbetween position XLand position
-          /* position2 */ 
+		/* position2 */ 
 		{
     	  r = $1.xval;
     	  $$.xval = $6.xval + (r * ($8.xval - $6.xval));
     	  $$.yval = $6.yval + (r * ($8.yval - $6.yval)); }
 
 		| expression XLT position Xcomma position XLcompare shift
-          /* position3 */
+		/* position3 */
 		{ r = $1.xval;
     	  $$.xval = $3.xval + (r * ($5.xval - $3.xval));
     	  $$.yval = $3.yval + (r * ($5.yval - $3.yval));
@@ -822,7 +823,6 @@ for	:	forhead elementlist optnl /* for1 */
 #endif
 		  }
 
-		/* | for forincr XLendfor elementlist optnl */ /* for2 */ 
 		| for forincr elementlist optnl /* for2 */ 
 		{ forattr = $$; }
 		;
@@ -868,8 +868,8 @@ string	:	XLstring /* string1 */
 		  if (With2->Upr.Ubox.boxwidth == 0.0) {
 			switch (drawmode) {
 		  	  case xfig:
-		  	    /* To keep xfig from crashing, assume text height is 0.1
-		  	       and a character is 0.1*0.75 wide */
+							/* To keep xfig from crashing, assume text height
+							   is 0.1 and a character is 0.1*0.75 wide */
 		  	  	if ($$.prim->Upr.Ubox.boxheight == 0.0) {
 		  	      $$.prim->Upr.Ubox.boxheight = 0.1 * eb->envinx(XLscale); }
 		  	  	$$.prim->Upr.Ubox.boxwidth =
@@ -934,7 +934,8 @@ assignment	:	XLname suffix XEQ assignrhs /* assignment1 */
 			  With2->Upr.UBLOCK.vars[j] = $$.varname; }
 			else {
 			  namptr = With2->Upr.UBLOCK.vars[j];
-			  /* while (namptr^.next<>nil) and (namptr^.next<>lastvar) do */
+							/* while (namptr^.next<>nil) and
+							   (namptr^.next<>lastvar) do */
 			  while (namptr->next_ != lastvar) { namptr = namptr->next_; }
 			  namptr->next_ = $$.varname;
 			  $$.varname->next_ = lastvar;
@@ -1023,7 +1024,7 @@ forhead	:	XFOR assignlist XLto expression do XLBRACE /* forhead1 */
 		  $$.xval = $2.xval;                     /* initial value  */
 		  $$.yval = $5.xval;                          /* increment */
 		  $$.endchop = $4.xval;                     /* final value */
-		  $$.toklen = 0;
+		  $$.toklen = 0;                                  /* flags */
 		  if ($$.xval == $$.endchop) {
 			$$.toklen = -1;
 			$$.yval = 1.0; }
@@ -1042,7 +1043,7 @@ forhead	:	XFOR assignlist XLto expression do XLBRACE /* forhead1 */
 		  else if ($$.yval == 0.0) { $$.toklen = 860; }
 		  else if (($$.endchop - $$.xval) * $$.yval > 0) { $$.toklen = -1; }
 		  if ($$.toklen > 800) { markerror($$.toklen); $$.toklen = 0; }
-		  /* store loop variable */
+							/* store loop variable */
 		  $$.startchop = $2.startchop;
 		  if ($$.startchop == 0.0) {
 			$$.varname = $2.varname;
@@ -1069,10 +1070,9 @@ forhead	:	XFOR assignlist XLto expression do XLBRACE /* forhead1 */
 		  }
 		;
 
-/* forincr	:	 forincr1 */ 
 forincr	: XLendfor	/* forincr1 */ 
 		{ $$ = forattr;
-	    With1 = &$$; /* !! &attstack[newp-1]; */
+	    With1 = &$$;
 #ifdef DDEBUG
 		if (debuglevel>1) prattribute("forincr1 $$",&$$);
 #endif
@@ -2133,7 +2133,8 @@ object	:	block /* object1 */
     	    	    r = sqrt(ts);               /* t is always nonnegative  */
     	    	    if (t <= 0.0) { With2->Upr.Uline.aradius = 0.5 * r; }
     	    	    switch (i) {
-    	    		/* Determine which of the two default arcs to draw: */
+							/* Determine which of the two default arcs to
+							   draw: */
     	    	    case XLup:
     	    	      if (With2->Upr.Uline.endpos.ypos *
                         ((-dx) - (t * dy)) < 0.0) { t = -t; }
@@ -2167,7 +2168,7 @@ object	:	block /* object1 */
     	    		      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1,
     	    		      $3.xval, $3.yval);
     	    	}
-    	    	/* ratio centre-to-chord/half-chord */
+							/* ratio centre-to-chord/half-chord */
     	    	    if (With2->direction != 0) { $$.toklen = With2->direction; }
     	    	    With2->direction = 0;
     	            }
@@ -2344,7 +2345,7 @@ openblock	:	XBRACKETL /* openblock1 */
 		  }
 		;
 
-                                    /* position values for basic drawn object */
+							/* position values for basic drawn object */
 block	:	XLprimitiv optexp /* block1 */
 		{ if (($1.lexval > XLprimitiv) && ($1.lexval < XLenvvar)) {
 			newprim(&$$.prim, $1.lexval, envblock);
@@ -2677,27 +2678,22 @@ shift	: /* empty */
 		  }
 		;
 
-location	:	Xlparen position Xrparen 
-		/* location1 */
+location	:	Xlparen position Xrparen /* location1 */
 		{ $$ = $2; }
 
-		| Xlparen position Xcomma position Xrparen 
-		/* location2 */
+		| Xlparen position Xcomma position Xrparen /* location2 */
 		{ $$.xval = $2.xval;
 		  $$.yval = $4.yval;
 		  }
 
-		| place 
-		/* location3 */
+		| place /* location3 */
 
-		| location Xmult factor 
-		/* location4 */
+		| location Xmult factor /* location4 */
 		{ $$.xval *= $3.xval;
 		  $$.yval *= $3.xval;
 		  }
 
-		| location Xdiv factor 
-		/* location5 */
+		| location Xdiv factor /* location5 */
 		{ if ($3.xval == 0.0) { markerror(852); }
 		  else {
 			$$.xval /= $3.xval;
@@ -3061,8 +3057,8 @@ yyerror(char *s)
   return 0;
   }
 
-/* Get and initialize a buffer from the
-   old-buffer stack or make a new one */
+							/* Get and initialize a buffer from the
+							   old-buffer stack or make a new one */
 void
 newbuf(fbuffer **buf)
 { fbuffer *With;
@@ -3094,14 +3090,13 @@ newbuf(fbuffer **buf)
 }
 
 
-/* Clearing memory at end of diagram */
+							/* Clearing memory at end of diagram */
 void
 deletefreeargs(arg **a)
 { arg *na;
 
   while ((*a) != NULL) {
-      na = (*a)->nexta;                                                 /*D,8D*/
-      /*D if debuglevel > 0 then writeln(log,'del arg[',ordp(a):1,']'); D*/
+      na = (*a)->nexta;
       disposebufs(&(*a)->argbody);
       Free(*a);
       *a = na;
@@ -3109,14 +3104,13 @@ deletefreeargs(arg **a)
 }
 
 
-/* Clearing memory at end of diagram */
+							/* Clearing memory at end of diagram */
 void
 deletefreeinbufs(fbuffer **p)
 { fbuffer *q;
 
   while ((*p) != NULL) {
       q = (*p)->nextb;
-      /*D if debuglevel > 0 then logaddr(p); D*/
       Free((*p)->carray);
       Free(*p);
       *p = q;
@@ -3124,7 +3118,7 @@ deletefreeinbufs(fbuffer **p)
 }
 
 
-/* performed for each input diagram: */
+							/* performed for each input diagram: */
 void
 inittwo(void)
 { freeinbuf = NULL;
@@ -3158,34 +3152,34 @@ preproduce(int p)
 	}
   }
 
-/* Compute integer power of x */
+							/* Compute integer power of x */
 double
 intpow(double x, int k)
 { /* 0^(-k) does not occur */
-                                             /* 0^0 returns 1.0 */
+  /* 0^0 returns 1.0 */
   if (k == 0) { x = 1.0; return x; }
   if ((x == 0.0) || (k == 1)) { return x; }
   if (k < 0) { x = intpow(1.0 / x, -k); return x; }
-                                             /* common enough to test for it */
+							/* common enough to test for it */
   if (k == 2) { x *= x; return x; }
   if (k & 1) { x *= intpow(x, k - 1); }
   else { x = intpow(x, k >> 1); x *= x; }
   return x;
 }
 
-/* error message strings for lexical terminals */
+							/* error message strings for lexical terminals */
 static const char *const lexterms[] = {
 " EOF",
 #include "lxerr.h"
 };
 
-/* Write error message with symbol found
-   and symbol expected if possible */
+							/* Write error message with symbol found
+							   and symbol expected if possible */
 void
 markerror(int emi) {
   int inx, j, k;
   fbuffer *thisbuf, *lastbuf;
-                                   /* Do not count warnings */
+							/* Do not count warnings */
   if (emi < 900) { errcount++; }
 #ifdef DDEBUG
   fbuffer *With;
@@ -3260,7 +3254,7 @@ markerror(int emi) {
       for (i=yylval.chbufx; i<(yylval.chbufx+yylval.toklen); i++) {
         wchar(&errout, chbuf[i]); } }
     break;
-                                            /* lexical error messages */
+							/* lexical error messages */
   case 800:
     fprintf(errout, "Character not recognized: ignored\n");
     break;
@@ -3299,11 +3293,7 @@ markerror(int emi) {
     fprintf(errout, "End of file while evaluating macro argument\n");
     break;
 
-/*
-  case 808: fprintf(errout, "Syntax error\n"); break;
-*/
-
-  /* context error messages */
+							/* context error messages */
   case 851:
     fprintf(errout, "Variable not found\n");
     break;
@@ -3400,7 +3390,7 @@ markerror(int emi) {
     fprintf(errout, "System routine snprintf error: bad formatted value\n");
     break;
 
-  /* warning messages */
+							/* warning messages */
   case 901:
     fprintf(errout, "Safe mode: sh, copy, and print to file disallowed\n");
     break;
@@ -3418,14 +3408,13 @@ markerror(int emi) {
     break;
   }
 
-  /* writeln(errout); */
   consoleflush();
   if (errcount > MAXERRCOUNT) { fatal(3); }
 }  /* markerror */
 
 
-/* Flag an object not found and complain to
-   stderr */
+							/* Flag an object not found and complain to
+							   stderr */
 void
 marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
 { int i;
@@ -3452,8 +3441,8 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
   putc('\n', errout);
 }
 
-/* Hash of variable name:
-   (ord(chr(1))+ord(chr(n-1))) mod 10 */
+							/* Hash of variable name:
+   							   (ord(chr(1))+ord(chr(n-1))) mod 10 */
 int
 varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
 { int idx;
@@ -3469,8 +3458,8 @@ varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
   return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1)));
 }
 
-
-/* Binary search for name in chain of stored names */
+							/* Binary search for name in chain of stored
+							   names */
 nametype *(
 findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 	 nametype **last, int *k))
@@ -3504,7 +3493,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
       if (leftptr==NULL) { fprintf(log_," leftptr == NULL "); }
       else { fprintf(log_, "leftptr!=NULL[%d] k=%d", ordp(leftptr), *k); } }
 #endif
-  /* Check the first (highest) name */
+							/* Check the first (highest) name */
   if (leftptr != NULL) {
     *k = eqstring(chb, chbufx, toklen, leftptr->segmnt, leftptr->seginx,
 		    leftptr->len);
@@ -3523,8 +3512,6 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #endif
   while (leftptr != rightptr) {
     midpt = (left + right) >> 1;
-      /*D if debuglevel > 0 then
-                         write(log,' midpt=',midpt:1); D*/
     *last = leftptr;
     for (i = left + 1; i <= midpt; i++) { *last = (*last)->next_; }
     With = *last;
@@ -3552,7 +3539,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
   else { return NULL; }
 }
 
-/* A minimal set of debug routines has been kept: */
+							/* A minimal set of debug routines has been kept: */
 #ifdef DDEBUG
 void
 logchar(Char c)
@@ -3704,7 +3691,7 @@ snaptree(primitive *pr, int indent)
 { int i, j = /* 6 */ 0;
   while ((pr != NULL) && (indent <= 240)) {
     snaptype(&log_, pr->ptype);
-    /* fprintf(log_,"[%d]",odp(pr)); */
+	/* fprintf(log_,"[%d]",odp(pr)); */
     switch (pr->ptype) {
       case XBLOCK: i = 4; break;
       case XLbox:
@@ -3859,7 +3846,7 @@ printobject(primitive *primp)
 		    break;
 	      case XLaTeX:
 	      case XLabel:
-		    /* blank case */
+			/* blank case */
 		    break;
 	      default:
 		    fprintf(log_, " Bad case in printobject; this cannot happen\n");
@@ -3924,7 +3911,7 @@ prvars(primitive *eb)
 }
 #endif
 
-/* Dispose of a tree of 1 or more objects */
+							/* Dispose of a tree of 1 or more objects */
 void
 deletetree(primitive **p)
 { primitive *r;
@@ -3954,7 +3941,7 @@ deletetree(primitive **p)
   }
 
 
-/* Store arc strtang and arcang parameters */
+							/* Store arc strtang and arcang parameters */
 void
 setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 	  double xf, double yf)
@@ -3972,7 +3959,7 @@ setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 }
 
 
-/* Perform assignment operator */
+							/* Perform assignment operator */
 void
 eqop(double *x, int op, double y)
 { int i, j;
@@ -4019,22 +4006,19 @@ eqop(double *x, int op, double y)
   }
 }
 
-
-/* Store int value in bits 9 and above */
+							/* Store int value in bits 9 and above */
 void
 setstval(int *st, int value)
 { *st = (value * 256) + ((*st) & 255);
 }
 
-
-/* Recover int value from bits 9 and above */
+							/* Recover int value from bits 9 and above */
 int
 getstval(int st)
 { return (st >> 8);
 }
 
-
-/* Record application of object attribute */
+							/* Record application of object attribute */
 void
 setstflag(int *st, int value)
 { switch (value) {
@@ -4078,7 +4062,7 @@ setstflag(int *st, int value)
 }
 
 
-/* Test if attribute has been applied */
+							/* Test if attribute has been applied */
 boolean
 teststflag(int st, int value)
 { boolean b = false;
@@ -4120,7 +4104,7 @@ teststflag(int st, int value)
   return b;
 }
 
-/* String equality of primitives */
+							/* String equality of primitives */
 int
 cmpstring(primitive *p1, primitive *p2)
 { if ((p1 == NULL) || (p2 == NULL)) {
@@ -4139,17 +4123,13 @@ cmpstring(primitive *p1, primitive *p2)
 }
 
 
-/* Match place name with stored places */
+							/* Match place name with stored places */
 primitive *(
 findplace(primitive *p, Char *chb, chbufinx inx, chbufinx toklen))
 { primitive *pj = NULL;
   nametype *With;
 
-  /*D if debuglevel = 2 then begin
-     write(log,'findplace:'); snapname(chb,inx,toklen); writeln(log)
-     end; D*/
   while (p != pj) {
-      /*D if debuglevel = 2 then printobject(p); D*/
       if (p->name == NULL) {
 	  p = p->next_;
       }
@@ -4167,7 +4147,7 @@ findplace(primitive *p, Char *chb, chbufinx inx, chbufinx toklen))
   return p;
 }
 
-/* Get the value of a global variable */
+							/* Get the value of a global variable */
 double
 findvar(Char *s, int ln)
 { int i, k;
@@ -4188,7 +4168,7 @@ findvar(Char *s, int ln)
   }
 }
 
-/* Search for variable in this and higer scope*/
+							/* Search for variable in this and higer scope*/
 nametype *(
 glfindname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 	   nametype **last, int *k))
@@ -4205,7 +4185,7 @@ glfindname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 }
 
 
-/* Append the int string to the name string*/
+							/* Append the int string to the name string*/
 void
 appendsuff(Char *buf, chbufinx inx, int *len, double x)
 { int i, j, k;
@@ -4226,8 +4206,8 @@ appendsuff(Char *buf, chbufinx inx, int *len, double x)
     } while (i != 0);
 }
 
-/* Append the suffix string to the name string
-   for one or two integers */
+							/* Append the suffix string to the name string
+							   for one or two integers */
 void
 addsuffix(Char *buf, chbufinx *inx, int *len, double x, int lx, double y)
 { int i, FORLIM;
@@ -4252,7 +4232,7 @@ addsuffix(Char *buf, chbufinx *inx, int *len, double x, int lx, double y)
 }  /* addsuffix */
 
 
-/* Implement "then" or the "to" special case */
+							/* Implement "then" or the "to" special case */
 void
 appendthen(primitive **pr)
 { primitive *prp, *prq;
@@ -4272,7 +4252,7 @@ appendthen(primitive **pr)
   *pr = prp;
 }
 
-/* Attribute up, down, left, right */
+							/* Attribute up, down, left, right */
 void
 lineardir(primitive *pr, double dy, double dx, int *state)
 { if (!(teststflag(*state, XLto) | teststflag(*state, XLdirecton))) {
@@ -4294,7 +4274,7 @@ lineardir(primitive *pr, double dy, double dx, int *state)
   setstflag(state, XLdirecton);
 }
 
-/* Test for outline for outlined "string" */
+							/* Test for outline for outlined "string" */
 boolean
 hasoutline(int lx, boolean warn)
 { boolean hs;
@@ -4307,7 +4287,7 @@ hasoutline(int lx, boolean warn)
 }
 
 
-/* Test for shade for shaded "string" */
+							/* Test for shade for shaded "string" */
 boolean
 hasshade(int lx, boolean warn)
 { boolean hs;
@@ -4324,7 +4304,7 @@ hasshade(int lx, boolean warn)
 }
 
 
-/* Create a string struct */
+							/* Create a string struct */
 void
 newstr(nametype **sp)
 {
@@ -4342,7 +4322,7 @@ newstr(nametype **sp)
 }
 
 
-/* Copy a string into freeseg */
+							/* Copy a string into freeseg */
 void
 storestring(nametype *outstr,Char *srcbuf,chbufinx psrc,chbufinx lsrc,int job)
 { int i, j;
@@ -4376,7 +4356,7 @@ storestring(nametype *outstr,Char *srcbuf,chbufinx psrc,chbufinx lsrc,int job)
   if (job != 0) { clearchbuf(psrc, lsrc); }
   }
 
-/* Duplicate a strptr and copy the body */
+							/* Duplicate a strptr and copy the body */
 void
 copystr(nametype **sp, nametype *ip)
 { if (ip == NULL) {
@@ -4389,43 +4369,29 @@ copystr(nametype **sp, nametype *ip)
 }
 
 
-/* Append buf to *sp */
+							/* Append buf to *sp */
 void
 appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 {
   int i;
-  /*D,k D*/
   int j;
   Char *tmpseg;
   int FORLIM;
   if ((sp == NULL) || (buf == NULL)) { return; }
   if ((sp->segmnt == freeseg) && (sp->seginx + sp->len == freex) &&
       (freex + ll - 1 <= CHBUFSIZ)) {
-      /*D if debuglevel > 0 then begin
-          write(log,' appending |');
-          for i:=0 to ll-1 do write(log,buf^[px+i]); writeln(log,'|') end; D*/
     for (i = 0; i < ll; i++) { freeseg[freex + i] = buf[px + i]; }
-    sp->len += ll;                                 /*D k := 1; D*/
+    sp->len += ll;
     freex += ll;
     return;
     }
   if (sp->len + ll + 2 > CHBUFSIZ) { markerror(866); return; }
-  /*D; if debuglevel > 0 then if sp<>nil then with sp^ do begin
-     writeln(log,
-      'appendstring to strptr ',ordp(sp):1,': segmnt=',ordp(freeseg):1,
-      ' seginx:seginx+len-1=',seginx:1,':',seginx+len-1:1);
-     writeln(log,
-      ' len=',len:1, ' branch k=',k:1);
-     snapname(segmnt,seginx,len); writeln( log )
-     end D*/
   tmpseg = malloc(sizeof(chbufarray));
   FORLIM = sp->len;
-  /*D if debuglevel > 0 then
-     writeln(log,'apendstring new[',ordp(tmpseg):1,']'); D*/
   for (i = 0; i < FORLIM; i++) { tmpseg[i+3] = sp->segmnt[sp->seginx + i]; }
   j = bval(sp->segmnt);
   if (j > 1) {
-    putbval(sp->segmnt, j - 1);                                /*D k := 2; D*/
+    putbval(sp->segmnt, j - 1);
     if ((sp->segmnt == freeseg) && (sp->seginx + sp->len == freex)) {
 	  freex = sp->seginx;
 	  j = 3;
@@ -4439,7 +4405,7 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 	  for (i = sp->seginx; i < FORLIM; i++) { sp->segmnt[i] = nlch; }
       }
     }
-  else {                               /*D k := 3; D*/
+  else {
     if (sp->segmnt == freeseg) { freeseg = NULL; }
     Free(sp->segmnt);
     }
@@ -4453,7 +4419,7 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 }
 
 
-/* Store or append string */
+							/* Store or append string */
 int
 putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 { if (ix <= 0) {
@@ -4466,7 +4432,7 @@ putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 }
 
 
-/* Height of a primitive object */
+							/* Height of a primitive object */
 double
 pheight(primitive *pr)
 { double ph;
@@ -4497,7 +4463,6 @@ pheight(primitive *pr)
     ph = 2.0 * pr->Upr.Ucircle.radius;
     break;
 
-  /*  XLline,XLarrow,XLmove: ph := abs(endpos.ypos - aat.ypos); */
   case XLline:
   case XLarrow:
   case XLmove:
@@ -4513,7 +4478,7 @@ pheight(primitive *pr)
 }
 
 
-/* Width of a primitive object */
+							/* Width of a primitive object */
 double
 pwidth(primitive *pr)
 { double pw;
@@ -4541,7 +4506,6 @@ pwidth(primitive *pr)
     pw = 2.0 * pr->Upr.Ucircle.radius;
     break;
 
-  /*  XLline,XLarrow,XLmove: pw := abs(endpos.xpos - aat.xpos); */
   case XLline:
   case XLarrow:
   case XLmove:
@@ -4557,7 +4521,7 @@ pwidth(primitive *pr)
 }
 
 
-/* The n, s, e, w values of a drawing tree */
+							/* The n, s, e, w values of a drawing tree */
 void
 neswrec(primitive *ptm)
 { while (ptm != NULL) {
@@ -4568,7 +4532,7 @@ neswrec(primitive *ptm)
   }
 
 
-/* Bounding box of a drawing tree */
+							/* Bounding box of a drawing tree */
 void
 getnesw(primitive *ptm)
 { initnesw();
@@ -4584,8 +4548,8 @@ getnesw(primitive *ptm)
 }
 
 
-/* Test and return A(bove), B(elow),
-                   L(eft), R(ight) */
+							/* Test and return A(bove), B(elow),
+							                   L(eft), R(ight) */
 void
 checkjust(nametype *tp, boolean *A, boolean *B, boolean *L, boolean *R)
 { int i;
@@ -4604,9 +4568,9 @@ checkjust(nametype *tp, boolean *A, boolean *B, boolean *L, boolean *R)
   *A = (i >> 3) & 1;
 }
 
-/* Return linespec, i.e.,
-   <solid>, <dotted>, <dashed>, <invis>
-   from lowest 3 bits */
+							/* Return linespec, i.e.,
+							   <solid>, <dotted>, <dashed>, <invis>
+							   from lowest 3 bits */
 int
 lspec(int n)
 { /* if ((n div 16) mod 2) <> 0 then lspec := XLsolid
@@ -4614,8 +4578,8 @@ lspec(int n)
   return ((n & 7) + XLlinetype);
 }
 
-/* Find the lowest block with environment
-   variables defined */
+							/* Find the lowest block with environment
+							   variables defined */
 primitive *(
 findenv(primitive *p))
 { primitive *q = NULL;
@@ -4631,15 +4595,11 @@ findenv(primitive *p))
 	  q = p;
       }
   }
-  /*D if debuglevel > 0 then begin
-     if p = nil then writeln(log,'findenv: p=nil')
-     else if p^.env = nil then writeln(log,'findenv: p^.env=nil');
-     flush(log) end; D*/
   return p;
 }
 
 
-/* Get the value of an environment variable */
+							/* Get the value of an environment variable */
 double
 venv(primitive *p, int ind)
 { double v = 0.0;
@@ -4650,8 +4610,8 @@ venv(primitive *p, int ind)
 }
 
 
-/* Get the value of an environment variable
-   if it has not been set locally */
+							/* Get the value of an environment variable
+							   if it has not been set locally */
 double
 qenv(primitive *p, int ind, double localval)
 { double noval;
@@ -4666,9 +4626,9 @@ qenv(primitive *p, int ind, double localval)
 }
 
 
-/* Position from an affine transformation
-   orig + mat(cs) * [x,y]
-   Position cs is (cos t, sin t) */
+							/* Position from an affine transformation
+							   orig + mat(cs) * [x,y]
+							   Position cs is (cos t, sin t) */
 postype
 affine(double x, double y, postype orig, postype cs)
 { postype tpos;
@@ -4679,7 +4639,7 @@ affine(double x, double y, postype orig, postype cs)
 }
 
 
-/* Get (cos t, sin t) of point wrt shaft */
+							/* Get (cos t, sin t) of point wrt shaft */
 postype
 affang(postype point, postype shaft)
 { double lgth;
@@ -4697,7 +4657,7 @@ affang(postype point, postype shaft)
   return tpos;
 }
 
-/* Initialize parameters for routine nesw */
+							/* Initialize parameters for routine nesw */
 void
 initnesw(void)
 { south = distmax;
@@ -4707,8 +4667,8 @@ initnesw(void)
 }
 
 
-/* Values north, south, west, east for a string
-   accounting for ljust rjust above below */
+							/* Values north, south, west, east for a string
+							   accounting for ljust rjust above below */
 void
 neswstring(primitive *pmp, double ht, double wd)
 { boolean A, B, L, R;
@@ -4742,8 +4702,8 @@ neswstring(primitive *pmp, double ht, double wd)
 }
 
 
-/* Values north, south, west, east for a line
-   or arrow */
+							/* Values north, south, west, east for a line
+							   or arrow */
 void
 neswline(primitive *pmp)
 { double aht, awd;
@@ -4785,16 +4745,11 @@ neswline(primitive *pmp)
 }
 
 
-/* Test if angle is within an arc segment */
+							/* Test if angle is within an arc segment */
 boolean
 inarc(double strt, double fin, double ang, double arcang)
 { boolean inarctmp;
 
-  /*D if debuglevel > 0 then begin
-     write(log,'Inarc strt,fin='); wfloat(log,strt*180.0/pi);
-        write(log,' ' ); wfloat(log,fin*180.0/pi);
-     write(log,' ang,arcang='); wfloat(log,ang*180.0/pi);
-        write(log,' ' ); wfloat(log,arcang*180.0/pi) end; D*/
   if (arcang >= 0.0) {
       while (fin < strt) {
 	  fin += 2.0 * pi;
@@ -4823,11 +4778,10 @@ inarc(double strt, double fin, double ang, double arcang)
       inarctmp = false;
   }
   return inarctmp;
-  /*D; if debuglevel > 0 then writeln(log,' Inarc =',inarctmp) D*/
 }
 
 
-/* Values north, south, east, west of an obj */
+							/* Values north, south, east, west of an obj */
 void
 nesw(primitive *ptmp)
 { double hight, wdth, sang, eang;
@@ -4887,13 +4841,11 @@ nesw(primitive *ptmp)
     break;
   case XLaTeX:
   case XLabel:
-    /* blank case */
+	/* blank case */
     break;
   case XLarc:
     sang = principal(ptmp->Upr.Uline.endpos.xpos, pi);
     eang = ptmp->Upr.Uline.endpos.xpos + ptmp->Upr.Uline.endpos.ypos;
-    /*D if debuglevel > 0 then begin write(log,'(sang,eang)(deg)=');
-       wpair(log,sang*180/pi,eang*180/pi); writeln(log) end; D*/
     if (inarc(sang, eang, 0.5 * pi, ptmp->Upr.Uline.endpos.ypos)) {
 	  north = Max(north, ptmp->aat.ypos + ptmp->Upr.Uline.aradius); }
     else { north = Max(north,
@@ -4920,7 +4872,7 @@ nesw(primitive *ptmp)
 #endif
 }
 
-/* Exit point of a primitive object */
+							/* Exit point of a primitive object */
 void
 FindExitPoint(primitive *pr, postype *pe)
 { if (pr == NULL) {
@@ -4977,15 +4929,6 @@ FindExitPoint(primitive *pr, postype *pe)
     }
     break;
 
-  /* XLstring: begin
-     getnesw(pr);
-     case direction of
-        XLup: begin pe.xpos := (east+west)/2; pe.ypos := north end;
-        XLdown: begin pe.xpos := (east+west)/2; pe.ypos := south end;
-        XLleft: begin pe.ypos := (north+south)/2; pe.xpos := west end;
-        XLright: begin pe.ypos := (north+south)/2; pe.xpos := east; end
-        end
-     end; */
   case XBLOCK:
     switch (pr->direction) {
 
@@ -5062,25 +5005,25 @@ FindExitPoint(primitive *pr, postype *pe)
 
   case XLabel:
   case XLaTeX:
-    /* blank case */
+	/* blank case */
     break;
   }
 }
 
-/* Retrieve integer in first two buffer bytes */
+							/* Retrieve integer in first two buffer bytes */
 int
 bval(Char *buf)
 { return (((int) buf[0]) << 7) + (int) buf[1] ;
 }
 
-/* Store integer in first two buffer bytes */
+							/* Store integer in first two buffer bytes */
 void
 putbval(Char *buf, int n)
 {
   buf[0] = (Char)(n>>7); buf[1] = (Char)(n % 128);
 }
 
-/* Free the space used by the name string */
+							/* Free the space used by the name string */
 void
 deletename(nametype **head)
 { /*F(var head: strptr)F*/
@@ -5092,8 +5035,6 @@ deletename(nametype **head)
     while (pn->next_ != NULL) { r = pn; pn = pn->next_; }
     r->next_ = NULL;
     if (pn == (*head)) { *head = NULL; }
-    /*D if debuglevel > 0 then
-       writeln(log,'deletename strptr[',ordp(pn):1,']'); D*/
     if (pn->segmnt != NULL) {
 	  if (bval(pn->segmnt) > 1) {
 	    j = bval(pn->segmnt);
@@ -5112,16 +5053,12 @@ deletename(nametype **head)
 	      }
 	    }
 	  else if ((pn->segmnt == freeseg) && (freeseg != NULL)) {
-	    /*D if debuglevel > 0 then
-	       writeln(log,'deletename freeseg[',ordp(freeseg):1,']'); D*/
 	    Free(freeseg);
 	    freeseg = NULL;
 	    }
 	  else {
 	    Free(pn->segmnt);
 	    pn->segmnt = NULL;
-	      /*D if debuglevel > 0 then
-	         writeln(log,'deletename segmnt[',ordp(segmnt):1,']'); D*/
 	    }
       }
     Free(pn);
@@ -5129,16 +5066,15 @@ deletename(nametype **head)
 }
 
 
-/* Store svalue in low 3 bits */
+							/* Store svalue in low 3 bits */
 void
 setspec(int *specv, int svalue)
 { *specv = (((*specv) >> 3) * 8) + svalue - XLlinetype;
-  /* if svalue = XLsolid then
-     specv := (specv div 32)*32 + 16 + (specv mod 16) */
+							/* if svalue = XLsolid then
+						     specv := (specv div 32)*32 + 16 + (specv mod 16) */
 }
 
-
-/* Store svalue only in low 3 bits */
+							/* Store svalue only in low 3 bits */
 void
 resetspec(int *specv, int svalue)
 { *specv = 0;
@@ -5146,13 +5082,13 @@ resetspec(int *specv, int svalue)
 }
 
 
-/* Set bit 4 to flag a segment with a parent */
+							/* Set bit 4 to flag a segment with a parent */
 void
 setthen(int *specv)
 { *specv = (((*specv) >> 4) * 16) + ((*specv) & 7) + 8;
 }
 
-/* Create and initialize a primitive object */
+							/* Create and initialize a primitive object */
 void
 newprim(primitive **pr, int primtype, primitive *envblk)
 { int i;
@@ -5257,12 +5193,12 @@ newprim(primitive **pr, int primtype, primitive *envblk)
       break;
     case XLabel:
     case XLaTeX:
-      /* blank case */
+	/* blank case */
       break;
     }
 }  /* newprim */
 
-/* Determine drawing direction at arc end */
+							/* Determine drawing direction at arc end */
 void
 arcenddir(primitive *pr)
 { if (pr->Upr.Uline.endpos.ypos > 0.0) {
@@ -5293,7 +5229,7 @@ arcenddir(primitive *pr)
   switch (pr->direction) {
 
   case 0:
-    /* blank case */
+	/* blank case */
     break;
 
   case XLup:
@@ -5350,7 +5286,7 @@ checktree( primitive *p )
   }
 #endif
 
-/* Shift a tree by (x,y) */
+							/* Shift a tree by (x,y) */
 void
 shift(primitive *pr, double x, double y)
 { 
@@ -5374,7 +5310,7 @@ shift(primitive *pr, double x, double y)
 }
 
 
-/* Scale an object */
+							/* Scale an object */
 void
 scaleobj(primitive *pr, double s)
 { primitive *With;
@@ -5415,8 +5351,8 @@ scaleobj(primitive *pr, double s)
 }
 
 
-/* corner(prim,<corner>,xval,yval);
-   Put the named-corner coordinates into xval,yval   */
+							/* corner(prim,<corner>,xval,yval); Put the
+							   named-corner coordinates into xval,yval   */
 void
 corner(primitive *pr, int lexv, double *x, double *y)
 { primitive *pe;
@@ -5446,8 +5382,9 @@ corner(primitive *pr, int lexv, double *x, double *y)
       *y = pr->aat.ypos;
       initnesw();
       nesw(pr);
-      /* Compass corners of justified strings not implemented: */
-      /* if ptype = XLstring then begin
+							/* Compass corners of justified strings not
+							   implemented: */
+		/* if ptype = XLstring then begin
          checkjust(textp,A,B,L,R);
          offst := venv(pr,XLtextoffset);
          if L then x := x+boxwidth/2 + offst
@@ -5540,7 +5477,7 @@ corner(primitive *pr, int lexv, double *x, double *y)
 	switch (lexv) {
 
 	case XDne:
-	  /* blank case */
+	/* blank case */
 	  break;
 
 	case XDse:
@@ -5579,7 +5516,7 @@ corner(primitive *pr, int lexv, double *x, double *y)
 	  break;
 
 	case XDc:
-	  /* blank case */
+	/* blank case */
 	  break;
 
 	case XDstart:
@@ -5644,12 +5581,6 @@ corner(primitive *pr, int lexv, double *x, double *y)
 	  markerror(858);
 	  break;
 	}
-	/*D; if debuglevel>0 then begin
-	    write(log,' aat'); wpair(log,aat.xpos,aat.ypos);
-	    write(log,' n,s'); wpair(log,north,south);
-	    write(log,' w,e'); wpair(log,west,east);
-	    write(log,' x,y'); wpair(log,x,y)
-	    end D*/
     }
     break;
 
@@ -5732,19 +5663,17 @@ corner(primitive *pr, int lexv, double *x, double *y)
     break;
 
   case XLabel:
-    /* blank case */
+	/* blank case */
     break;
 
   case XLaTeX:
     markerror(858);
     break;
   }
-  /*D; if debuglevel > 0 then begin write(log,' corner=');
-      wpair(log,x,y); writeln(log) end D*/
 }
 
 
-/* The nth (or nth last) enumerated object */
+							/* The nth (or nth last) enumerated object */
 primitive *(
 nthprimobj(primitive *primp, int nth, int objtype))
 { primitive *prp = NULL;
@@ -5781,10 +5710,10 @@ nthprimobj(primitive *primp, int nth, int objtype))
   }
 
 
-/* Reset environment vars:
-   n=0: all
-   n<0: scaled variables only
-   n>0: one var given by its lexical val*/
+							/* Reset environment vars:
+							   n=0: all
+							   n<0: scaled variables only
+							   n>0: one var given by its lexical val*/
 void
 resetenv(int envval, primitive *envbl)
 { environx i, last;
@@ -5808,7 +5737,7 @@ resetenv(int envval, primitive *envbl)
     }
   for (i = envval - 1; i <= (last - 1); i++) {
     switch (i + 1) {
-                          /* scaled environment vars (in) */
+							/* scaled environment vars (in) */
       case XLarcrad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.25;
 	    break;
       case XLarrowht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.1;
@@ -5853,7 +5782,7 @@ resetenv(int envval, primitive *envbl)
 	    break;
       case XLtextwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
 	    break;
-      /* The following are unscaled */
+							/* The following are unscaled */
       case XLarrowhead: envbl->Upr.UBLOCK.env[i - XXenvvar] = 1.0;
 	    break;
       case XLfillval: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
@@ -5871,7 +5800,7 @@ resetenv(int envval, primitive *envbl)
 }
 
 
-/* Copy env vars to current scope */
+							/* Copy env vars to current scope */
 void
 inheritenv(primitive *envbl)
 { environx i;
@@ -5880,15 +5809,13 @@ inheritenv(primitive *envbl)
   pr = findenv(envbl);
   if (pr == NULL) { resetenv(0, envbl); return; }
   envbl->Upr.UBLOCK.env = malloc(sizeof(envarray));
-  /*D if debuglevel > 0 then
-     writeln(log,'inheritenv new[',ordp(env):1,']'); D*/
   for (i = XXenvvar; i <= (XLlastenv - 1); i++) {
       envbl->Upr.UBLOCK.env[i - XXenvvar] = pr->Upr.UBLOCK.env[i - XXenvvar];
   }
 }
 
 
-/* Execute scale = x */
+							/* Execute scale = x */
 void
 resetscale(double x, int opr, primitive *envbl)
 { double r, s;
@@ -5915,11 +5842,11 @@ resetscale(double x, int opr, primitive *envbl)
 }
 
 
-/* .PS xv yv
-sfact = nominal scale factor set by scale = ...
-xsc = effective scale factor to achieve correct
-  max picture size
-ie (size in inches)/(desired size in inches) */
+							/* .PS xv yv
+							   sfact = nominal scale factor set by scale = ...
+							   xsc = effective scale factor to achieve correct
+  							   max picture size
+							   ie (size in inches)/(desired size in inches) */
 void
 getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
 { double gs = 1.0;
@@ -5933,11 +5860,6 @@ getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
 	  if (qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1] > 0.0) {
 	      *sfact = qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
 	  }
-	  /*D if debuglevel > 0 then begin
-	    write(log,'getscale: sfact='); wfloat(log,sfact);
-	    write(log,' maxpswid='); wfloat(log,qp^.env^[XLmaxpswid]);
-	    write(log,' maxpsht='); wfloat(log,qp^.env^[XLmaxpsht]);
-	    writeln(log) end; D*/
 	  if ((east > west) &&
 	      ((east - west) / (*sfact) >
 	       qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1]) &&
@@ -5967,12 +5889,10 @@ getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
   if (erno != 0) {
       markerror(erno);
   }
-  /*D if debuglevel > 0 then begin write(log,' getscale=');
-     wfloat(log,gs*sfact); writeln(log) end; D*/
   *xsc = gs * (*sfact);
 }
 
-/* Copy primitive for use by then or same */
+							/* Copy primitive for use by then or same */
 void
 copyprim(primitive *prin, primitive **prout)
 { /* Needed because assignment of variant records is unreliable */
@@ -6009,8 +5929,6 @@ copyprim(primitive *prin, primitive **prout)
 	  (*prout)->Upr.UBLOCK.nvars[i] = prin->Upr.UBLOCK.nvars[i]; }
     if (prin->Upr.UBLOCK.env != NULL) {
 	  (*prout)->Upr.UBLOCK.env = malloc(sizeof(envarray));
-	  /*D if debuglevel > 0 then
-	   writeln(log,'copyprim  new(env)[',ordp(prout^.env):1,']'); D*/
 	  for (i = XXenvvar; i < XLlastenv; i++) {
 	    (*prout)->Upr.UBLOCK.env[i - XXenvvar] =
           prin->Upr.UBLOCK.env[i - XXenvvar];
@@ -6040,13 +5958,13 @@ copyprim(primitive *prin, primitive **prout)
     break;
   case XLabel:
   case XLaTeX:
-    /* blank case */
+	/* blank case */
     break;
   }
 }
 
 
-/* Delete temporary string */
+							/* Delete temporary string */
 void
 deletestringbox(primitive **pr)
 {
@@ -6088,7 +6006,7 @@ dostart(void)
       }
 }
 
-/* The program equivalent of var = number */
+							/* The program equivalent of var = number */
 void
 makevar(Char *s, int ln, double varval)
 { nametype *vn, *lastvar, *namptr;
@@ -6141,7 +6059,6 @@ donamedobj(attribute *a1)
 	prp = a1->prim;
 	while (isthen(a1->prim)) { a1->prim = a1->prim->parent; }
 #ifdef DDEBUG
-/* !! */
 	if (debuglevel < 0) { fprintf(log_," donamedobj(%d):\n",ordp(a1->prim));
       if (checktree(envblock->son) == 0) {
         fprintf(errout," checktree failure ijx=%d\n",ijx);
@@ -6185,11 +6102,11 @@ donamedobj(attribute *a1)
 	    else {
 		  x1 = With2->aat.xpos +
 		     (With2->Upr.Uline.aradius * cos(With2->Upr.Uline.endpos.xpos));
-		    /* from */
+							/* from */
 		  z1 = With2->aat.ypos +
 		     (With2->Upr.Uline.aradius * sin(With2->Upr.Uline.endpos.xpos));
 		  if (teststflag(a1->state, XLto)) {
-		                                 /* to X from Here|Y implied */
+							/* to X from Here|Y implied */
 		    if ((i != XEMPTY) && (i != XDc)) { markerror(858); }
 		    r = With2->aat.xpos + (With2->Upr.Uline.aradius * cos(
 			    With2->Upr.Uline.endpos.xpos + With2->Upr.Uline.endpos.ypos));
@@ -6234,13 +6151,14 @@ doundefine( attribute *a2 )
 	  macp = NULL; }
 }
 
-/* Stuff the body of a for loop or a macro body into p2 */
+							/* Stuff the body of a for loop or a macro body
+							   into p2 */
 void
 readfor(fbuffer *p0, int attx, fbuffer **p2)
 {
-  /* attx: attstack index or -(name length)
-     p0 <> nil: append the output to this buffer.
-     Should we check for macro arguments? */
+							/* attx: attstack index or -(name length)
+							     p0 <> nil: append the output to this buffer.
+							     Should we check for macro arguments? */
   int j;
   int bracelevel = 1;
   fbuffer *p;
@@ -6329,14 +6247,14 @@ dodefhead( attribute *a0 )
   disposebufs(&(macp->argbody));
   newbuf(&(macp->argbody));
   With5 = macp->argbody;
-                                              /* copy the macro name */
+							/* copy the macro name */
   FORLIM = a0->toklen;
   for (i = 1; i <= FORLIM; i++) {
     With5->carray[i] = chbuf[a0->chbufx + i - 1]; }
   With5->savedlen = a0->toklen;
   With5->readx = a0->toklen + 1;
   clearchbuf(a0->chbufx, a0->toklen);
-	                                              /* append the body */
+							/* append the body */
   readfor(macp->argbody, -(a0->toklen), &macp->argbody);
   lastm = macp->argbody;
   while (lastm->nextb != NULL) { lastm = lastm->nextb; }
@@ -6426,8 +6344,8 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
         fprintf(log_, "\" nexprs=%2d Numerical print value=", nexprs);
         wfloat(&log_, ts); putc('\n', log_); fflush(log_); }
 #endif
-      if (j - lj + 1 > CHBUFSIZ) { markerror(873);
-                ll = 0; j = With4->len; }
+      if (j - lj + 1 > CHBUFSIZ) {
+        markerror(873); ll = 0; j = With4->len; }
       else {
         for (ll = lj; ll <= (j - 2); ll++) {
           tmpfmt[ll - lj] = With4->segmnt[With4->seginx + ll]; }
@@ -6447,7 +6365,7 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
           for (kv = 0; kv < ll; kv++) { putc(tmpbuf[kv], log_); } }
         putc('\n', log_); fflush(log_); }
 #endif
-                                         /* Copy tmpbuf to the string */
+							/* Copy tmpbuf to the string */
       if (ll > 0) { kk = putstring(kk, a0->prim->textp, tmpbuf, 0, ll);}
       i++;
       lj = j;

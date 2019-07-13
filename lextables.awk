@@ -58,14 +58,14 @@ function prtr(lx){
        else { tk = substr($2,2,length($2)-2); ntv++ }
        if ( tk !~ /^<[a-zA-Z]/ ) { token[++ntokens] = tk }
        labeltv[$1] = ntv
-       toktv[tk] = ntv
-       tvterminal[ntv] = tk
+       tokentv[tk] = ntv
+       tvtoken[ntv] = tk
        }
      else {
        tk = substr($2,2,length($2)-2)
        if ( tk !~ /^<[a-zA-Z]/ ) { token[++ntokens] = tk }
-       toktv[tk] = ntv
-       tvterminal[ntv] = tk
+       tokentv[tk] = ntv
+       tvtoken[ntv] = tk
        }
      }
 
@@ -79,16 +79,16 @@ if (debug){
   for (i=0; i<=nlabels; i++) {
     print sprintf("%d %s",labeltv[label[i]], label[i]) >> "lex.list" }
 
-# print "\n toktv, tokens > tokens"
+# print "\n tokentv, tokens > tokens"
 # print "\n" ntokens " tokens" > "tokens"
 # for (i=1; i<=ntokens; i++) {
-#   print sprintf("%d %s",toktv[token[i]], token[i]) >> "tokens" }
+#   print sprintf("%d %s",tokentv[token[i]], token[i]) >> "tokens" }
 
-# print "\n toktv, tvterminals"
-# print "toktv, tvterminal" > "tvterminals"
+# print "\n tokentv, tvtokens"
+# print "tokentv, tvtoken" > "tvtokens"
 # for (i=0; i<=ntv; i++) {
-#   print sprintf("%d %s",i, tvterminal[i])
-#   print sprintf("%d %s",i, tvterminal[i]) >> "tvterminals" }
+#   print sprintf("%d %s",i, tvtoken[i])
+#   print sprintf("%d %s",i, tvtoken[i]) >> "tvtokens" }
 }
 
 #                           Sort the terminals
@@ -101,64 +101,64 @@ do { c="";
 if (debug){
   print "\nunsorted tokens, tv:"
   for (i=1; i<=ntokens; i++) {
-    print sprintf("%d %s %d",i,token[i],toktv[token[i]]) }
+    print sprintf("%d %s %d",i,token[i],tokentv[token[i]]) }
 
   echo "sortedtoks"
   print "tokens, tv" > "sortedtoks"
   print "\nsorted tokens, tv:"
   for (i=1; i<=ntokens; i++){
-    print sprintf("%d %s %d",i,stok[i],toktv[stok[i]]) }
+    print sprintf("%d %s %d",i,stok[i],tokentv[stok[i]]) }
   for (i=1; i<=ntokens; i++) {
-    print sprintf("%d %s %d",i,stok[i],toktv[stok[i]]) >> "sortedtoks" }
+    print sprintf("%d %s %d",i,stok[i],tokentv[stok[i]]) >> "sortedtoks" }
   }
 
   lxch[0] = "0"
 #                           Add the terminals to the tree
   for (tn=1; tn<=ntokens; tn++) {
-  tok = stok[tn]
-  if (debug) ter = "A"
-  ch = substr(tok,1,1)
-  och = ord(ch)
-  lt = length(tok)
-  if (lt == 1) { entrytv[och] = toktv[tok] }
-  else {
-    if (entryhp[och] == 0) { entryhp[och] = ++nhp }
-    lxix = entryhp[och]
-    chx = 2
-    while (chx <= lt) {
-      cx = substr(tok,chx,1)
-      if (ord(lxch[lxix]) == 0) { # empty node
-        lxch[lxix] = cx
-        if (chx == lt) { lxtv[lxix] = toktv[tok]; ter=ter "B" }
-        else { if (debug)ter=ter "C"
-          lxhp[lxix] = ++nhp; lxix = nhp
+    tok = stok[tn]
+    if (debug) ter = "A"
+    ch = substr(tok,1,1)
+    och = ord(ch)
+    lt = length(tok)
+    if (lt == 1) { entrytv[och] = tokentv[tok] }
+    else {
+      if (entryhp[och] == 0) { entryhp[och] = ++nhp }
+      lxix = entryhp[och]
+      chx = 2
+      while (chx <= lt) {
+        cx = substr(tok,chx,1)
+        if (ord(lxch[lxix]) == 0) { # empty node
+          lxch[lxix] = cx
+          if (chx == lt) { lxtv[lxix] = tokentv[tok]; if (debug)ter=ter "B" }
+          else { if (debug)ter=ter "C"
+            lxhp[lxix] = ++nhp; lxix = nhp
+            }
           }
-        }
-      else if (lxch[lxix] == cx) {
-        if (chx == lt) { lxtv[lxix] = toktv[tok]; if (debug)ter=ter "D" }
-        else if (lxhp[lxix] == 0) { if (debug)ter=ter "E"
-          lxhp[lxix] = ++nhp; lxix = nhp
+        else if (lxch[lxix] == cx) {
+          if (chx == lt) { lxtv[lxix] = tokentv[tok]; if (debug)ter=ter "D" }
+          else if (lxhp[lxix] == 0) { if (debug)ter=ter "E"
+            lxhp[lxix] = ++nhp; lxix = nhp
+            }
+          else { lxix = lxhp[lxix]; if (debug)ter=ter "F" }
           }
-        else { lxix = lxhp[lxix]; if (debug)ter=ter "F" }
-        }
-      else if (lxnp[lxix] != 0) { if (debug)ter=ter "G"
-        lxix = lxnp[lxix]
-        chx--
-        }
-      else {
-        lxnp[lxix] = ++nhp
-        lxix = nhp
-        lxch[lxix] = cx
-        if (chx == lt) { lxtv[lxix] = toktv[tok]; if (debug)ter=ter "H" }
-        else { if (debug)ter=ter "I"
-          lxhp[lxix] = ++nhp; lxix = nhp
+        else if (lxnp[lxix] != 0) { if (debug)ter=ter "G"
+          lxix = lxnp[lxix]
+          chx--
           }
-        }
-      chx++
-      } # while chx
-    } # lt > 1
-# if (debug) prtr(lxix)
-  } # for tn
+        else {
+          lxnp[lxix] = ++nhp
+          lxix = nhp
+          lxch[lxix] = cx
+          if (chx == lt) { lxtv[lxix] = tokentv[tok]; if (debug)ter=ter "H" }
+          else { if (debug)ter=ter "I"
+            lxhp[lxix] = ++nhp; lxix = nhp
+            }
+          }
+        chx++
+        } # while chx
+      } # lt > 1
+#   if (debug) prtr(lxix)
+    } # for tn
 
   lxmax = nhp
   
@@ -243,9 +243,9 @@ if (debug){
    print "terminals"
    print "" > "terminals"
    for (i=1; i<ntv; i++) {
-     print sprintf("\"%s\",",tvterminal[i]) >> "terminals"
+     print sprintf("\"%s\",",tvtoken[i]) >> "terminals"
      }
-   print sprintf("\"%s\"",tvterminal[ntv]) >> "terminals"
+   print sprintf("\"%s\"",tvtoken[ntv]) >> "terminals"
 
    print "tokens.y"
    print "" > "tokens.y"

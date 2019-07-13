@@ -750,25 +750,25 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   382,   382,   384,   400,   471,   473,   477,   480,   483,
-     487,   489,   497,   506,   508,   511,   516,   524,   571,   595,
-     597,   600,   607,   609,   620,   622,   624,   626,   636,   660,
-     666,   669,   689,   691,   694,   702,   705,   710,   717,   730,
-     732,   736,   748,   761,   777,   780,   782,   784,   795,   797,
-     801,   806,   808,   811,   814,   818,   826,   830,   840,   862,
-     895,   899,   952,   979,   981,   984,   986,   989,   992,   995,
-     999,  1009,  1013,  1015,  1021,  1073,  1115,  1118,  1122,  1124,
+       0,   383,   383,   385,   401,   472,   474,   478,   481,   484,
+     488,   490,   498,   507,   509,   512,   517,   525,   572,   596,
+     598,   601,   608,   610,   621,   623,   625,   627,   637,   661,
+     667,   670,   690,   692,   695,   703,   706,   711,   718,   731,
+     733,   737,   749,   762,   778,   781,   783,   785,   796,   798,
+     802,   807,   809,   812,   815,   819,   826,   830,   840,   862,
+     895,   899,   953,   980,   982,   985,   987,   990,   993,   996,
+    1000,  1010,  1014,  1016,  1022,  1073,  1115,  1118,  1122,  1124,
     1129,  1131,  1149,  1169,  1172,  1176,  1200,  1207,  1215,  1218,
     1222,  1225,  1229,  1231,  1318,  1403,  1467,  1494,  1505,  1606,
     1668,  1686,  1709,  1756,  1775,  1787,  1823,  1859,  1991,  2023,
-    2046,  2083,  2183,  2201,  2246,  2284,  2293,  2302,  2318,  2337,
-    2348,  2508,  2513,  2565,  2574,  2576,  2579,  2595,  2597,  2613,
-    2623,  2630,  2637,  2642,  2647,  2651,  2653,  2655,  2657,  2662,
-    2667,  2673,  2680,  2684,  2690,  2693,  2699,  2709,  2712,  2715,
-    2719,  2723,  2729,  2731,  2736,  2748,  2764,  2776,  2787,  2795,
-    2797,  2800,  2804,  2806,  2812,  2820,  2829,  2835,  2837,  2839,
-    2863,  2884,  2891,  2900,  2902,  2905,  2907,  2910,  2970,  2973,
-    2978,  3028,  3048,  3051
+    2046,  2083,  2184,  2202,  2247,  2285,  2294,  2303,  2319,  2338,
+    2349,  2509,  2514,  2566,  2575,  2577,  2580,  2596,  2598,  2614,
+    2624,  2631,  2638,  2643,  2648,  2652,  2654,  2656,  2658,  2663,
+    2668,  2674,  2681,  2684,  2689,  2691,  2696,  2705,  2708,  2711,
+    2715,  2719,  2725,  2727,  2732,  2744,  2760,  2772,  2783,  2791,
+    2793,  2796,  2800,  2802,  2808,  2816,  2825,  2831,  2833,  2835,
+    2859,  2880,  2887,  2896,  2898,  2901,  2903,  2906,  2966,  2969,
+    2974,  3024,  3044,  3047
 };
 #endif
 
@@ -1913,7 +1913,7 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-#line 385 "dpic.y" /* yacc.c:1646  */
+#line 386 "dpic.y" /* yacc.c:1646  */
     { deletetree(&envblock);
     	  deletefreeargs(&freearg);
     	  deletefreeinbufs(&freeinbuf);
@@ -1931,7 +1931,7 @@ yyreduce:
     break;
 
   case 4:
-#line 401 "dpic.y" /* yacc.c:1646  */
+#line 402 "dpic.y" /* yacc.c:1646  */
     { if (envblock != NULL ) { getnesw(envblock->son);
 #ifdef DDEBUG
 	      if (debuglevel > 0) {
@@ -1954,7 +1954,7 @@ yyreduce:
 		    south = 0.0; }
 	      else if ((envblock != NULL) &&
 	        ((drawmode == SVG) || (drawmode == PDF) || (drawmode == PS))) {
-		                                /* linethick/2 in drawing units*/
+							/* linethick/2 in drawing units*/
 		    r = (envblock->envinx(XLlinethick) / 2 / 72)
                 * envblock->envinx(XLscale);
 #ifdef DDEBUG
@@ -1967,7 +1967,7 @@ yyreduce:
 			  wfloat(&log_,     r - south);
               fprintf(log_, ")\n"); fflush(log_); }
 #endif
-		      /* shift .sw to (r,r) */
+							/* shift .sw to (r,r) */
 		      shift(envblock, (2 * r) - west, (2 * r) - south);
 		      north += (3 * r) - south;
 		      east += (3 * r) - west;
@@ -2004,31 +2004,31 @@ yyreduce:
     break;
 
   case 6:
-#line 474 "dpic.y" /* yacc.c:1646  */
+#line 475 "dpic.y" /* yacc.c:1646  */
     { yyerrok; yyclearin; }
 #line 2010 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 478 "dpic.y" /* yacc.c:1646  */
+#line 479 "dpic.y" /* yacc.c:1646  */
     { dostart(); (yyval).xval = 0; (yyval).yval = 0;}
 #line 2016 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 481 "dpic.y" /* yacc.c:1646  */
+#line 482 "dpic.y" /* yacc.c:1646  */
     { dostart(); (yyval).xval = (yyvsp[0]).xval; (yyval).yval = 0; }
 #line 2022 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 484 "dpic.y" /* yacc.c:1646  */
+#line 485 "dpic.y" /* yacc.c:1646  */
     { dostart(); (yyval).xval = (yyvsp[-1]).xval; (yyval).yval = (yyvsp[0]).xval; }
 #line 2028 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 490 "dpic.y" /* yacc.c:1646  */
+#line 491 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[0]).prim != NULL) && ((yyvsp[0]).lexval != XLcontinue)) {
             queueprim( (yyvsp[0]).prim, envblock ); }
 #ifdef DDEBUG
@@ -2039,7 +2039,7 @@ yyreduce:
     break;
 
   case 12:
-#line 498 "dpic.y" /* yacc.c:1646  */
+#line 499 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[0]).prim != NULL) && ((yyvsp[0]).lexval != XLcontinue)) {
             queueprim( (yyvsp[0]).prim, envblock ); }
 #ifdef DDEBUG
@@ -2050,13 +2050,13 @@ yyreduce:
     break;
 
   case 14:
-#line 509 "dpic.y" /* yacc.c:1646  */
+#line 510 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-2]).xval * (yyvsp[0]).xval; }
 #line 2056 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 512 "dpic.y" /* yacc.c:1646  */
+#line 513 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { markerror(852); (yyval).xval = 0.0; }
     		else { (yyval).xval = (yyvsp[-2]).xval / (yyvsp[0]).xval; }
 		  }
@@ -2064,7 +2064,7 @@ yyreduce:
     break;
 
   case 16:
-#line 517 "dpic.y" /* yacc.c:1646  */
+#line 518 "dpic.y" /* yacc.c:1646  */
     { i = Rnd((yyvsp[-2]).xval);
     	  j = Rnd((yyvsp[0]).xval);
     	  if (j == 0) { markerror(852); (yyval).xval = 0.0; }
@@ -2074,7 +2074,7 @@ yyreduce:
     break;
 
   case 17:
-#line 525 "dpic.y" /* yacc.c:1646  */
+#line 526 "dpic.y" /* yacc.c:1646  */
     { if ((yyval).prim != NULL) {
 			prp = (yyval).prim;
 			if ((prp->ptype == XLspline) || (prp->ptype == XLmove) ||
@@ -2124,7 +2124,7 @@ yyreduce:
     break;
 
   case 18:
-#line 572 "dpic.y" /* yacc.c:1646  */
+#line 573 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval != XEMPTY) {
 		    addsuffix(chbuf, &(yyvsp[-3]).chbufx,&(yyvsp[-3]).toklen, (yyvsp[-2]).xval,(yyvsp[-2]).lexval,(yyvsp[-2]).yval);}
 		  prp = findplace(envblock->son, chbuf, (yyvsp[-3]).chbufx, (yyvsp[-3]).toklen);
@@ -2151,13 +2151,13 @@ yyreduce:
     break;
 
   case 20:
-#line 598 "dpic.y" /* yacc.c:1646  */
+#line 599 "dpic.y" /* yacc.c:1646  */
     { envblock->direction = (yyvsp[0]).lexval; }
 #line 2157 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 601 "dpic.y" /* yacc.c:1646  */
+#line 602 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XLaTeX, envblock);
     	  newstr(&(yyval).prim->textp);
     	  storestring((yyval).prim->textp, chbuf, (yyvsp[0]).chbufx, (yyvsp[0]).toklen, 1);
@@ -2167,7 +2167,7 @@ yyreduce:
     break;
 
   case 23:
-#line 610 "dpic.y" /* yacc.c:1646  */
+#line 611 "dpic.y" /* yacc.c:1646  */
     { envblockB.here.xpos = (yyvsp[-3]).xval;
     	  envblockB.here.ypos = (yyvsp[-3]).yval;
     	  if (((yyvsp[-3]).state == XLright) || ((yyvsp[-3]).state == XLleft) ||
@@ -2181,7 +2181,7 @@ yyreduce:
     break;
 
   case 27:
-#line 627 "dpic.y" /* yacc.c:1646  */
+#line 628 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 			newprim(&(yyval).prim, XLaTeX, envblock);
 			(yyval).prim->textp = (yyvsp[0]).prim->textp;
@@ -2194,7 +2194,7 @@ yyreduce:
     break;
 
   case 28:
-#line 637 "dpic.y" /* yacc.c:1646  */
+#line 638 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim == NULL) { }
           else if ((yyvsp[0]).prim->textp == NULL) { }
           else if ((yyvsp[0]).prim->textp->segmnt != NULL) {
@@ -2220,7 +2220,7 @@ yyreduce:
     break;
 
   case 29:
-#line 661 "dpic.y" /* yacc.c:1646  */
+#line 662 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = envblockB.here.xpos;
     	  (yyval).yval = envblockB.here.ypos;
     	  (yyval).state = envblock->direction; }
@@ -2228,13 +2228,13 @@ yyreduce:
     break;
 
   case 30:
-#line 667 "dpic.y" /* yacc.c:1646  */
+#line 668 "dpic.y" /* yacc.c:1646  */
     { donamedobj(&(yyval)); }
 #line 2234 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 670 "dpic.y" /* yacc.c:1646  */
+#line 671 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 		    if ((yyvsp[-2]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-3]).chbufx,
                   &(yyvsp[-3]).toklen, (yyvsp[-2]).xval,(yyvsp[-2]).lexval,(yyvsp[-2]).yval); }
@@ -2255,19 +2255,19 @@ yyreduce:
     break;
 
   case 32:
-#line 689 "dpic.y" /* yacc.c:1646  */
+#line 690 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XEMPTY; }
 #line 2261 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 692 "dpic.y" /* yacc.c:1646  */
+#line 693 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).xval > maxint) { fatal(9); } else { (yyval).xval = (yyvsp[-1]).xval; } }
 #line 2267 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 695 "dpic.y" /* yacc.c:1646  */
+#line 696 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = Xcomma;
     	  (yyval).xval = (yyvsp[-1]).xval;
     	  (yyval).yval = (yyvsp[-1]).yval;
@@ -2277,13 +2277,13 @@ yyreduce:
     break;
 
   case 35:
-#line 703 "dpic.y" /* yacc.c:1646  */
+#line 704 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[0]); }
 #line 2283 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 706 "dpic.y" /* yacc.c:1646  */
+#line 707 "dpic.y" /* yacc.c:1646  */
     { r = (yyvsp[-4]).xval;
     	  (yyval).xval = (yyvsp[-2]).xval + (r * ((yyvsp[0]).xval - (yyvsp[-2]).xval));
     	  (yyval).yval = (yyvsp[-2]).yval + (r * ((yyvsp[0]).yval - (yyvsp[-2]).yval)); }
@@ -2291,7 +2291,7 @@ yyreduce:
     break;
 
   case 37:
-#line 712 "dpic.y" /* yacc.c:1646  */
+#line 713 "dpic.y" /* yacc.c:1646  */
     {
     	  r = (yyvsp[-7]).xval;
     	  (yyval).xval = (yyvsp[-2]).xval + (r * ((yyvsp[0]).xval - (yyvsp[-2]).xval));
@@ -2300,7 +2300,7 @@ yyreduce:
     break;
 
   case 38:
-#line 719 "dpic.y" /* yacc.c:1646  */
+#line 720 "dpic.y" /* yacc.c:1646  */
     { r = (yyvsp[-6]).xval;
     	  (yyval).xval = (yyvsp[-4]).xval + (r * ((yyvsp[-2]).xval - (yyvsp[-4]).xval));
     	  (yyval).yval = (yyvsp[-4]).yval + (r * ((yyvsp[-2]).yval - (yyvsp[-4]).yval));
@@ -2314,13 +2314,13 @@ yyreduce:
     break;
 
   case 40:
-#line 733 "dpic.y" /* yacc.c:1646  */
+#line 734 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[0]).xval; }
 #line 2320 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 737 "dpic.y" /* yacc.c:1646  */
+#line 738 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XEMPTY) {
             wfloat(&errout, (yyvsp[-1]).xval); putc('\n', errout); }
     	  else if ((yyvsp[0]).state == 0) {
@@ -2335,7 +2335,7 @@ yyreduce:
     break;
 
   case 42:
-#line 749 "dpic.y" /* yacc.c:1646  */
+#line 750 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XEMPTY) {
 	  		wpair(&errout, (yyvsp[-1]).xval, (yyvsp[-1]).yval); putc('\n', errout); }
     	  else if ((yyvsp[0]).state == 0) {
@@ -2351,7 +2351,7 @@ yyreduce:
     break;
 
   case 43:
-#line 762 "dpic.y" /* yacc.c:1646  */
+#line 763 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XEMPTY) {
 	      	wstring(&errout, (yyvsp[-1]).prim->textp);
 			putc('\n', errout); }
@@ -2370,13 +2370,13 @@ yyreduce:
     break;
 
   case 44:
-#line 778 "dpic.y" /* yacc.c:1646  */
+#line 779 "dpic.y" /* yacc.c:1646  */
     { resetenv(0, envblock); }
 #line 2376 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 785 "dpic.y" /* yacc.c:1646  */
+#line 786 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 #ifdef SAFE_MODE
 			markerror(901);
@@ -2390,27 +2390,27 @@ yyreduce:
     break;
 
   case 49:
-#line 798 "dpic.y" /* yacc.c:1646  */
+#line 799 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[0]); doundefine( &(yyvsp[0]) );
 		  clearchbuf((yyvsp[0]).chbufx, (yyvsp[0]).toklen); }
 #line 2397 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 802 "dpic.y" /* yacc.c:1646  */
+#line 803 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[0]); doundefine( &(yyvsp[0]) );
 		  clearchbuf((yyvsp[0]).chbufx, (yyvsp[0]).toklen); }
 #line 2404 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 815 "dpic.y" /* yacc.c:1646  */
+#line 816 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval == 1.0) { currprod = 1; skiptobrace(); } }
 #line 2410 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 819 "dpic.y" /* yacc.c:1646  */
+#line 820 "dpic.y" /* yacc.c:1646  */
     { forattr = (yyval);
 #ifdef DDEBUG
 		  if (debuglevel>0) prattribute("for1",&(yyval));
@@ -2472,8 +2472,8 @@ yyreduce:
 		  if (With2->Upr.Ubox.boxwidth == 0.0) {
 			switch (drawmode) {
 		  	  case xfig:
-		  	    /* To keep xfig from crashing, assume text height is 0.1
-		  	       and a character is 0.1*0.75 wide */
+							/* To keep xfig from crashing, assume text height
+							   is 0.1 and a character is 0.1*0.75 wide */
 		  	  	if ((yyval).prim->Upr.Ubox.boxheight == 0.0) {
 		  	      (yyval).prim->Upr.Ubox.boxheight = 0.1 * eb->envinx(XLscale); }
 		  	  	(yyval).prim->Upr.Ubox.boxwidth =
@@ -2537,7 +2537,8 @@ yyreduce:
 			  With2->Upr.UBLOCK.vars[j] = (yyval).varname; }
 			else {
 			  namptr = With2->Upr.UBLOCK.vars[j];
-			  /* while (namptr^.next<>nil) and (namptr^.next<>lastvar) do */
+							/* while (namptr^.next<>nil) and
+							   (namptr^.next<>lastvar) do */
 			  while (namptr->next_ != lastvar) { namptr = namptr->next_; }
 			  namptr->next_ = (yyval).varname;
 			  (yyval).varname->next_ = lastvar;
@@ -2551,11 +2552,11 @@ yyreduce:
 
 		  clearchbuf((yyvsp[-3]).chbufx, (yyvsp[-3]).toklen);
           }
-#line 2555 "dpic.tab.c" /* yacc.c:1646  */
+#line 2556 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 953 "dpic.y" /* yacc.c:1646  */
+#line 954 "dpic.y" /* yacc.c:1646  */
     { if (envblock != NULL) {
 		    if (((yyvsp[-2]).lexval == XLarrowhead) && (drawmode == TeX) &&
 		      ((yyvsp[0]).xval == 0.0)) { markerror(858); }
@@ -2580,35 +2581,35 @@ yyreduce:
 		      }
 	        }
 		  }
-#line 2584 "dpic.tab.c" /* yacc.c:1646  */
+#line 2585 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 987 "dpic.y" /* yacc.c:1646  */
+#line 988 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[0]).xval; }
-#line 2590 "dpic.tab.c" /* yacc.c:1646  */
+#line 2591 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 990 "dpic.y" /* yacc.c:1646  */
+#line 991 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = -(yyvsp[0]).xval; }
-#line 2596 "dpic.tab.c" /* yacc.c:1646  */
+#line 2597 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 993 "dpic.y" /* yacc.c:1646  */
+#line 994 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-2]).xval + (yyvsp[0]).xval; }
-#line 2602 "dpic.tab.c" /* yacc.c:1646  */
+#line 2603 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 996 "dpic.y" /* yacc.c:1646  */
+#line 997 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-2]).xval - (yyvsp[0]).xval; }
-#line 2608 "dpic.tab.c" /* yacc.c:1646  */
+#line 2609 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 1000 "dpic.y" /* yacc.c:1646  */
+#line 1001 "dpic.y" /* yacc.c:1646  */
     { inlogic = false;
     	  (yyval).xval = (yyvsp[-2]).xval;
     	  if ((yyval).xval == 0.0) {
@@ -2616,30 +2617,30 @@ yyreduce:
 		    skiptobrace();
     	    }
 		  }
-#line 2620 "dpic.tab.c" /* yacc.c:1646  */
+#line 2621 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 1010 "dpic.y" /* yacc.c:1646  */
+#line 1011 "dpic.y" /* yacc.c:1646  */
     { inlogic = true; }
-#line 2626 "dpic.tab.c" /* yacc.c:1646  */
+#line 2627 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 1016 "dpic.y" /* yacc.c:1646  */
+#line 1017 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).xval != 0.0) || ((yyvsp[0]).xval != 0.0)) { (yyval).xval = 1.0; }
     	  else { (yyval).xval = 0.0; }
 		  }
-#line 2634 "dpic.tab.c" /* yacc.c:1646  */
+#line 2635 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 1022 "dpic.y" /* yacc.c:1646  */
+#line 1023 "dpic.y" /* yacc.c:1646  */
     {
 		  (yyval).xval = (yyvsp[-4]).xval;                     /* initial value  */
 		  (yyval).yval = (yyvsp[-1]).xval;                          /* increment */
 		  (yyval).endchop = (yyvsp[-2]).xval;                     /* final value */
-		  (yyval).toklen = 0;
+		  (yyval).toklen = 0;                                  /* flags */
 		  if ((yyval).xval == (yyval).endchop) {
 			(yyval).toklen = -1;
 			(yyval).yval = 1.0; }
@@ -2658,7 +2659,7 @@ yyreduce:
 		  else if ((yyval).yval == 0.0) { (yyval).toklen = 860; }
 		  else if (((yyval).endchop - (yyval).xval) * (yyval).yval > 0) { (yyval).toklen = -1; }
 		  if ((yyval).toklen > 800) { markerror((yyval).toklen); (yyval).toklen = 0; }
-		  /* store loop variable */
+							/* store loop variable */
 		  (yyval).startchop = (yyvsp[-4]).startchop;
 		  if ((yyval).startchop == 0.0) {
 			(yyval).varname = (yyvsp[-4]).varname;
@@ -2683,13 +2684,13 @@ yyreduce:
 		    putc('\n', log_); }
 #endif
 		  }
-#line 2687 "dpic.tab.c" /* yacc.c:1646  */
+#line 2688 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 75:
 #line 1074 "dpic.y" /* yacc.c:1646  */
     { (yyval) = forattr;
-	    With1 = &(yyval); /* !! &attstack[newp-1]; */
+	    With1 = &(yyval);
 #ifdef DDEBUG
 		if (debuglevel>1) prattribute("forincr1 $$",&(yyval));
 #endif
@@ -2727,31 +2728,31 @@ yyreduce:
 		  disposebufs(&lastm);
 	      }
 		}
-#line 2731 "dpic.tab.c" /* yacc.c:1646  */
+#line 2732 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 76:
 #line 1116 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = 1.0; }
-#line 2737 "dpic.tab.c" /* yacc.c:1646  */
+#line 2738 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
 #line 1119 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 2743 "dpic.tab.c" /* yacc.c:1646  */
+#line 2744 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 79:
 #line 1125 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = (yyvsp[0]).lexval; }
-#line 2749 "dpic.tab.c" /* yacc.c:1646  */
+#line 2750 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 80:
 #line 1129 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XEMPTY; }
-#line 2755 "dpic.tab.c" /* yacc.c:1646  */
+#line 2756 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 81:
@@ -2772,7 +2773,7 @@ yyreduce:
 #endif
 		  deletestringbox(&With1->prim);
 		  }
-#line 2776 "dpic.tab.c" /* yacc.c:1646  */
+#line 2777 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 82:
@@ -2794,19 +2795,19 @@ yyreduce:
 #endif
 		  deletestringbox(&With1->prim);
 		  }
-#line 2798 "dpic.tab.c" /* yacc.c:1646  */
+#line 2799 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 83:
 #line 1170 "dpic.y" /* yacc.c:1646  */
     { resetenv((yyvsp[0]).lexval, envblock); }
-#line 2804 "dpic.tab.c" /* yacc.c:1646  */
+#line 2805 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 84:
 #line 1173 "dpic.y" /* yacc.c:1646  */
     { resetenv((yyvsp[0]).lexval, envblock); }
-#line 2810 "dpic.tab.c" /* yacc.c:1646  */
+#line 2811 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 85:
@@ -2832,7 +2833,7 @@ yyreduce:
 		  if (debuglevel>1) { prattribute("systemcmd1",&(yyval)); }
 #endif
 		  }
-#line 2836 "dpic.tab.c" /* yacc.c:1646  */
+#line 2837 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 86:
@@ -2842,7 +2843,7 @@ yyreduce:
 		  dodefhead( &(yyval) );
 		  clearchbuf((yyvsp[-2]).chbufx, (yyvsp[-2]).toklen);
           }
-#line 2846 "dpic.tab.c" /* yacc.c:1646  */
+#line 2847 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 87:
@@ -2852,31 +2853,31 @@ yyreduce:
 		  dodefhead( &(yyval) );
 		  clearchbuf((yyvsp[-2]).chbufx, (yyvsp[-2]).toklen);
           }
-#line 2856 "dpic.tab.c" /* yacc.c:1646  */
+#line 2857 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 88:
 #line 1216 "dpic.y" /* yacc.c:1646  */
     { dosprintf( &(yyval), &(yyvsp[0]), &(yyvsp[0]), 0 ); }
-#line 2862 "dpic.tab.c" /* yacc.c:1646  */
+#line 2863 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 89:
 #line 1219 "dpic.y" /* yacc.c:1646  */
     { dosprintf( &(yyval), &(yyvsp[-2]), &(yyvsp[0]), (yyvsp[0]).state ); }
-#line 2868 "dpic.tab.c" /* yacc.c:1646  */
+#line 2869 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 90:
 #line 1223 "dpic.y" /* yacc.c:1646  */
     { (yyval).state = 1; }
-#line 2874 "dpic.tab.c" /* yacc.c:1646  */
+#line 2875 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 91:
 #line 1226 "dpic.y" /* yacc.c:1646  */
     { (yyval).state = (yyvsp[0]).state + 1; }
-#line 2880 "dpic.tab.c" /* yacc.c:1646  */
+#line 2881 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 93:
@@ -2966,7 +2967,7 @@ yyreduce:
 			    }
 		      }
 			}
-#line 2970 "dpic.tab.c" /* yacc.c:1646  */
+#line 2971 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 94:
@@ -3054,7 +3055,7 @@ yyreduce:
 			  }
 		    }
 	 	  }
-#line 3058 "dpic.tab.c" /* yacc.c:1646  */
+#line 3059 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 95:
@@ -3121,7 +3122,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3125 "dpic.tab.c" /* yacc.c:1646  */
+#line 3126 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 96:
@@ -3151,7 +3152,7 @@ yyreduce:
 			else { markerror(858); }
 		    }
 		  }
-#line 3155 "dpic.tab.c" /* yacc.c:1646  */
+#line 3156 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 97:
@@ -3165,7 +3166,7 @@ yyreduce:
 			else { With2->lthick = (yyvsp[0]).xval; }
 		    }
 		  }
-#line 3169 "dpic.tab.c" /* yacc.c:1646  */
+#line 3170 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 98:
@@ -3269,7 +3270,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3273 "dpic.tab.c" /* yacc.c:1646  */
+#line 3274 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 99:
@@ -3334,7 +3335,7 @@ yyreduce:
 	    if (debuglevel > 0) { printobject(With->prim); }
 #endif
 		  }
-#line 3338 "dpic.tab.c" /* yacc.c:1646  */
+#line 3339 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 100:
@@ -3355,7 +3356,7 @@ yyreduce:
 	    if (debuglevel > 0) { printobject(With->prim); }
 #endif
 		  }
-#line 3359 "dpic.tab.c" /* yacc.c:1646  */
+#line 3360 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 101:
@@ -3381,7 +3382,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3385 "dpic.tab.c" /* yacc.c:1646  */
+#line 3386 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 102:
@@ -3431,7 +3432,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3435 "dpic.tab.c" /* yacc.c:1646  */
+#line 3436 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 103:
@@ -3453,7 +3454,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3457 "dpic.tab.c" /* yacc.c:1646  */
+#line 3458 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 104:
@@ -3468,7 +3469,7 @@ yyreduce:
 			if ((yyvsp[-1]).prim->ptype != XLarc) { setstflag(&(yyval).state, XEMPTY); }
 		    }
 		  }
-#line 3472 "dpic.tab.c" /* yacc.c:1646  */
+#line 3473 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 105:
@@ -3507,7 +3508,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3511 "dpic.tab.c" /* yacc.c:1646  */
+#line 3512 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 106:
@@ -3546,7 +3547,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3550 "dpic.tab.c" /* yacc.c:1646  */
+#line 3551 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 107:
@@ -3681,7 +3682,7 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3685 "dpic.tab.c" /* yacc.c:1646  */
+#line 3686 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 108:
@@ -3716,7 +3717,7 @@ yyreduce:
 			deletestringbox(&(yyvsp[0]).prim);
 		    }
 		  }
-#line 3720 "dpic.tab.c" /* yacc.c:1646  */
+#line 3721 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 109:
@@ -3742,7 +3743,7 @@ yyreduce:
 			  else { markerror(858); }
 		    }
 		  }
-#line 3746 "dpic.tab.c" /* yacc.c:1646  */
+#line 3747 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 110:
@@ -3782,7 +3783,7 @@ yyreduce:
 			else { markerror(858); }
 		    }
 		  }
-#line 3786 "dpic.tab.c" /* yacc.c:1646  */
+#line 3787 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 111:
@@ -3839,7 +3840,8 @@ yyreduce:
     	    	    r = sqrt(ts);               /* t is always nonnegative  */
     	    	    if (t <= 0.0) { With2->Upr.Uline.aradius = 0.5 * r; }
     	    	    switch (i) {
-    	    		/* Determine which of the two default arcs to draw: */
+							/* Determine which of the two default arcs to
+							   draw: */
     	    	    case XLup:
     	    	      if (With2->Upr.Uline.endpos.ypos *
                         ((-dx) - (t * dy)) < 0.0) { t = -t; }
@@ -3873,7 +3875,7 @@ yyreduce:
     	    		      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1,
     	    		      (yyvsp[0]).xval, (yyvsp[0]).yval);
     	    	}
-    	    	/* ratio centre-to-chord/half-chord */
+							/* ratio centre-to-chord/half-chord */
     	    	    if (With2->direction != 0) { (yyval).toklen = With2->direction; }
     	    	    With2->direction = 0;
     	            }
@@ -3885,11 +3887,11 @@ yyreduce:
     	      else { markerror(858); }
     	      }
 		   }
-#line 3889 "dpic.tab.c" /* yacc.c:1646  */
+#line 3891 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 112:
-#line 2184 "dpic.y" /* yacc.c:1646  */
+#line 2185 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -3906,11 +3908,11 @@ yyreduce:
 #endif
 		    }
 		  }
-#line 3910 "dpic.tab.c" /* yacc.c:1646  */
+#line 3912 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 113:
-#line 2202 "dpic.y" /* yacc.c:1646  */
+#line 2203 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			namptr = (yyval).prim->textp;
 			if (namptr != NULL) {
@@ -3954,11 +3956,11 @@ yyreduce:
 			else { markerror(861); }
 		    }
 		  }
-#line 3958 "dpic.tab.c" /* yacc.c:1646  */
+#line 3960 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 114:
-#line 2247 "dpic.y" /* yacc.c:1646  */
+#line 2248 "dpic.y" /* yacc.c:1646  */
     { if ((drawmode == Pict2e) || (drawmode == TeX) ||
 		      (drawmode == tTeX) || (drawmode == xfig)) { markerror(858); }
 		  else if (((yyvsp[0]).prim != NULL) && ((yyvsp[-2]).prim != NULL)) {
@@ -3995,11 +3997,11 @@ yyreduce:
 		    }
 		    deletestringbox(&(yyvsp[0]).prim);
 		  }
-#line 3999 "dpic.tab.c" /* yacc.c:1646  */
+#line 4001 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 115:
-#line 2285 "dpic.y" /* yacc.c:1646  */
+#line 2286 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4007,11 +4009,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4011 "dpic.tab.c" /* yacc.c:1646  */
+#line 4013 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 116:
-#line 2294 "dpic.y" /* yacc.c:1646  */
+#line 2295 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4019,11 +4021,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4023 "dpic.tab.c" /* yacc.c:1646  */
+#line 4025 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 117:
-#line 2303 "dpic.y" /* yacc.c:1646  */
+#line 2304 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4038,11 +4040,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4042 "dpic.tab.c" /* yacc.c:1646  */
+#line 4044 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 118:
-#line 2319 "dpic.y" /* yacc.c:1646  */
+#line 2320 "dpic.y" /* yacc.c:1646  */
     { primp = NULL;
 	      prp = envblock->son;
 	      while (prp != NULL) { i = prp->ptype;
@@ -4059,11 +4061,11 @@ yyreduce:
 		      }
 		    }
 		  }
-#line 4063 "dpic.tab.c" /* yacc.c:1646  */
+#line 4065 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 119:
-#line 2338 "dpic.y" /* yacc.c:1646  */
+#line 2339 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XBLOCK, envblock);
 		  (yyval).prim->Upr.UBLOCK.here.xpos = 0.0;
 		  (yyval).prim->Upr.UBLOCK.here.ypos = 0.0;
@@ -4071,11 +4073,11 @@ yyreduce:
 		  tail = NULL;
 		  (yyval).lexval = 0;
 		  }
-#line 4075 "dpic.tab.c" /* yacc.c:1646  */
+#line 4077 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 120:
-#line 2349 "dpic.y" /* yacc.c:1646  */
+#line 2350 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-1]).lexval > XLprimitiv) && ((yyvsp[-1]).lexval < XLenvvar)) {
 			newprim(&(yyval).prim, (yyvsp[-1]).lexval, envblock);
 			eb = findenv(envblock);
@@ -4234,19 +4236,19 @@ yyreduce:
 			if (debuglevel > 0) { printobject((yyval).prim); }
 #endif
 		  }
-#line 4238 "dpic.tab.c" /* yacc.c:1646  */
+#line 4240 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 121:
-#line 2509 "dpic.y" /* yacc.c:1646  */
+#line 2510 "dpic.y" /* yacc.c:1646  */
     { if ((drawmode == PS) || (drawmode == PDF) || (drawmode == PSfrag)) {
 			printstate = ((printstate >> 1) * 2) + 1; }
 		  }
-#line 4246 "dpic.tab.c" /* yacc.c:1646  */
+#line 4248 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 122:
-#line 2514 "dpic.y" /* yacc.c:1646  */
+#line 2515 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			envblock = (yyvsp[-2]).prim->parent;
 			tail = NULL;
@@ -4297,27 +4299,27 @@ yyreduce:
 #endif
 		    }
 		  }
-#line 4301 "dpic.tab.c" /* yacc.c:1646  */
+#line 4303 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 123:
-#line 2566 "dpic.y" /* yacc.c:1646  */
+#line 2567 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XBLOCK, envblock);
 		  (yyval).prim->Upr.UBLOCK.here.xpos = 0.0;
 		  (yyval).prim->Upr.UBLOCK.here.ypos = 0.0;
 		  (yyval).lexval = 0;
 		  }
-#line 4311 "dpic.tab.c" /* yacc.c:1646  */
+#line 4313 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 124:
-#line 2574 "dpic.y" /* yacc.c:1646  */
+#line 2575 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XEMPTY; }
-#line 4317 "dpic.tab.c" /* yacc.c:1646  */
+#line 4319 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 126:
-#line 2580 "dpic.y" /* yacc.c:1646  */
+#line 2581 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-1]).prim != NULL) && (envblockB.env != NULL)) {
 			eb = findenv(envblock->parent);
 			if (eb != NULL) {  /* check and reset variables: */
@@ -4331,11 +4333,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 4335 "dpic.tab.c" /* yacc.c:1646  */
+#line 4337 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 128:
-#line 2598 "dpic.y" /* yacc.c:1646  */
+#line 2599 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[0]).lexval != XEMPTY) {
 			  With1 = &(yyvsp[-1]);
@@ -4350,11 +4352,11 @@ yyreduce:
 		    }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4354 "dpic.tab.c" /* yacc.c:1646  */
+#line 4356 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 129:
-#line 2614 "dpic.y" /* yacc.c:1646  */
+#line 2615 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[-3]).internal == NULL) { prp = (yyvsp[-3]).prim; }
 			else { prp = (yyvsp[-3]).internal; }
@@ -4362,160 +4364,160 @@ yyreduce:
 			if ((yyval).internal == NULL) { markerror(857); deletetree(&(yyval).prim); }
 		    }
 		  }
-#line 4366 "dpic.tab.c" /* yacc.c:1646  */
+#line 4368 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 130:
-#line 2624 "dpic.y" /* yacc.c:1646  */
+#line 2625 "dpic.y" /* yacc.c:1646  */
     { (yyval).yval = (yyvsp[0]).xval;
 #ifdef DDEBUG
 			if (debuglevel>1) prattribute("pair1",&(yyval));
 #endif
 			}
-#line 4376 "dpic.tab.c" /* yacc.c:1646  */
+#line 4378 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 131:
-#line 2631 "dpic.y" /* yacc.c:1646  */
+#line 2632 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) {
 			(yyval).xval += (yyvsp[0]).xval;
 			(yyval).yval += (yyvsp[0]).yval; }
 		  }
-#line 4385 "dpic.tab.c" /* yacc.c:1646  */
+#line 4387 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 132:
-#line 2638 "dpic.y" /* yacc.c:1646  */
+#line 2639 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).xval <= 0.0) { markerror(856); }
 		  else { (yyval).toklen = Rnd((yyvsp[-1]).xval); }
 		  }
-#line 4393 "dpic.tab.c" /* yacc.c:1646  */
+#line 4395 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 133:
-#line 2643 "dpic.y" /* yacc.c:1646  */
+#line 2644 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval <= 0.0) { markerror(856); }
 		  else { (yyval).toklen = -Rnd((yyvsp[-2]).xval); }
 		  }
-#line 4401 "dpic.tab.c" /* yacc.c:1646  */
+#line 4403 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 134:
-#line 2648 "dpic.y" /* yacc.c:1646  */
+#line 2649 "dpic.y" /* yacc.c:1646  */
     { (yyval).toklen = 0; }
-#line 4407 "dpic.tab.c" /* yacc.c:1646  */
+#line 4409 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 138:
-#line 2658 "dpic.y" /* yacc.c:1646  */
+#line 2659 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XBLOCK; }
-#line 4413 "dpic.tab.c" /* yacc.c:1646  */
+#line 4415 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 139:
-#line 2662 "dpic.y" /* yacc.c:1646  */
+#line 2663 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = 0.0;
 		  (yyval).yval = 0.0;
 		  (yyval).lexval = XEMPTY;
 		  }
-#line 4422 "dpic.tab.c" /* yacc.c:1646  */
+#line 4424 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 140:
-#line 2668 "dpic.y" /* yacc.c:1646  */
+#line 2669 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval += (yyvsp[0]).xval;
 		  (yyval).yval += (yyvsp[0]).yval;
 		  (yyval).lexval = XLfloat;
 		  }
-#line 4431 "dpic.tab.c" /* yacc.c:1646  */
+#line 4433 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 141:
-#line 2674 "dpic.y" /* yacc.c:1646  */
+#line 2675 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval -= (yyvsp[0]).xval;
 		  (yyval).yval -= (yyvsp[0]).yval;
 		  (yyval).lexval = XLfloat;
 		  }
-#line 4440 "dpic.tab.c" /* yacc.c:1646  */
+#line 4442 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 142:
 #line 2682 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[-1]); }
-#line 4446 "dpic.tab.c" /* yacc.c:1646  */
+#line 4448 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 143:
-#line 2686 "dpic.y" /* yacc.c:1646  */
+#line 2685 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-3]).xval;
 		  (yyval).yval = (yyvsp[-1]).yval;
 		  }
-#line 4454 "dpic.tab.c" /* yacc.c:1646  */
+#line 4456 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 145:
-#line 2695 "dpic.y" /* yacc.c:1646  */
+#line 2692 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval *= (yyvsp[0]).xval;
 		  (yyval).yval *= (yyvsp[0]).xval;
 		  }
-#line 4462 "dpic.tab.c" /* yacc.c:1646  */
+#line 4464 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 146:
-#line 2701 "dpic.y" /* yacc.c:1646  */
+#line 2697 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { markerror(852); }
 		  else {
 			(yyval).xval /= (yyvsp[0]).xval;
 			(yyval).yval /= (yyvsp[0]).xval;
 		    }
 		  }
-#line 4473 "dpic.tab.c" /* yacc.c:1646  */
+#line 4475 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 147:
-#line 2710 "dpic.y" /* yacc.c:1646  */
+#line 2706 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, XEMPTY, &(yyval).xval, &(yyval).yval); }
-#line 4479 "dpic.tab.c" /* yacc.c:1646  */
+#line 4481 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 148:
-#line 2713 "dpic.y" /* yacc.c:1646  */
+#line 2709 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[-1]).prim, (yyvsp[0]).lexval, &(yyval).xval, &(yyval).yval); }
-#line 4485 "dpic.tab.c" /* yacc.c:1646  */
+#line 4487 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 149:
-#line 2716 "dpic.y" /* yacc.c:1646  */
+#line 2712 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, (yyvsp[-1]).lexval, &(yyvsp[0]).xval, &(yyvsp[0]).yval);
  		  (yyval) = (yyvsp[0]); }
-#line 4492 "dpic.tab.c" /* yacc.c:1646  */
+#line 4494 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 150:
-#line 2720 "dpic.y" /* yacc.c:1646  */
+#line 2716 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, (yyvsp[-2]).lexval, &(yyvsp[0]).xval, &(yyvsp[0]).yval);
  		  (yyval) = (yyvsp[0]); }
-#line 4499 "dpic.tab.c" /* yacc.c:1646  */
+#line 4501 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 151:
-#line 2724 "dpic.y" /* yacc.c:1646  */
+#line 2720 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = envblockB.here.xpos;
 		  (yyval).yval = envblockB.here.ypos;
 		  }
-#line 4507 "dpic.tab.c" /* yacc.c:1646  */
+#line 4509 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 153:
-#line 2732 "dpic.y" /* yacc.c:1646  */
+#line 2728 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { (yyval).xval = 1.0; }
     	  else { (yyval).xval = 0.0; }
 		  }
-#line 4515 "dpic.tab.c" /* yacc.c:1646  */
+#line 4517 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 154:
-#line 2737 "dpic.y" /* yacc.c:1646  */
+#line 2733 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).xval == 0.0) && ((yyvsp[0]).xval < 0.0)) { markerror(852); }
 		  else {
 			j = Rnd((yyvsp[0]).xval);
@@ -4525,11 +4527,11 @@ yyreduce:
 			else if ((yyvsp[-2]).xval != 0.0) { (yyval).xval = exp((yyvsp[0]).xval * log((yyvsp[-2]).xval));}
 			}
     	  }
-#line 4529 "dpic.tab.c" /* yacc.c:1646  */
+#line 4531 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 155:
-#line 2749 "dpic.y" /* yacc.c:1646  */
+#line 2745 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-1]).chbufx, &(yyvsp[-1]).toklen, 
                 (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
 		  prp = NULL;
@@ -4544,11 +4546,11 @@ yyreduce:
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  (yyval).prim = prp;
 		  }
-#line 4548 "dpic.tab.c" /* yacc.c:1646  */
+#line 4550 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 156:
-#line 2765 "dpic.y" /* yacc.c:1646  */
+#line 2761 "dpic.y" /* yacc.c:1646  */
     { (yyval).prim = nthprimobj(envblock->son, (yyvsp[-1]).toklen, (yyvsp[0]).lexval);
 		  if ((yyval).prim == NULL) { markerror(857); }
 #ifdef DDEBUG
@@ -4559,11 +4561,11 @@ yyreduce:
             }
 #endif
 		  }
-#line 4563 "dpic.tab.c" /* yacc.c:1646  */
+#line 4565 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 157:
-#line 2777 "dpic.y" /* yacc.c:1646  */
+#line 2773 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-1]).chbufx,
               &(yyvsp[-1]).toklen, (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
@@ -4573,52 +4575,52 @@ yyreduce:
 		    }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4577 "dpic.tab.c" /* yacc.c:1646  */
+#line 4579 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 158:
-#line 2788 "dpic.y" /* yacc.c:1646  */
+#line 2784 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).prim = nthprimobj((yyvsp[-3]).prim->son, (yyvsp[-1]).toklen, (yyvsp[0]).lexval);
 			if ((yyval).prim == NULL) { markerror(857); }
 		    }
 		  }
-#line 4587 "dpic.tab.c" /* yacc.c:1646  */
+#line 4589 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 160:
-#line 2798 "dpic.y" /* yacc.c:1646  */
+#line 2794 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4593 "dpic.tab.c" /* yacc.c:1646  */
+#line 4595 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 161:
-#line 2801 "dpic.y" /* yacc.c:1646  */
+#line 2797 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4599 "dpic.tab.c" /* yacc.c:1646  */
+#line 4601 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 163:
-#line 2807 "dpic.y" /* yacc.c:1646  */
+#line 2803 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).xval == 0.0) || ((yyvsp[0]).xval == 0.0)) { (yyval).xval = 0.0; }
 		  else { (yyval).xval = 1.0; }
 		  }
-#line 4607 "dpic.tab.c" /* yacc.c:1646  */
+#line 4609 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 164:
-#line 2813 "dpic.y" /* yacc.c:1646  */
+#line 2809 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XLstring) {
 			markerror(869);
 			(yyval).lexval = XLfloat;
 			deletestringbox(&(yyvsp[0]).prim);
 		    }
 		  }
-#line 4618 "dpic.tab.c" /* yacc.c:1646  */
+#line 4620 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 165:
-#line 2821 "dpic.y" /* yacc.c:1646  */
+#line 2817 "dpic.y" /* yacc.c:1646  */
     { i = cmpstring((yyvsp[-2]).prim, (yyvsp[0]).prim);
 		  if (i < 0) { (yyval).xval = 1.0; }
 		  else { (yyval).xval = 0.0; }
@@ -4626,19 +4628,19 @@ yyreduce:
 		  deletestringbox(&(yyvsp[0]).prim);
 		  deletestringbox(&(yyvsp[-2]).prim);
 		  }
-#line 4630 "dpic.tab.c" /* yacc.c:1646  */
+#line 4632 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 166:
-#line 2830 "dpic.y" /* yacc.c:1646  */
+#line 2826 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval < (yyvsp[0]).xval) { (yyval).xval = 1.0; }
 		  else { (yyval).xval = 0.0; }
 		  }
-#line 4638 "dpic.tab.c" /* yacc.c:1646  */
+#line 4640 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 169:
-#line 2840 "dpic.y" /* yacc.c:1646  */
+#line 2836 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval == XLstring) {
 			markerror(869);
 			bswitch = false;
@@ -4661,11 +4663,11 @@ yyreduce:
 		    }
 		  if (bswitch) { (yyval).xval = 1.0; } else { (yyval).xval = 0.0; }
 		  }
-#line 4665 "dpic.tab.c" /* yacc.c:1646  */
+#line 4667 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 170:
-#line 2864 "dpic.y" /* yacc.c:1646  */
+#line 2860 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval != XLstring) { markerror(869); bswitch = false; }
 		  else {
 			i = cmpstring((yyvsp[-2]).prim, (yyvsp[0]).prim);
@@ -4684,21 +4686,21 @@ yyreduce:
 		  (yyval).lexval = XLfloat;
 		  deletestringbox(&(yyvsp[0]).prim);
 		  }
-#line 4688 "dpic.tab.c" /* yacc.c:1646  */
+#line 4690 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 171:
-#line 2885 "dpic.y" /* yacc.c:1646  */
+#line 2881 "dpic.y" /* yacc.c:1646  */
     { if (envblock != NULL) {
 			eb = findenv(envblock);
 			(yyval).xval = eb->envinx((yyvsp[0]).lexval);
 		    }
 		  }
-#line 4698 "dpic.tab.c" /* yacc.c:1646  */
+#line 4700 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 172:
-#line 2892 "dpic.y" /* yacc.c:1646  */
+#line 2888 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf,
 		    &(yyvsp[-1]).chbufx, &(yyvsp[-1]).toklen, (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
     	  namptr = glfindname(envblock,chbuf,(yyvsp[-1]).chbufx,(yyvsp[-1]).toklen, &lastvar, &k);
@@ -4706,23 +4708,23 @@ yyreduce:
     	  else { (yyval).xval = namptr->val; }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4710 "dpic.tab.c" /* yacc.c:1646  */
+#line 4712 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 174:
-#line 2903 "dpic.y" /* yacc.c:1646  */
+#line 2899 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4716 "dpic.tab.c" /* yacc.c:1646  */
+#line 4718 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 176:
-#line 2908 "dpic.y" /* yacc.c:1646  */
+#line 2904 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).yval; }
-#line 4722 "dpic.tab.c" /* yacc.c:1646  */
+#line 4724 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 177:
-#line 2911 "dpic.y" /* yacc.c:1646  */
+#line 2907 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			switch ((yyvsp[0]).lexval) {
 			  case XLheight:
@@ -4781,25 +4783,25 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 4785 "dpic.tab.c" /* yacc.c:1646  */
+#line 4787 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 178:
-#line 2971 "dpic.y" /* yacc.c:1646  */
+#line 2967 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = ((double)random()) / randmax; }
-#line 4791 "dpic.tab.c" /* yacc.c:1646  */
+#line 4793 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 179:
-#line 2974 "dpic.y" /* yacc.c:1646  */
+#line 2970 "dpic.y" /* yacc.c:1646  */
     { srandom(Rnd((yyvsp[-1]).xval));
 		  (yyval).xval = ((double)random()) / randmax;
 		  }
-#line 4799 "dpic.tab.c" /* yacc.c:1646  */
+#line 4801 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 180:
-#line 2979 "dpic.y" /* yacc.c:1646  */
+#line 2975 "dpic.y" /* yacc.c:1646  */
     { switch ((yyval).lexval) {
 		    case XLabs: (yyval).xval = fabs((yyvsp[-1]).xval);
 		      break;
@@ -4848,11 +4850,11 @@ yyreduce:
 		      break;
 		    }
 		  }
-#line 4852 "dpic.tab.c" /* yacc.c:1646  */
+#line 4854 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 181:
-#line 3029 "dpic.y" /* yacc.c:1646  */
+#line 3025 "dpic.y" /* yacc.c:1646  */
     { switch ((yyvsp[-5]).lexval) {
 		    case XLatan2: (yyval).xval = datan((yyvsp[-3]).xval, (yyvsp[-1]).xval);
 		      break;
@@ -4871,23 +4873,23 @@ yyreduce:
 		      break;
 		    }
 		  }
-#line 4875 "dpic.tab.c" /* yacc.c:1646  */
+#line 4877 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 182:
-#line 3049 "dpic.y" /* yacc.c:1646  */
+#line 3045 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4881 "dpic.tab.c" /* yacc.c:1646  */
+#line 4883 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 183:
-#line 3052 "dpic.y" /* yacc.c:1646  */
+#line 3048 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4887 "dpic.tab.c" /* yacc.c:1646  */
+#line 4889 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 4891 "dpic.tab.c" /* yacc.c:1646  */
+#line 4893 "dpic.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -5115,7 +5117,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 3055 "dpic.y" /* yacc.c:1906  */
+#line 3051 "dpic.y" /* yacc.c:1906  */
  /* start of programs */
 
 int
@@ -5125,8 +5127,8 @@ yyerror(char *s)
   return 0;
   }
 
-/* Get and initialize a buffer from the
-   old-buffer stack or make a new one */
+							/* Get and initialize a buffer from the
+							   old-buffer stack or make a new one */
 void
 newbuf(fbuffer **buf)
 { fbuffer *With;
@@ -5158,14 +5160,13 @@ newbuf(fbuffer **buf)
 }
 
 
-/* Clearing memory at end of diagram */
+							/* Clearing memory at end of diagram */
 void
 deletefreeargs(arg **a)
 { arg *na;
 
   while ((*a) != NULL) {
-      na = (*a)->nexta;                                                 /*D,8D*/
-      /*D if debuglevel > 0 then writeln(log,'del arg[',ordp(a):1,']'); D*/
+      na = (*a)->nexta;
       disposebufs(&(*a)->argbody);
       Free(*a);
       *a = na;
@@ -5173,14 +5174,13 @@ deletefreeargs(arg **a)
 }
 
 
-/* Clearing memory at end of diagram */
+							/* Clearing memory at end of diagram */
 void
 deletefreeinbufs(fbuffer **p)
 { fbuffer *q;
 
   while ((*p) != NULL) {
       q = (*p)->nextb;
-      /*D if debuglevel > 0 then logaddr(p); D*/
       Free((*p)->carray);
       Free(*p);
       *p = q;
@@ -5188,7 +5188,7 @@ deletefreeinbufs(fbuffer **p)
 }
 
 
-/* performed for each input diagram: */
+							/* performed for each input diagram: */
 void
 inittwo(void)
 { freeinbuf = NULL;
@@ -5222,34 +5222,34 @@ preproduce(int p)
 	}
   }
 
-/* Compute integer power of x */
+							/* Compute integer power of x */
 double
 intpow(double x, int k)
 { /* 0^(-k) does not occur */
-                                             /* 0^0 returns 1.0 */
+  /* 0^0 returns 1.0 */
   if (k == 0) { x = 1.0; return x; }
   if ((x == 0.0) || (k == 1)) { return x; }
   if (k < 0) { x = intpow(1.0 / x, -k); return x; }
-                                             /* common enough to test for it */
+							/* common enough to test for it */
   if (k == 2) { x *= x; return x; }
   if (k & 1) { x *= intpow(x, k - 1); }
   else { x = intpow(x, k >> 1); x *= x; }
   return x;
 }
 
-/* error message strings for lexical terminals */
+							/* error message strings for lexical terminals */
 static const char *const lexterms[] = {
 " EOF",
 #include "lxerr.h"
 };
 
-/* Write error message with symbol found
-   and symbol expected if possible */
+							/* Write error message with symbol found
+							   and symbol expected if possible */
 void
 markerror(int emi) {
   int inx, j, k;
   fbuffer *thisbuf, *lastbuf;
-                                   /* Do not count warnings */
+							/* Do not count warnings */
   if (emi < 900) { errcount++; }
 #ifdef DDEBUG
   fbuffer *With;
@@ -5324,7 +5324,7 @@ markerror(int emi) {
       for (i=yylval.chbufx; i<(yylval.chbufx+yylval.toklen); i++) {
         wchar(&errout, chbuf[i]); } }
     break;
-                                            /* lexical error messages */
+							/* lexical error messages */
   case 800:
     fprintf(errout, "Character not recognized: ignored\n");
     break;
@@ -5363,11 +5363,7 @@ markerror(int emi) {
     fprintf(errout, "End of file while evaluating macro argument\n");
     break;
 
-/*
-  case 808: fprintf(errout, "Syntax error\n"); break;
-*/
-
-  /* context error messages */
+							/* context error messages */
   case 851:
     fprintf(errout, "Variable not found\n");
     break;
@@ -5464,7 +5460,7 @@ markerror(int emi) {
     fprintf(errout, "System routine snprintf error: bad formatted value\n");
     break;
 
-  /* warning messages */
+							/* warning messages */
   case 901:
     fprintf(errout, "Safe mode: sh, copy, and print to file disallowed\n");
     break;
@@ -5482,14 +5478,13 @@ markerror(int emi) {
     break;
   }
 
-  /* writeln(errout); */
   consoleflush();
   if (errcount > MAXERRCOUNT) { fatal(3); }
 }  /* markerror */
 
 
-/* Flag an object not found and complain to
-   stderr */
+							/* Flag an object not found and complain to
+							   stderr */
 void
 marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
 { int i;
@@ -5516,8 +5511,8 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
   putc('\n', errout);
 }
 
-/* Hash of variable name:
-   (ord(chr(1))+ord(chr(n-1))) mod 10 */
+							/* Hash of variable name:
+   							   (ord(chr(1))+ord(chr(n-1))) mod 10 */
 int
 varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
 { int idx;
@@ -5533,8 +5528,8 @@ varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
   return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1)));
 }
 
-
-/* Binary search for name in chain of stored names */
+							/* Binary search for name in chain of stored
+							   names */
 nametype *(
 findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 	 nametype **last, int *k))
@@ -5568,7 +5563,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
       if (leftptr==NULL) { fprintf(log_," leftptr == NULL "); }
       else { fprintf(log_, "leftptr!=NULL[%d] k=%d", ordp(leftptr), *k); } }
 #endif
-  /* Check the first (highest) name */
+							/* Check the first (highest) name */
   if (leftptr != NULL) {
     *k = eqstring(chb, chbufx, toklen, leftptr->segmnt, leftptr->seginx,
 		    leftptr->len);
@@ -5587,8 +5582,6 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #endif
   while (leftptr != rightptr) {
     midpt = (left + right) >> 1;
-      /*D if debuglevel > 0 then
-                         write(log,' midpt=',midpt:1); D*/
     *last = leftptr;
     for (i = left + 1; i <= midpt; i++) { *last = (*last)->next_; }
     With = *last;
@@ -5616,7 +5609,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
   else { return NULL; }
 }
 
-/* A minimal set of debug routines has been kept: */
+							/* A minimal set of debug routines has been kept: */
 #ifdef DDEBUG
 void
 logchar(Char c)
@@ -5768,7 +5761,7 @@ snaptree(primitive *pr, int indent)
 { int i, j = /* 6 */ 0;
   while ((pr != NULL) && (indent <= 240)) {
     snaptype(&log_, pr->ptype);
-    /* fprintf(log_,"[%d]",odp(pr)); */
+	/* fprintf(log_,"[%d]",odp(pr)); */
     switch (pr->ptype) {
       case XBLOCK: i = 4; break;
       case XLbox:
@@ -5923,7 +5916,7 @@ printobject(primitive *primp)
 		    break;
 	      case XLaTeX:
 	      case XLabel:
-		    /* blank case */
+			/* blank case */
 		    break;
 	      default:
 		    fprintf(log_, " Bad case in printobject; this cannot happen\n");
@@ -5988,7 +5981,7 @@ prvars(primitive *eb)
 }
 #endif
 
-/* Dispose of a tree of 1 or more objects */
+							/* Dispose of a tree of 1 or more objects */
 void
 deletetree(primitive **p)
 { primitive *r;
@@ -6018,7 +6011,7 @@ deletetree(primitive **p)
   }
 
 
-/* Store arc strtang and arcang parameters */
+							/* Store arc strtang and arcang parameters */
 void
 setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 	  double xf, double yf)
@@ -6036,7 +6029,7 @@ setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 }
 
 
-/* Perform assignment operator */
+							/* Perform assignment operator */
 void
 eqop(double *x, int op, double y)
 { int i, j;
@@ -6083,22 +6076,19 @@ eqop(double *x, int op, double y)
   }
 }
 
-
-/* Store int value in bits 9 and above */
+							/* Store int value in bits 9 and above */
 void
 setstval(int *st, int value)
 { *st = (value * 256) + ((*st) & 255);
 }
 
-
-/* Recover int value from bits 9 and above */
+							/* Recover int value from bits 9 and above */
 int
 getstval(int st)
 { return (st >> 8);
 }
 
-
-/* Record application of object attribute */
+							/* Record application of object attribute */
 void
 setstflag(int *st, int value)
 { switch (value) {
@@ -6142,7 +6132,7 @@ setstflag(int *st, int value)
 }
 
 
-/* Test if attribute has been applied */
+							/* Test if attribute has been applied */
 boolean
 teststflag(int st, int value)
 { boolean b = false;
@@ -6184,7 +6174,7 @@ teststflag(int st, int value)
   return b;
 }
 
-/* String equality of primitives */
+							/* String equality of primitives */
 int
 cmpstring(primitive *p1, primitive *p2)
 { if ((p1 == NULL) || (p2 == NULL)) {
@@ -6203,17 +6193,13 @@ cmpstring(primitive *p1, primitive *p2)
 }
 
 
-/* Match place name with stored places */
+							/* Match place name with stored places */
 primitive *(
 findplace(primitive *p, Char *chb, chbufinx inx, chbufinx toklen))
 { primitive *pj = NULL;
   nametype *With;
 
-  /*D if debuglevel = 2 then begin
-     write(log,'findplace:'); snapname(chb,inx,toklen); writeln(log)
-     end; D*/
   while (p != pj) {
-      /*D if debuglevel = 2 then printobject(p); D*/
       if (p->name == NULL) {
 	  p = p->next_;
       }
@@ -6231,7 +6217,7 @@ findplace(primitive *p, Char *chb, chbufinx inx, chbufinx toklen))
   return p;
 }
 
-/* Get the value of a global variable */
+							/* Get the value of a global variable */
 double
 findvar(Char *s, int ln)
 { int i, k;
@@ -6252,7 +6238,7 @@ findvar(Char *s, int ln)
   }
 }
 
-/* Search for variable in this and higer scope*/
+							/* Search for variable in this and higer scope*/
 nametype *(
 glfindname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 	   nametype **last, int *k))
@@ -6269,7 +6255,7 @@ glfindname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 }
 
 
-/* Append the int string to the name string*/
+							/* Append the int string to the name string*/
 void
 appendsuff(Char *buf, chbufinx inx, int *len, double x)
 { int i, j, k;
@@ -6290,8 +6276,8 @@ appendsuff(Char *buf, chbufinx inx, int *len, double x)
     } while (i != 0);
 }
 
-/* Append the suffix string to the name string
-   for one or two integers */
+							/* Append the suffix string to the name string
+							   for one or two integers */
 void
 addsuffix(Char *buf, chbufinx *inx, int *len, double x, int lx, double y)
 { int i, FORLIM;
@@ -6316,7 +6302,7 @@ addsuffix(Char *buf, chbufinx *inx, int *len, double x, int lx, double y)
 }  /* addsuffix */
 
 
-/* Implement "then" or the "to" special case */
+							/* Implement "then" or the "to" special case */
 void
 appendthen(primitive **pr)
 { primitive *prp, *prq;
@@ -6336,7 +6322,7 @@ appendthen(primitive **pr)
   *pr = prp;
 }
 
-/* Attribute up, down, left, right */
+							/* Attribute up, down, left, right */
 void
 lineardir(primitive *pr, double dy, double dx, int *state)
 { if (!(teststflag(*state, XLto) | teststflag(*state, XLdirecton))) {
@@ -6358,7 +6344,7 @@ lineardir(primitive *pr, double dy, double dx, int *state)
   setstflag(state, XLdirecton);
 }
 
-/* Test for outline for outlined "string" */
+							/* Test for outline for outlined "string" */
 boolean
 hasoutline(int lx, boolean warn)
 { boolean hs;
@@ -6371,7 +6357,7 @@ hasoutline(int lx, boolean warn)
 }
 
 
-/* Test for shade for shaded "string" */
+							/* Test for shade for shaded "string" */
 boolean
 hasshade(int lx, boolean warn)
 { boolean hs;
@@ -6388,7 +6374,7 @@ hasshade(int lx, boolean warn)
 }
 
 
-/* Create a string struct */
+							/* Create a string struct */
 void
 newstr(nametype **sp)
 {
@@ -6406,7 +6392,7 @@ newstr(nametype **sp)
 }
 
 
-/* Copy a string into freeseg */
+							/* Copy a string into freeseg */
 void
 storestring(nametype *outstr,Char *srcbuf,chbufinx psrc,chbufinx lsrc,int job)
 { int i, j;
@@ -6440,7 +6426,7 @@ storestring(nametype *outstr,Char *srcbuf,chbufinx psrc,chbufinx lsrc,int job)
   if (job != 0) { clearchbuf(psrc, lsrc); }
   }
 
-/* Duplicate a strptr and copy the body */
+							/* Duplicate a strptr and copy the body */
 void
 copystr(nametype **sp, nametype *ip)
 { if (ip == NULL) {
@@ -6453,43 +6439,29 @@ copystr(nametype **sp, nametype *ip)
 }
 
 
-/* Append buf to *sp */
+							/* Append buf to *sp */
 void
 appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 {
   int i;
-  /*D,k D*/
   int j;
   Char *tmpseg;
   int FORLIM;
   if ((sp == NULL) || (buf == NULL)) { return; }
   if ((sp->segmnt == freeseg) && (sp->seginx + sp->len == freex) &&
       (freex + ll - 1 <= CHBUFSIZ)) {
-      /*D if debuglevel > 0 then begin
-          write(log,' appending |');
-          for i:=0 to ll-1 do write(log,buf^[px+i]); writeln(log,'|') end; D*/
     for (i = 0; i < ll; i++) { freeseg[freex + i] = buf[px + i]; }
-    sp->len += ll;                                 /*D k := 1; D*/
+    sp->len += ll;
     freex += ll;
     return;
     }
   if (sp->len + ll + 2 > CHBUFSIZ) { markerror(866); return; }
-  /*D; if debuglevel > 0 then if sp<>nil then with sp^ do begin
-     writeln(log,
-      'appendstring to strptr ',ordp(sp):1,': segmnt=',ordp(freeseg):1,
-      ' seginx:seginx+len-1=',seginx:1,':',seginx+len-1:1);
-     writeln(log,
-      ' len=',len:1, ' branch k=',k:1);
-     snapname(segmnt,seginx,len); writeln( log )
-     end D*/
   tmpseg = malloc(sizeof(chbufarray));
   FORLIM = sp->len;
-  /*D if debuglevel > 0 then
-     writeln(log,'apendstring new[',ordp(tmpseg):1,']'); D*/
   for (i = 0; i < FORLIM; i++) { tmpseg[i+3] = sp->segmnt[sp->seginx + i]; }
   j = bval(sp->segmnt);
   if (j > 1) {
-    putbval(sp->segmnt, j - 1);                                /*D k := 2; D*/
+    putbval(sp->segmnt, j - 1);
     if ((sp->segmnt == freeseg) && (sp->seginx + sp->len == freex)) {
 	  freex = sp->seginx;
 	  j = 3;
@@ -6503,7 +6475,7 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 	  for (i = sp->seginx; i < FORLIM; i++) { sp->segmnt[i] = nlch; }
       }
     }
-  else {                               /*D k := 3; D*/
+  else {
     if (sp->segmnt == freeseg) { freeseg = NULL; }
     Free(sp->segmnt);
     }
@@ -6517,7 +6489,7 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 }
 
 
-/* Store or append string */
+							/* Store or append string */
 int
 putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 { if (ix <= 0) {
@@ -6530,7 +6502,7 @@ putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 }
 
 
-/* Height of a primitive object */
+							/* Height of a primitive object */
 double
 pheight(primitive *pr)
 { double ph;
@@ -6561,7 +6533,6 @@ pheight(primitive *pr)
     ph = 2.0 * pr->Upr.Ucircle.radius;
     break;
 
-  /*  XLline,XLarrow,XLmove: ph := abs(endpos.ypos - aat.ypos); */
   case XLline:
   case XLarrow:
   case XLmove:
@@ -6577,7 +6548,7 @@ pheight(primitive *pr)
 }
 
 
-/* Width of a primitive object */
+							/* Width of a primitive object */
 double
 pwidth(primitive *pr)
 { double pw;
@@ -6605,7 +6576,6 @@ pwidth(primitive *pr)
     pw = 2.0 * pr->Upr.Ucircle.radius;
     break;
 
-  /*  XLline,XLarrow,XLmove: pw := abs(endpos.xpos - aat.xpos); */
   case XLline:
   case XLarrow:
   case XLmove:
@@ -6621,7 +6591,7 @@ pwidth(primitive *pr)
 }
 
 
-/* The n, s, e, w values of a drawing tree */
+							/* The n, s, e, w values of a drawing tree */
 void
 neswrec(primitive *ptm)
 { while (ptm != NULL) {
@@ -6632,7 +6602,7 @@ neswrec(primitive *ptm)
   }
 
 
-/* Bounding box of a drawing tree */
+							/* Bounding box of a drawing tree */
 void
 getnesw(primitive *ptm)
 { initnesw();
@@ -6648,8 +6618,8 @@ getnesw(primitive *ptm)
 }
 
 
-/* Test and return A(bove), B(elow),
-                   L(eft), R(ight) */
+							/* Test and return A(bove), B(elow),
+							                   L(eft), R(ight) */
 void
 checkjust(nametype *tp, boolean *A, boolean *B, boolean *L, boolean *R)
 { int i;
@@ -6668,9 +6638,9 @@ checkjust(nametype *tp, boolean *A, boolean *B, boolean *L, boolean *R)
   *A = (i >> 3) & 1;
 }
 
-/* Return linespec, i.e.,
-   <solid>, <dotted>, <dashed>, <invis>
-   from lowest 3 bits */
+							/* Return linespec, i.e.,
+							   <solid>, <dotted>, <dashed>, <invis>
+							   from lowest 3 bits */
 int
 lspec(int n)
 { /* if ((n div 16) mod 2) <> 0 then lspec := XLsolid
@@ -6678,8 +6648,8 @@ lspec(int n)
   return ((n & 7) + XLlinetype);
 }
 
-/* Find the lowest block with environment
-   variables defined */
+							/* Find the lowest block with environment
+							   variables defined */
 primitive *(
 findenv(primitive *p))
 { primitive *q = NULL;
@@ -6695,15 +6665,11 @@ findenv(primitive *p))
 	  q = p;
       }
   }
-  /*D if debuglevel > 0 then begin
-     if p = nil then writeln(log,'findenv: p=nil')
-     else if p^.env = nil then writeln(log,'findenv: p^.env=nil');
-     flush(log) end; D*/
   return p;
 }
 
 
-/* Get the value of an environment variable */
+							/* Get the value of an environment variable */
 double
 venv(primitive *p, int ind)
 { double v = 0.0;
@@ -6714,8 +6680,8 @@ venv(primitive *p, int ind)
 }
 
 
-/* Get the value of an environment variable
-   if it has not been set locally */
+							/* Get the value of an environment variable
+							   if it has not been set locally */
 double
 qenv(primitive *p, int ind, double localval)
 { double noval;
@@ -6730,9 +6696,9 @@ qenv(primitive *p, int ind, double localval)
 }
 
 
-/* Position from an affine transformation
-   orig + mat(cs) * [x,y]
-   Position cs is (cos t, sin t) */
+							/* Position from an affine transformation
+							   orig + mat(cs) * [x,y]
+							   Position cs is (cos t, sin t) */
 postype
 affine(double x, double y, postype orig, postype cs)
 { postype tpos;
@@ -6743,7 +6709,7 @@ affine(double x, double y, postype orig, postype cs)
 }
 
 
-/* Get (cos t, sin t) of point wrt shaft */
+							/* Get (cos t, sin t) of point wrt shaft */
 postype
 affang(postype point, postype shaft)
 { double lgth;
@@ -6761,7 +6727,7 @@ affang(postype point, postype shaft)
   return tpos;
 }
 
-/* Initialize parameters for routine nesw */
+							/* Initialize parameters for routine nesw */
 void
 initnesw(void)
 { south = distmax;
@@ -6771,8 +6737,8 @@ initnesw(void)
 }
 
 
-/* Values north, south, west, east for a string
-   accounting for ljust rjust above below */
+							/* Values north, south, west, east for a string
+							   accounting for ljust rjust above below */
 void
 neswstring(primitive *pmp, double ht, double wd)
 { boolean A, B, L, R;
@@ -6806,8 +6772,8 @@ neswstring(primitive *pmp, double ht, double wd)
 }
 
 
-/* Values north, south, west, east for a line
-   or arrow */
+							/* Values north, south, west, east for a line
+							   or arrow */
 void
 neswline(primitive *pmp)
 { double aht, awd;
@@ -6849,16 +6815,11 @@ neswline(primitive *pmp)
 }
 
 
-/* Test if angle is within an arc segment */
+							/* Test if angle is within an arc segment */
 boolean
 inarc(double strt, double fin, double ang, double arcang)
 { boolean inarctmp;
 
-  /*D if debuglevel > 0 then begin
-     write(log,'Inarc strt,fin='); wfloat(log,strt*180.0/pi);
-        write(log,' ' ); wfloat(log,fin*180.0/pi);
-     write(log,' ang,arcang='); wfloat(log,ang*180.0/pi);
-        write(log,' ' ); wfloat(log,arcang*180.0/pi) end; D*/
   if (arcang >= 0.0) {
       while (fin < strt) {
 	  fin += 2.0 * pi;
@@ -6887,11 +6848,10 @@ inarc(double strt, double fin, double ang, double arcang)
       inarctmp = false;
   }
   return inarctmp;
-  /*D; if debuglevel > 0 then writeln(log,' Inarc =',inarctmp) D*/
 }
 
 
-/* Values north, south, east, west of an obj */
+							/* Values north, south, east, west of an obj */
 void
 nesw(primitive *ptmp)
 { double hight, wdth, sang, eang;
@@ -6951,13 +6911,11 @@ nesw(primitive *ptmp)
     break;
   case XLaTeX:
   case XLabel:
-    /* blank case */
+	/* blank case */
     break;
   case XLarc:
     sang = principal(ptmp->Upr.Uline.endpos.xpos, pi);
     eang = ptmp->Upr.Uline.endpos.xpos + ptmp->Upr.Uline.endpos.ypos;
-    /*D if debuglevel > 0 then begin write(log,'(sang,eang)(deg)=');
-       wpair(log,sang*180/pi,eang*180/pi); writeln(log) end; D*/
     if (inarc(sang, eang, 0.5 * pi, ptmp->Upr.Uline.endpos.ypos)) {
 	  north = Max(north, ptmp->aat.ypos + ptmp->Upr.Uline.aradius); }
     else { north = Max(north,
@@ -6984,7 +6942,7 @@ nesw(primitive *ptmp)
 #endif
 }
 
-/* Exit point of a primitive object */
+							/* Exit point of a primitive object */
 void
 FindExitPoint(primitive *pr, postype *pe)
 { if (pr == NULL) {
@@ -7041,15 +6999,6 @@ FindExitPoint(primitive *pr, postype *pe)
     }
     break;
 
-  /* XLstring: begin
-     getnesw(pr);
-     case direction of
-        XLup: begin pe.xpos := (east+west)/2; pe.ypos := north end;
-        XLdown: begin pe.xpos := (east+west)/2; pe.ypos := south end;
-        XLleft: begin pe.ypos := (north+south)/2; pe.xpos := west end;
-        XLright: begin pe.ypos := (north+south)/2; pe.xpos := east; end
-        end
-     end; */
   case XBLOCK:
     switch (pr->direction) {
 
@@ -7126,25 +7075,25 @@ FindExitPoint(primitive *pr, postype *pe)
 
   case XLabel:
   case XLaTeX:
-    /* blank case */
+	/* blank case */
     break;
   }
 }
 
-/* Retrieve integer in first two buffer bytes */
+							/* Retrieve integer in first two buffer bytes */
 int
 bval(Char *buf)
 { return (((int) buf[0]) << 7) + (int) buf[1] ;
 }
 
-/* Store integer in first two buffer bytes */
+							/* Store integer in first two buffer bytes */
 void
 putbval(Char *buf, int n)
 {
   buf[0] = (Char)(n>>7); buf[1] = (Char)(n % 128);
 }
 
-/* Free the space used by the name string */
+							/* Free the space used by the name string */
 void
 deletename(nametype **head)
 { /*F(var head: strptr)F*/
@@ -7156,8 +7105,6 @@ deletename(nametype **head)
     while (pn->next_ != NULL) { r = pn; pn = pn->next_; }
     r->next_ = NULL;
     if (pn == (*head)) { *head = NULL; }
-    /*D if debuglevel > 0 then
-       writeln(log,'deletename strptr[',ordp(pn):1,']'); D*/
     if (pn->segmnt != NULL) {
 	  if (bval(pn->segmnt) > 1) {
 	    j = bval(pn->segmnt);
@@ -7176,16 +7123,12 @@ deletename(nametype **head)
 	      }
 	    }
 	  else if ((pn->segmnt == freeseg) && (freeseg != NULL)) {
-	    /*D if debuglevel > 0 then
-	       writeln(log,'deletename freeseg[',ordp(freeseg):1,']'); D*/
 	    Free(freeseg);
 	    freeseg = NULL;
 	    }
 	  else {
 	    Free(pn->segmnt);
 	    pn->segmnt = NULL;
-	      /*D if debuglevel > 0 then
-	         writeln(log,'deletename segmnt[',ordp(segmnt):1,']'); D*/
 	    }
       }
     Free(pn);
@@ -7193,16 +7136,15 @@ deletename(nametype **head)
 }
 
 
-/* Store svalue in low 3 bits */
+							/* Store svalue in low 3 bits */
 void
 setspec(int *specv, int svalue)
 { *specv = (((*specv) >> 3) * 8) + svalue - XLlinetype;
-  /* if svalue = XLsolid then
-     specv := (specv div 32)*32 + 16 + (specv mod 16) */
+							/* if svalue = XLsolid then
+						     specv := (specv div 32)*32 + 16 + (specv mod 16) */
 }
 
-
-/* Store svalue only in low 3 bits */
+							/* Store svalue only in low 3 bits */
 void
 resetspec(int *specv, int svalue)
 { *specv = 0;
@@ -7210,13 +7152,13 @@ resetspec(int *specv, int svalue)
 }
 
 
-/* Set bit 4 to flag a segment with a parent */
+							/* Set bit 4 to flag a segment with a parent */
 void
 setthen(int *specv)
 { *specv = (((*specv) >> 4) * 16) + ((*specv) & 7) + 8;
 }
 
-/* Create and initialize a primitive object */
+							/* Create and initialize a primitive object */
 void
 newprim(primitive **pr, int primtype, primitive *envblk)
 { int i;
@@ -7321,12 +7263,12 @@ newprim(primitive **pr, int primtype, primitive *envblk)
       break;
     case XLabel:
     case XLaTeX:
-      /* blank case */
+	/* blank case */
       break;
     }
 }  /* newprim */
 
-/* Determine drawing direction at arc end */
+							/* Determine drawing direction at arc end */
 void
 arcenddir(primitive *pr)
 { if (pr->Upr.Uline.endpos.ypos > 0.0) {
@@ -7357,7 +7299,7 @@ arcenddir(primitive *pr)
   switch (pr->direction) {
 
   case 0:
-    /* blank case */
+	/* blank case */
     break;
 
   case XLup:
@@ -7414,7 +7356,7 @@ checktree( primitive *p )
   }
 #endif
 
-/* Shift a tree by (x,y) */
+							/* Shift a tree by (x,y) */
 void
 shift(primitive *pr, double x, double y)
 { 
@@ -7438,7 +7380,7 @@ shift(primitive *pr, double x, double y)
 }
 
 
-/* Scale an object */
+							/* Scale an object */
 void
 scaleobj(primitive *pr, double s)
 { primitive *With;
@@ -7479,8 +7421,8 @@ scaleobj(primitive *pr, double s)
 }
 
 
-/* corner(prim,<corner>,xval,yval);
-   Put the named-corner coordinates into xval,yval   */
+							/* corner(prim,<corner>,xval,yval); Put the
+							   named-corner coordinates into xval,yval   */
 void
 corner(primitive *pr, int lexv, double *x, double *y)
 { primitive *pe;
@@ -7510,8 +7452,9 @@ corner(primitive *pr, int lexv, double *x, double *y)
       *y = pr->aat.ypos;
       initnesw();
       nesw(pr);
-      /* Compass corners of justified strings not implemented: */
-      /* if ptype = XLstring then begin
+							/* Compass corners of justified strings not
+							   implemented: */
+		/* if ptype = XLstring then begin
          checkjust(textp,A,B,L,R);
          offst := venv(pr,XLtextoffset);
          if L then x := x+boxwidth/2 + offst
@@ -7604,7 +7547,7 @@ corner(primitive *pr, int lexv, double *x, double *y)
 	switch (lexv) {
 
 	case XDne:
-	  /* blank case */
+	/* blank case */
 	  break;
 
 	case XDse:
@@ -7643,7 +7586,7 @@ corner(primitive *pr, int lexv, double *x, double *y)
 	  break;
 
 	case XDc:
-	  /* blank case */
+	/* blank case */
 	  break;
 
 	case XDstart:
@@ -7708,12 +7651,6 @@ corner(primitive *pr, int lexv, double *x, double *y)
 	  markerror(858);
 	  break;
 	}
-	/*D; if debuglevel>0 then begin
-	    write(log,' aat'); wpair(log,aat.xpos,aat.ypos);
-	    write(log,' n,s'); wpair(log,north,south);
-	    write(log,' w,e'); wpair(log,west,east);
-	    write(log,' x,y'); wpair(log,x,y)
-	    end D*/
     }
     break;
 
@@ -7796,19 +7733,17 @@ corner(primitive *pr, int lexv, double *x, double *y)
     break;
 
   case XLabel:
-    /* blank case */
+	/* blank case */
     break;
 
   case XLaTeX:
     markerror(858);
     break;
   }
-  /*D; if debuglevel > 0 then begin write(log,' corner=');
-      wpair(log,x,y); writeln(log) end D*/
 }
 
 
-/* The nth (or nth last) enumerated object */
+							/* The nth (or nth last) enumerated object */
 primitive *(
 nthprimobj(primitive *primp, int nth, int objtype))
 { primitive *prp = NULL;
@@ -7845,10 +7780,10 @@ nthprimobj(primitive *primp, int nth, int objtype))
   }
 
 
-/* Reset environment vars:
-   n=0: all
-   n<0: scaled variables only
-   n>0: one var given by its lexical val*/
+							/* Reset environment vars:
+							   n=0: all
+							   n<0: scaled variables only
+							   n>0: one var given by its lexical val*/
 void
 resetenv(int envval, primitive *envbl)
 { environx i, last;
@@ -7872,7 +7807,7 @@ resetenv(int envval, primitive *envbl)
     }
   for (i = envval - 1; i <= (last - 1); i++) {
     switch (i + 1) {
-                          /* scaled environment vars (in) */
+							/* scaled environment vars (in) */
       case XLarcrad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.25;
 	    break;
       case XLarrowht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.1;
@@ -7917,7 +7852,7 @@ resetenv(int envval, primitive *envbl)
 	    break;
       case XLtextwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
 	    break;
-      /* The following are unscaled */
+							/* The following are unscaled */
       case XLarrowhead: envbl->Upr.UBLOCK.env[i - XXenvvar] = 1.0;
 	    break;
       case XLfillval: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
@@ -7935,7 +7870,7 @@ resetenv(int envval, primitive *envbl)
 }
 
 
-/* Copy env vars to current scope */
+							/* Copy env vars to current scope */
 void
 inheritenv(primitive *envbl)
 { environx i;
@@ -7944,15 +7879,13 @@ inheritenv(primitive *envbl)
   pr = findenv(envbl);
   if (pr == NULL) { resetenv(0, envbl); return; }
   envbl->Upr.UBLOCK.env = malloc(sizeof(envarray));
-  /*D if debuglevel > 0 then
-     writeln(log,'inheritenv new[',ordp(env):1,']'); D*/
   for (i = XXenvvar; i <= (XLlastenv - 1); i++) {
       envbl->Upr.UBLOCK.env[i - XXenvvar] = pr->Upr.UBLOCK.env[i - XXenvvar];
   }
 }
 
 
-/* Execute scale = x */
+							/* Execute scale = x */
 void
 resetscale(double x, int opr, primitive *envbl)
 { double r, s;
@@ -7979,11 +7912,11 @@ resetscale(double x, int opr, primitive *envbl)
 }
 
 
-/* .PS xv yv
-sfact = nominal scale factor set by scale = ...
-xsc = effective scale factor to achieve correct
-  max picture size
-ie (size in inches)/(desired size in inches) */
+							/* .PS xv yv
+							   sfact = nominal scale factor set by scale = ...
+							   xsc = effective scale factor to achieve correct
+  							   max picture size
+							   ie (size in inches)/(desired size in inches) */
 void
 getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
 { double gs = 1.0;
@@ -7997,11 +7930,6 @@ getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
 	  if (qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1] > 0.0) {
 	      *sfact = qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
 	  }
-	  /*D if debuglevel > 0 then begin
-	    write(log,'getscale: sfact='); wfloat(log,sfact);
-	    write(log,' maxpswid='); wfloat(log,qp^.env^[XLmaxpswid]);
-	    write(log,' maxpsht='); wfloat(log,qp^.env^[XLmaxpsht]);
-	    writeln(log) end; D*/
 	  if ((east > west) &&
 	      ((east - west) / (*sfact) >
 	       qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1]) &&
@@ -8031,12 +7959,10 @@ getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
   if (erno != 0) {
       markerror(erno);
   }
-  /*D if debuglevel > 0 then begin write(log,' getscale=');
-     wfloat(log,gs*sfact); writeln(log) end; D*/
   *xsc = gs * (*sfact);
 }
 
-/* Copy primitive for use by then or same */
+							/* Copy primitive for use by then or same */
 void
 copyprim(primitive *prin, primitive **prout)
 { /* Needed because assignment of variant records is unreliable */
@@ -8073,8 +7999,6 @@ copyprim(primitive *prin, primitive **prout)
 	  (*prout)->Upr.UBLOCK.nvars[i] = prin->Upr.UBLOCK.nvars[i]; }
     if (prin->Upr.UBLOCK.env != NULL) {
 	  (*prout)->Upr.UBLOCK.env = malloc(sizeof(envarray));
-	  /*D if debuglevel > 0 then
-	   writeln(log,'copyprim  new(env)[',ordp(prout^.env):1,']'); D*/
 	  for (i = XXenvvar; i < XLlastenv; i++) {
 	    (*prout)->Upr.UBLOCK.env[i - XXenvvar] =
           prin->Upr.UBLOCK.env[i - XXenvvar];
@@ -8104,13 +8028,13 @@ copyprim(primitive *prin, primitive **prout)
     break;
   case XLabel:
   case XLaTeX:
-    /* blank case */
+	/* blank case */
     break;
   }
 }
 
 
-/* Delete temporary string */
+							/* Delete temporary string */
 void
 deletestringbox(primitive **pr)
 {
@@ -8152,7 +8076,7 @@ dostart(void)
       }
 }
 
-/* The program equivalent of var = number */
+							/* The program equivalent of var = number */
 void
 makevar(Char *s, int ln, double varval)
 { nametype *vn, *lastvar, *namptr;
@@ -8205,7 +8129,6 @@ donamedobj(attribute *a1)
 	prp = a1->prim;
 	while (isthen(a1->prim)) { a1->prim = a1->prim->parent; }
 #ifdef DDEBUG
-/* !! */
 	if (debuglevel < 0) { fprintf(log_," donamedobj(%d):\n",ordp(a1->prim));
       if (checktree(envblock->son) == 0) {
         fprintf(errout," checktree failure ijx=%d\n",ijx);
@@ -8249,11 +8172,11 @@ donamedobj(attribute *a1)
 	    else {
 		  x1 = With2->aat.xpos +
 		     (With2->Upr.Uline.aradius * cos(With2->Upr.Uline.endpos.xpos));
-		    /* from */
+							/* from */
 		  z1 = With2->aat.ypos +
 		     (With2->Upr.Uline.aradius * sin(With2->Upr.Uline.endpos.xpos));
 		  if (teststflag(a1->state, XLto)) {
-		                                 /* to X from Here|Y implied */
+							/* to X from Here|Y implied */
 		    if ((i != XEMPTY) && (i != XDc)) { markerror(858); }
 		    r = With2->aat.xpos + (With2->Upr.Uline.aradius * cos(
 			    With2->Upr.Uline.endpos.xpos + With2->Upr.Uline.endpos.ypos));
@@ -8298,13 +8221,14 @@ doundefine( attribute *a2 )
 	  macp = NULL; }
 }
 
-/* Stuff the body of a for loop or a macro body into p2 */
+							/* Stuff the body of a for loop or a macro body
+							   into p2 */
 void
 readfor(fbuffer *p0, int attx, fbuffer **p2)
 {
-  /* attx: attstack index or -(name length)
-     p0 <> nil: append the output to this buffer.
-     Should we check for macro arguments? */
+							/* attx: attstack index or -(name length)
+							     p0 <> nil: append the output to this buffer.
+							     Should we check for macro arguments? */
   int j;
   int bracelevel = 1;
   fbuffer *p;
@@ -8393,14 +8317,14 @@ dodefhead( attribute *a0 )
   disposebufs(&(macp->argbody));
   newbuf(&(macp->argbody));
   With5 = macp->argbody;
-                                              /* copy the macro name */
+							/* copy the macro name */
   FORLIM = a0->toklen;
   for (i = 1; i <= FORLIM; i++) {
     With5->carray[i] = chbuf[a0->chbufx + i - 1]; }
   With5->savedlen = a0->toklen;
   With5->readx = a0->toklen + 1;
   clearchbuf(a0->chbufx, a0->toklen);
-	                                              /* append the body */
+							/* append the body */
   readfor(macp->argbody, -(a0->toklen), &macp->argbody);
   lastm = macp->argbody;
   while (lastm->nextb != NULL) { lastm = lastm->nextb; }
@@ -8490,8 +8414,8 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
         fprintf(log_, "\" nexprs=%2d Numerical print value=", nexprs);
         wfloat(&log_, ts); putc('\n', log_); fflush(log_); }
 #endif
-      if (j - lj + 1 > CHBUFSIZ) { markerror(873);
-                ll = 0; j = With4->len; }
+      if (j - lj + 1 > CHBUFSIZ) {
+        markerror(873); ll = 0; j = With4->len; }
       else {
         for (ll = lj; ll <= (j - 2); ll++) {
           tmpfmt[ll - lj] = With4->segmnt[With4->seginx + ll]; }
@@ -8511,7 +8435,7 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
           for (kv = 0; kv < ll; kv++) { putc(tmpbuf[kv], log_); } }
         putc('\n', log_); fflush(log_); }
 #endif
-                                         /* Copy tmpbuf to the string */
+							/* Copy tmpbuf to the string */
       if (ll > 0) { kk = putstring(kk, a0->prim->textp, tmpbuf, 0, ll);}
       i++;
       lj = j;
