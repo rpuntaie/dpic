@@ -1,4 +1,4 @@
-/* Output routines for MetaPost */
+							/* Output routines for MetaPost */
 void
 mpoprelude (void) {
   printstate++;
@@ -311,7 +311,7 @@ splinesegment (primitive * tv, int splc, int splt) {
     wprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
     ddash ();
     wpos (tv->Upr.Uline.endpos);
-    /* last segment */
+							    /* last segment */
     return;
   }
   if ((splc == splt) && (splc > 1)) {
@@ -339,7 +339,7 @@ splinesegment (primitive * tv, int splc, int splt) {
   wpos (tv->Upr.Uline.endpos);
 }
 
-/* node is always <> nil: */
+							/* node is always <> nil: */
 void
 mpodraw (primitive * node) {
   int lsp;

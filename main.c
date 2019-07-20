@@ -211,23 +211,25 @@ pahnum (int atyp, int anum) {
                                the fraction part */
 void
 wfloat (FILE ** iou, double y) {
-  char buf[25];
+  char buf[CHBUFSIZ];
   int i;
-  if (fabs (y) == distmax)
-    sprintf (buf, "%24.6e", y);
-  else if (y >= 0.0)
-    sprintf (buf, "%24.6f", floor (1000000 * y + 0.5) / 1000000.0);
-  else
-    sprintf (buf, "%24.6f", -floor (-1000000 * y + 0.5) / 1000000.0);
-  for (i = 23; buf[i] == '0';)
-    i--;
-  if (buf[i] == '.')
-    buf[i] = (char) 0;
-  else
-    buf[i + 1] = (char) 0;
-  for (; (i >= 0) && (buf[i] != ' ');)
-    i--;
-  fprintf (*iou, "%s", &buf[i + 1]);
+  if (fabs (y) >= distmax)
+    fprintf (*iou, "%.6g", y);
+  else {
+    if (y >= 0.0)
+      snprintf (buf, CHBUFSIZ, "%24.6f", floor (1000000 * y + 0.5)/1000000.0);
+    else
+      snprintf (buf, CHBUFSIZ, "%24.6f", -floor (-1000000 * y + 0.5)/1000000.0);
+    for (i = 23; buf[i] == '0';)
+      i--;
+    if (buf[i] == '.')
+      buf[i] = (char) 0;
+    else
+      buf[i + 1] = (char) 0;
+    for (; (i >= 0) && (buf[i] != ' ');)
+      i--;
+    fprintf (*iou, "%s", &buf[i + 1]);
+    }
 }
 
 							/* Output a string of characters from a strptr*/
@@ -2009,7 +2011,7 @@ yylex (attribute * a0) {
 #ifdef DDEBUG
 	  if (debuglevel > 0) {
 	    fprintf (log_,
-		     "Marking 800:ord(firstch)=%12d ord(ch)=%12d\n", firstch,
+		     "\nMarking 800:ord(firstch)=%12d ord(ch)=%12d\n", firstch,
 		     ch);
 	  }
 #endif

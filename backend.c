@@ -1,4 +1,4 @@
-/* Output routines */
+							/* Output routines */
 #include "dpic.h"
 #include "lxcst.h"
 
@@ -38,7 +38,7 @@ extern void wstring (FILE **, nametype *);
 
 extern primitive *(findenv (primitive *));
 
-/* Test (bit 4) if this segment has no parent */
+							/* Test (bit 4) if this segment has no parent */
 boolean
 firstsegment (primitive * pr) {
   if (pr == NULL) {
@@ -48,7 +48,7 @@ firstsegment (primitive * pr) {
   }
 }
 
-/* Test shaded, filled, dashed, dotted, solid */
+							/* Test shaded, filled, dashed, dotted, solid */
 boolean
 drawn (primitive * node, int linesp, double fill) {
   if (node == NULL) {
@@ -63,7 +63,7 @@ drawn (primitive * node, int linesp, double fill) {
   }
 }
 
-/* Shading parameters for linear objects */
+							/* Shading parameters for linear objects */
 void
 getlinshade (primitive * nod, primitive ** tn, nametype ** ss, nametype ** so,
 	     double *fillval, boolean * hshade) {
@@ -100,7 +100,7 @@ getlinshade (primitive * nod, primitive ** tn, nametype ** ss, nametype ** so,
   }
 }
 
-/* Count the number of spline segments */
+							/* Count the number of spline segments */
 int
 primdepth (primitive * ptmp) {
   int dep = 0;
@@ -111,7 +111,7 @@ primdepth (primitive * ptmp) {
   return dep;
 }
 
-/* Linespec from tail of a multisegment line */
+							/* Linespec from tail of a multisegment line */
 void
 getlinespec (primitive * nd, int *lsp, primitive ** lastnd) {
   primitive *tn = nd;
@@ -126,7 +126,7 @@ getlinespec (primitive * nd, int *lsp, primitive ** lastnd) {
   *lsp = lspec (tn->spec);
 }
 
-/* Distance to P control point */
+							/* Distance to P control point */
 double
 ahoffset (double ht, double wid, double lti) {
   if (wid == 0.0) {
@@ -136,11 +136,11 @@ ahoffset (double ht, double wid, double lti) {
   }
 }
 
-/* Arrowhead control points */
+							/* Arrowhead control points */
 void
 dahead (postype point, postype shaft, double ht, double wid, double ltu, postype * P, postype * L, postype * R, postype * Px, postype * Lx, postype * Rx, postype * C, double *x, double *y) {	/* arrowhead ht and wid, user units */
-  /* line thickness in diagram units */
-  /* adj point, left, right pts, dir cosines */
+							/* line thickness in diagram units */
+							/* adj point, left, right pts, dir cosines */
   double h, v, po, t;
 
   *C = affang (shaft, point);	/* shaft direction cosines */
@@ -176,7 +176,7 @@ dahead (postype point, postype shaft, double ht, double wid, double ltu, postype
   }
 }
 
-/* Parameters and positions for traced arrows*/
+							/* Parameters and positions for traced arrows*/
 void
 arcahead (postype C, postype point, int atyp, double ht, double wid,
 	  double lth, double radius, double angle, postype * P, postype * Co,
@@ -200,7 +200,7 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   wid = Max (wid, lw);
   radius = fabs (radius);
   d = sqrt ((ht * ht) + (wid * wid / 4));
-  /* Centres of the wing arcs */
+							/* Centres of the wing arcs */
   if (d == 0) {
     Q.xpos = 1.0;
     Q.ypos = 0.0;
@@ -211,7 +211,7 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   *Ci = affine (C.xpos - point.xpos, C.ypos - point.ypos, point, Q);
   Q.ypos = -Q.ypos;
   *Co = affine (C.xpos - point.xpos, C.ypos - point.ypos, point, Q);
-  /* Outer corner */
+							/* Outer corner */
   if (radius == 0) {
     t = 0.0;
   } else {
@@ -222,7 +222,7 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   *Ao = affine (point.xpos - Co->xpos, point.ypos - Co->ypos, *Co, Q);
   TEMP = Ao->xpos - C.xpos;
   TEMP1 = Ao->ypos - C.ypos;
-  /* Make angle(C to Ai) = angle(C to Ao) */
+							/* Make angle(C to Ai) = angle(C to Ao) */
   aa = (TEMP * TEMP) + (TEMP1 * TEMP1);
   bb = 2 * (((Ao->xpos - C.xpos) * (C.xpos - Ci->xpos)) +
 	    ((Ao->ypos - C.ypos) * (C.ypos - Ci->ypos)));
@@ -237,7 +237,7 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   }
   *Ai = *Ao;
   pprop (C, Ai, aa - v, v, aa);
-  /* Point adjusted for line thickness */
+							/* Point adjusted for line thickness */
   if (d == 0) {
     *P = point;
   } else if (radius == 0) {
@@ -246,7 +246,7 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
     *P = *Ao;
   } else {
     b = 2 * radius * sqrt ((1 - (ht / d)) / 2);	/* distance C to Co */
-    /* Angle from Co-C to P, center C */
+							/* Angle from Co-C to P, center C */
     Q.xpos = ((b * b) - (lw * lw) + (2 * lw * radius)) / (2 * b * radius);
     if (fabs (Q.xpos) > 1) {
       P->xpos = (Ao->xpos + Ai->xpos) / 2;
@@ -257,7 +257,7 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
 		   radius * (Co->ypos - C.ypos) / b, C, Q);
     }
   }
-  /* Type 3 center and corners */
+							/* Type 3 center and corners */
   if (radius == 0) {
     t = 0.0;
   } else {
@@ -299,7 +299,7 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
     ((Px->ypos + Ai->ypos) / 2) + ((*ccw) * (Ai->xpos - Px->xpos) * s);
 }
 
-/* Start of arc when there is an initial arrowhead */
+							/* Start of arc when there is an initial arrowhead */
 void
 startarc (primitive * n, postype X0, double lth, double *h, double *w) {
   double x, y;
@@ -324,7 +324,7 @@ startarc (primitive * n, postype X0, double lth, double *h, double *w) {
   }
 }
 
-/* End of arc when there is a final arrowhead*/
+							/* End of arc when there is a final arrowhead*/
 void
 endarc (primitive * n, postype X0, double lth, double *h, double *w) {
   double x, y;
@@ -347,7 +347,7 @@ endarc (primitive * n, postype X0, double lth, double *h, double *w) {
   }
 }
 
-/* Arc start point */
+							/* Arc start point */
 postype
 arcstart (primitive * n) {
   postype X;
@@ -359,7 +359,7 @@ arcstart (primitive * n) {
   return X;
 }
 
-/* Arc end point */
+							/* Arc end point */
 postype
 arcend (primitive * n) {
   postype X;
@@ -375,8 +375,8 @@ arcend (primitive * n) {
   return X;
 }
 
-/* Output \shortstack{line1\\ line2 ...}
-   if more than one text line, otherwise line1*/
+							/* Output \shortstack{line1\\ line2 ...}
+							   if more than one text line, otherwise line1*/
 void
 texstacktext (primitive * np, nametype * tp) {
   nametype *tx;
@@ -419,7 +419,7 @@ texstacktext (primitive * np, nametype * tp) {
   }
 }
 
-/* Output leftbrace x rightbrace */
+							/* Output leftbrace x rightbrace */
 void
 wbrace (double x) {
   putchar ('{');
@@ -427,7 +427,7 @@ wbrace (double x) {
   putchar ('}');
 }
 
-/* Output (x,y) */
+							/* Output (x,y) */
 void
 wpair (FILE ** iou, double x, double y) {
   putc ('(', *iou);
@@ -437,7 +437,7 @@ wpair (FILE ** iou, double x, double y) {
   putc (')', *iou);
 }
 
-/* Output (x,y) with final scaling */
+							/* Output (x,y) with final scaling */
 void
 wcoord (FILE ** iou, double x, double y) {
   putc ('(', *iou);
@@ -447,20 +447,20 @@ wcoord (FILE ** iou, double x, double y) {
   putc (')', *iou);
 }
 
-/* Output position as (x,y) with final scaling*/
+							/* Output position as (x,y) with final scaling*/
 void
 wpos (postype pos) {
   wcoord (&output, pos.xpos, pos.ypos);
 }
 
-/* Output P2 = (a*P1 + b*P2)/c (for arrows) */
+							/* Output P2 = (a*P1 + b*P2)/c (for arrows) */
 void
 wprop (postype p1, postype p2, double a, double b, double c) {
   pprop (p1, &p2, a, b, c);	/* Note: p2 is not var */
   wpos (p2);
 }
 
-/* Angle of the line from C to V */
+							/* Angle of the line from C to V */
 double
 posangle (postype V, postype C) {
   return (datan (V.ypos - C.ypos, V.xpos - C.xpos));
@@ -509,7 +509,7 @@ resetgs(primitive *node)
 #include "tex.c"
 #include "xfig.c"
 
-/* Recursive output of the drawing-tree nodes*/
+							/* Recursive output of the drawing-tree nodes*/
 void
 treedraw (primitive * node) {
   while (node != NULL) {
@@ -561,7 +561,7 @@ treedraw (primitive * node) {
   }
 }
 
-/* Set up scale parameters and draw the tree */
+							/* Set up scale parameters and draw the tree */
 void
 drawtree (double n, double s, double e, double w, primitive * eb) {
   double fsctmp;
@@ -633,7 +633,5 @@ drawtree (double n, double s, double e, double w, primitive * eb) {
     break;
   }
 }
-
-/* G end. G */
 
 /* End. */

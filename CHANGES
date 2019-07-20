@@ -1,6 +1,7 @@
 Distribution dates other than those shown correspond to changes (usually of
 documentation) not involving run-time functionality.
 
+2019 07 20 Bugfix for buffer overflow with extreme arguments of wfloat().
 2019 06 20 This is a major clone of the previous distribution, which
            contained compilable C code together with the original pascal
            source.  The pascal was translated to C code using p2c,
