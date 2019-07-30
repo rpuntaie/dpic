@@ -6,13 +6,13 @@ This file applies to versions of dpic later than June 15, 2019, which contain
 C source exclusively.
 
 Copying: 
-The files in this distribution are copyright (c) 2019, J. D. Aplevich,
-and are distributed under the licence at the end of this file, except for
-the file dpic-doc.pdf, which is subject to the Creative Commons attribution
-licence version 3.0 http://creativecommons.org/licenses/by/3.0/.
+   The files in this distribution are subject to copyrights listed in
+   the file Copyright.txt.  The source files are copyright (c) 2019,
+   J. D. Aplevich, under a BSD licence, and the manual dpic-doc.pdf is
+   subject to a Creative Commons attribution licence.
 
 Complete sources are available as a git repository at
-https://gitlab.com/aplevich/dpic
+   https://gitlab.com/aplevich/dpic
 
 Installation:
    See the INSTALL file.
@@ -80,32 +80,4 @@ Version:
    The version of dpic is the date the source was created, printed as a
    comment in dpic output.
 
--------------------------------------------------------------------
-BSD Licence:
- 
-    Copyright (c) 2019, J. D. Aplevich
-    All rights reserved.
- 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions
-    are met: 
- 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
- 
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-    PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
-    LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-    BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-    OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-    ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -------------------------------------------------------------------

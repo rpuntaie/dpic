@@ -1,14 +1,13 @@
 # dpictools.pic
-# General-purpose pic macros. Input this file using the m4 macro NeedDpicTools
-# or the pic statement copy "HOMELIB_/dpictools.pic" when HOMELIB_ is defined
-# or, generically, copy "<path>dpictools.pic"
+# General-purpose pic macros. Input this file using the Circuit_macros
+# m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
+# when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 8.7.1, copyright (c) 2019 J. D. Aplevich under     #
-# the LaTeX Project Public License. The files of this distribution may    #
-# be redistributed or modified provided that this copyright notice is     #
-# included and provided that modifications are clearly marked to          #
-# distinguish them from this distribution.  There is no warranty          #
-# whatsoever for these files.                                             #
+# Circuit_macros Version 9.0.1, copyright (c) 2019 J. D. Aplevich under     #
+# the conditions of the LaTeX Project Public License, either version 1.3  #
+# of this license or (at your option) any later version.                  #
+# The latest version of this license is in                                #
+#   http://www.latex-project.org/lppl.txt                                 #
 
 #                   findroot(function,left bound,right bound,tolerance,var name)
 #                   Solve function(x)=0 by the method of bisection
@@ -125,6 +124,26 @@ define randn {
     }
   }
 
+#                               dfitpoints(V,n,m,P,mP) 
+#                               Compute the controls in P[mP], P[mP+1]... for
+#                               the spline passing throught points V[m]...V[n]
+define dfitpoints {
+  if "$3"=="" then { m_dfit=0 } else { m_dfit=$3 }
+  if "$5"=="" then { mP_dfit=0 } else { mP_dfit=$5 }
+  n_dfit = $2; np_dfit = n_dfit-m_dfit
+  $4[mP_dfit]: $1[m_dfit]
+  for i_dfit=m_dfit+1 to n_dfit-1 do {
+    $4[mP_dfit+i_dfit-m_dfit]: $1[i_dfit]*(4/3) }
+  $4[mP_dfit+np_dfit]: $1[n_dfit]
+  $4[mP_dfit+1]: $4[mP_dfit+1]-$4[mP_dfit+0]/6    # forward substitution
+  d_dfit[1] = 1
+  for i_dfit = 2 to np_dfit-1 do { $4[mP_dfit+i_dfit]: \
+    $4[mP_dfit+i_dfit]-$4[mP_dfit+i_dfit-1]/d_dfit[i_dfit-1]/6
+    d_dfit[i_dfit] = 1-1/d_dfit[i_dfit-1]/36 }
+  for i_dfit= np_dfit-1 to 1 by -1 do {    # backward substitution
+    $4[mP_dfit+i_dfit]: \
+    ($4[mP_dfit+i_dfit]-$4[mP_dfit+i_dfit+1]/6)/d_dfit[i_dfit] } }
+
 #                               dfitcurve(V,n,linetype,m (default 0))
 #                               Draw a spline through V[m],...V[n]
 #                               linetype=eg dotted.  Works only with dpic.
@@ -135,30 +154,21 @@ define randn {
 #                               P[n] = V[n]
 #                               Like m4 macro fitcurve
 define dfitcurve { if "$4"=="" then { m_dfit=0 } else { m_dfit=$4 }
- n_dfit = $2; np_dfit = n_dfit-m_dfit
- M4P_[0]: $1[m_dfit]
- case( min(max(np_dfit,-1),3)+1,
-   spline 0.551784 $3 from M4P_[0] to M4P_[0],
-   spline 0.551784 $3 from M4P_[0] to $1[n_dfit],
-   M4P_[3]: $1[n_dfit]; Q_dfit: (M4P_[3]-M4P_[0])/4
-   M4P_[1]: $1[m_dfit+1]-Q_dfit; M4P_[2]: $1[m_dfit+1]+Q_dfit
-   spline 0.551784 $3 from M4P_[0] to M4P_[1] then to M4P_[2] then to M4P_[3],
-   for i_dfit=m_dfit+1 to n_dfit-1 do { M4P_[i_dfit-m_dfit]: $1[i_dfit]*(4/3) }
-   M4P_[np_dfit]: $1[n_dfit]
-   M4P_[1]: M4P_[1]-M4P_[0]/6    # forward substitution
-   d[1] = 1
-   for i_dfit = 2 to np_dfit-1 do {
-     M4P_[i_dfit]: M4P_[i_dfit]-M4P_[i_dfit-1]/(d[i_dfit-1]*6)
-     d[i_dfit] = 1-1/d[i_dfit-1]/36 }
-   for i_dfit= np_dfit-1 to 1 by -1 do {    # backward substitution
-     M4P_[i_dfit]: (M4P_[i_dfit]-M4P_[i_dfit+1]/6)/d[i_dfit] }
-                                 # draw using computed control points
-     spline 0.551784 $3 from M4P_[0] to 11/32 between M4P_[0] and M4P_[1] \
-        then to 5/32 between M4P_[1] and M4P_[2]
-     for i_dfit=2 to np_dfit-2 do { continue to M4P_[i_dfit] }
-     continue to 27/32 between M4P_[np_dfit-2] and M4P_[np_dfit-1] \
-       then to 21/32 between M4P_[np_dfit-1] and M4P_[np_dfit] \
-       then to M4P_[np_dfit]) }
+  n_dfit = $2; np_dfit = n_dfit-m_dfit
+  M4P_[0]: $1[m_dfit]
+  case( min(max(np_dfit,-1),3)+1,
+    spline 0.551784 $3 from M4P_[0] to M4P_[0],
+    spline 0.551784 $3 from M4P_[0] to $1[n_dfit],
+    M4P_[3]: $1[n_dfit]; Q_dfit: (M4P_[3]-M4P_[0])/4 
+    M4P_[1]: $1[m_dfit+1]-Q_dfit; M4P_[2]: $1[m_dfit+1]+Q_dfit
+    spline 0.551784 $3 from M4P_[0] to M4P_[1] then to M4P_[2] then to M4P_[3],
+    dfitpoints($1,$2,$4,M4P_,0)  # draw using computed control points
+    spline 0.551784 $3 from M4P_[0] to 11/32 between M4P_[0] and M4P_[1] \
+       then to 5/32 between M4P_[1] and M4P_[2]
+    for i_dfit=2 to np_dfit-2 do { continue to M4P_[i_dfit] }
+    continue to 27/32 between M4P_[np_dfit-2] and M4P_[np_dfit-1] \
+      then to 21/32 between M4P_[np_dfit-1] and M4P_[np_dfit] \
+      then to M4P_[np_dfit]) } 
 
 #                               histbins { data array name, n, [min], [max],
 #                                          nbins, bin array name )
@@ -183,12 +193,12 @@ define histbins { # dataarray, n, [min], [max], nbins, binarray
 define dpquicksort { [ if $3 > $2 then {
   pivot = $1[($2+($3))/2]
   loop(lo = $2; hi = $3, lo <= hi,
-    loop(,$1[lo] < pivot, lo = lo + 1)
-    loop(,$1[hi] > pivot, hi = hi - 1)
+    loop(,$1[lo] < pivot, lo += 1 )
+    loop(,$1[hi] > pivot, hi -= 1 )
     if lo < hi then {
       tmp = $1[lo]; $1[lo] := $1[hi]; $1[hi] := tmp
       tmp = $4[lo]; $4[lo] := $4[hi]; $4[hi] := tmp }
-    if lo <= hi then { lo = lo + 1; hi = hi - 1 } )
+    if lo <= hi then { lo += 1; hi -= 1 } )
   if hi > $2 then { exec sprintf("dpquicksort($1,%g,%g,$4)",$2,hi) }
   if lo < $3 then { exec sprintf("dpquicksort($1,%g,%g,$4)",lo,$3) }
   } ] }

@@ -48,6 +48,7 @@ dpic.1: dpic.1.src
 
 clean:
 	rm -f *.ps *.dvi *.aux *.log *.blg *.ilg *.toc core *.bbl *.upa *.upb
+	rm -f dpic.1 dpic.man dpic_man.tex
 	( cd examples; make clean )
 
 clobber: clean

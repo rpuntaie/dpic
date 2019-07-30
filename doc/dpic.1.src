@@ -693,7 +693,7 @@ lower left corner, for example,
 Linear objects are placed by default with the
 .B .start
 point placed at the current drawing
-postion; otherwise linear objects are defined using a
+position; otherwise linear objects are defined using a
 .I linespec,
 which is of the form
 .P
@@ -1005,7 +1005,7 @@ This is normally done once at the top of the outermost scope of a diagram.
 Drawing units are thereby changed but the default physical sizes of
 drawn objects remain unchanged since dimensions are divided by the outermost
 .B scale
-value on ouput.
+value on output.
 In addition when
 .B scale
 is changed, the following are unchanged:
@@ -1284,7 +1284,7 @@ and other diagrams.)
 .\"
 .SH AUTHOR
     Dwight Aplevich <aplevich at uwaterloo dot ca>
-.\"   Copyright (c) 2011, J. D. Aplevich
+.\"   Copyright (c) 2019, J. D. Aplevich
 .\"   .SH BSD licence:
 .\"   .P
 .\"   All rights reserved.

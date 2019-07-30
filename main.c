@@ -28,7 +28,7 @@ extern void snapname (Char *, chbufinx, chbufinx);
 extern void wlogfl (Char *, double, int);
 extern void wrbufaddr (fbuffer *, int);
 extern void wrbuf (fbuffer *, int, int);
-arg *currentmacro;		    /* last-found macro                   */
+arg *currentmacro;
 #endif
 
 							/* the parser                         */
@@ -161,7 +161,6 @@ linlen (double x, double y) {
 }
 
 /*--------------------------------------------------------------------*/
-							/* Some common utilities */ 
 							/* Substrings common to one or more postprocessor */
 void
 controls (void) {

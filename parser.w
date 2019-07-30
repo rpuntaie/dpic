@@ -1045,7 +1045,6 @@ object	:	block /* object1 */
 			switch (With2->ptype) {
 			  case XLbox:
 			  case XBLOCK:
-			  case XLstring:
 			    if (With2->ptype == XBLOCK) {
 			      r = 0.5 * ($3.xval - With2->Upr.UBLOCK.blockheight);
 			      With2->Upr.UBLOCK.blockheight = $3.xval; }
@@ -1065,12 +1064,14 @@ object	:	block /* object1 */
 				      break;
 			        }
 			      }
-			    if (With2->ptype == XLstring) {
-			      if ((drawmode == PDF) && (With2->textp != NULL)) {
-				    With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
-							    With2->textp->len * 0.6; }
-			      }
 			    break;
+			  case XLstring:
+	  			With2->Upr.Ubox.boxheight = $3.xval;
+	  			if ((drawmode == PDF) && (With2->textp != NULL)) {
+	      		  With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+					With2->textp->len * 0.6;
+	  			  }
+	  			break;
 			  case XLcircle:
 			    if (!teststflag($1.state, XLat)) {
 			      switch (With2->direction) {

@@ -759,16 +759,16 @@ static const yytype_uint16 yyrline[] =
      895,   899,   953,   980,   982,   985,   987,   990,   993,   996,
     1000,  1010,  1014,  1016,  1022,  1073,  1115,  1118,  1122,  1124,
     1129,  1131,  1149,  1169,  1172,  1176,  1200,  1207,  1215,  1218,
-    1222,  1225,  1229,  1231,  1318,  1403,  1467,  1494,  1505,  1606,
-    1668,  1686,  1709,  1756,  1775,  1787,  1823,  1859,  1991,  2023,
-    2046,  2083,  2184,  2202,  2247,  2285,  2294,  2303,  2319,  2338,
-    2349,  2509,  2514,  2566,  2575,  2577,  2580,  2596,  2598,  2614,
-    2624,  2631,  2638,  2643,  2648,  2652,  2654,  2656,  2658,  2663,
-    2668,  2674,  2681,  2684,  2689,  2691,  2696,  2705,  2708,  2711,
-    2715,  2719,  2725,  2727,  2732,  2744,  2760,  2772,  2783,  2791,
-    2793,  2796,  2800,  2802,  2808,  2816,  2825,  2831,  2833,  2835,
-    2859,  2880,  2887,  2896,  2898,  2901,  2903,  2906,  2966,  2969,
-    2974,  3024,  3044,  3047
+    1222,  1225,  1229,  1231,  1319,  1404,  1468,  1495,  1506,  1607,
+    1669,  1687,  1710,  1757,  1776,  1788,  1824,  1860,  1992,  2024,
+    2047,  2084,  2185,  2203,  2248,  2286,  2295,  2304,  2320,  2339,
+    2350,  2510,  2515,  2567,  2576,  2578,  2581,  2597,  2599,  2615,
+    2625,  2632,  2639,  2644,  2649,  2653,  2655,  2657,  2659,  2664,
+    2669,  2675,  2682,  2685,  2690,  2692,  2697,  2706,  2709,  2712,
+    2716,  2720,  2726,  2728,  2733,  2745,  2761,  2773,  2784,  2792,
+    2794,  2797,  2801,  2803,  2809,  2817,  2826,  2832,  2834,  2836,
+    2860,  2881,  2888,  2897,  2899,  2902,  2904,  2907,  2967,  2970,
+    2975,  3025,  3045,  3048
 };
 #endif
 
@@ -2887,7 +2887,6 @@ yyreduce:
 			switch (With2->ptype) {
 			  case XLbox:
 			  case XBLOCK:
-			  case XLstring:
 			    if (With2->ptype == XBLOCK) {
 			      r = 0.5 * ((yyvsp[0]).xval - With2->Upr.UBLOCK.blockheight);
 			      With2->Upr.UBLOCK.blockheight = (yyvsp[0]).xval; }
@@ -2907,12 +2906,14 @@ yyreduce:
 				      break;
 			        }
 			      }
-			    if (With2->ptype == XLstring) {
-			      if ((drawmode == PDF) && (With2->textp != NULL)) {
-				    With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
-							    With2->textp->len * 0.6; }
-			      }
 			    break;
+			  case XLstring:
+	  			With2->Upr.Ubox.boxheight = (yyvsp[0]).xval;
+	  			if ((drawmode == PDF) && (With2->textp != NULL)) {
+	      		  With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+					With2->textp->len * 0.6;
+	  			  }
+	  			break;
 			  case XLcircle:
 			    if (!teststflag((yyvsp[-2]).state, XLat)) {
 			      switch (With2->direction) {
@@ -2967,11 +2968,11 @@ yyreduce:
 			    }
 		      }
 			}
-#line 2971 "dpic.tab.c" /* yacc.c:1646  */
+#line 2972 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 1319 "dpic.y" /* yacc.c:1646  */
+#line 1320 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			switch (With2->ptype) {
@@ -3055,11 +3056,11 @@ yyreduce:
 			  }
 		    }
 	 	  }
-#line 3059 "dpic.tab.c" /* yacc.c:1646  */
+#line 3060 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 1404 "dpic.y" /* yacc.c:1646  */
+#line 1405 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			switch (With2->ptype) {
@@ -3122,11 +3123,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3126 "dpic.tab.c" /* yacc.c:1646  */
+#line 3127 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 96:
-#line 1468 "dpic.y" /* yacc.c:1646  */
+#line 1469 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			if (With2->ptype == XLcircle) {
@@ -3152,11 +3153,11 @@ yyreduce:
 			else { markerror(858); }
 		    }
 		  }
-#line 3156 "dpic.tab.c" /* yacc.c:1646  */
+#line 3157 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 97:
-#line 1495 "dpic.y" /* yacc.c:1646  */
+#line 1496 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			if ((yyvsp[0]).xval < 0.0) {
@@ -3166,11 +3167,11 @@ yyreduce:
 			else { With2->lthick = (yyvsp[0]).xval; }
 		    }
 		  }
-#line 3170 "dpic.tab.c" /* yacc.c:1646  */
+#line 3171 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 98:
-#line 1506 "dpic.y" /* yacc.c:1646  */
+#line 1507 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).prim != NULL) && ((yyvsp[0]).lexval != XEMPTY)) {
 			With2 = (yyval).prim;
 			r = (yyvsp[0]).xval - 1;
@@ -3270,11 +3271,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3274 "dpic.tab.c" /* yacc.c:1646  */
+#line 3275 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 99:
-#line 1607 "dpic.y" /* yacc.c:1646  */
+#line 1608 "dpic.y" /* yacc.c:1646  */
     { if ((yyval).prim != NULL) {
 			With2 = (yyval).prim;
 			if ((With2->ptype == XLspline) || (With2->ptype == XLarrow) ||
@@ -3335,11 +3336,11 @@ yyreduce:
 	    if (debuglevel > 0) { printobject(With->prim); }
 #endif
 		  }
-#line 3339 "dpic.tab.c" /* yacc.c:1646  */
+#line 3340 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 100:
-#line 1669 "dpic.y" /* yacc.c:1646  */
+#line 1670 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			setspec(&(yyval).prim->spec, (yyvsp[-1]).lexval);
 			if ((yyvsp[0]).lexval != XEMPTY) {
@@ -3356,11 +3357,11 @@ yyreduce:
 	    if (debuglevel > 0) { printobject(With->prim); }
 #endif
 		  }
-#line 3360 "dpic.tab.c" /* yacc.c:1646  */
+#line 3361 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 101:
-#line 1687 "dpic.y" /* yacc.c:1646  */
+#line 1688 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			if (((yyvsp[-2]).prim->ptype != XLspline) &&
 			    ((yyvsp[-2]).prim->ptype != XLmove) &&
@@ -3382,11 +3383,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3386 "dpic.tab.c" /* yacc.c:1646  */
+#line 3387 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 102:
-#line 1710 "dpic.y" /* yacc.c:1646  */
+#line 1711 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			if ((yyvsp[0]).lexval != XEMPTY) { s = (yyvsp[0]).xval; }
@@ -3432,11 +3433,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3436 "dpic.tab.c" /* yacc.c:1646  */
+#line 3437 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 103:
-#line 1757 "dpic.y" /* yacc.c:1646  */
+#line 1758 "dpic.y" /* yacc.c:1646  */
     { if ((yyval).prim != NULL) {
 			With2 = (yyval).prim;
 			if ((With2->ptype != XLspline) && (With2->ptype != XLarc) &&
@@ -3454,11 +3455,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3458 "dpic.tab.c" /* yacc.c:1646  */
+#line 3459 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 104:
-#line 1776 "dpic.y" /* yacc.c:1646  */
+#line 1777 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 #ifdef DDEBUG
 		    if (debuglevel > 0) {
@@ -3469,11 +3470,11 @@ yyreduce:
 			if ((yyvsp[-1]).prim->ptype != XLarc) { setstflag(&(yyval).state, XEMPTY); }
 		    }
 		  }
-#line 3473 "dpic.tab.c" /* yacc.c:1646  */
+#line 3474 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 105:
-#line 1788 "dpic.y" /* yacc.c:1646  */
+#line 1789 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			With2 = (yyvsp[-1]).prim;
 			if (With2->ptype != XLarc) { markerror(858); }
@@ -3508,11 +3509,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3512 "dpic.tab.c" /* yacc.c:1646  */
+#line 3513 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 106:
-#line 1824 "dpic.y" /* yacc.c:1646  */
+#line 1825 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			With2 = (yyvsp[-1]).prim;
 			if (With2->ptype != XLarc) { markerror(858); }
@@ -3547,11 +3548,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3551 "dpic.tab.c" /* yacc.c:1646  */
+#line 3552 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 107:
-#line 1860 "dpic.y" /* yacc.c:1646  */
+#line 1861 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			prp = nthprimobj(envblock->son, 0, (yyvsp[-1]).prim->ptype);
 			if (prp == NULL) { markerror(857); }
@@ -3682,11 +3683,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3686 "dpic.tab.c" /* yacc.c:1646  */
+#line 3687 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 108:
-#line 1992 "dpic.y" /* yacc.c:1646  */
+#line 1993 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 			if ((yyvsp[-1]).prim != NULL) {
 			  With2 = (yyvsp[-1]).prim;
@@ -3717,11 +3718,11 @@ yyreduce:
 			deletestringbox(&(yyvsp[0]).prim);
 		    }
 		  }
-#line 3721 "dpic.tab.c" /* yacc.c:1646  */
+#line 3722 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 109:
-#line 2024 "dpic.y" /* yacc.c:1646  */
+#line 2025 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval)  = (yyvsp[-2]);
 			if (((yyvsp[-2]).prim->ptype == XLmove) || ((yyvsp[-2]).prim->ptype == XLspline) ||
@@ -3743,11 +3744,11 @@ yyreduce:
 			  else { markerror(858); }
 		    }
 		  }
-#line 3747 "dpic.tab.c" /* yacc.c:1646  */
+#line 3748 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 110:
-#line 2047 "dpic.y" /* yacc.c:1646  */
+#line 2048 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyval).prim;
 			if ((With2->ptype == XLmove) || (With2->ptype == XLspline) ||
@@ -3783,11 +3784,11 @@ yyreduce:
 			else { markerror(858); }
 		    }
 		  }
-#line 3787 "dpic.tab.c" /* yacc.c:1646  */
+#line 3788 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 111:
-#line 2084 "dpic.y" /* yacc.c:1646  */
+#line 2085 "dpic.y" /* yacc.c:1646  */
     {
   /*                            | object "to" position         */
           object_xx:
@@ -3887,11 +3888,11 @@ yyreduce:
     	      else { markerror(858); }
     	      }
 		   }
-#line 3891 "dpic.tab.c" /* yacc.c:1646  */
+#line 3892 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 112:
-#line 2185 "dpic.y" /* yacc.c:1646  */
+#line 2186 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -3908,11 +3909,11 @@ yyreduce:
 #endif
 		    }
 		  }
-#line 3912 "dpic.tab.c" /* yacc.c:1646  */
+#line 3913 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 113:
-#line 2203 "dpic.y" /* yacc.c:1646  */
+#line 2204 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			namptr = (yyval).prim->textp;
 			if (namptr != NULL) {
@@ -3956,11 +3957,11 @@ yyreduce:
 			else { markerror(861); }
 		    }
 		  }
-#line 3960 "dpic.tab.c" /* yacc.c:1646  */
+#line 3961 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 114:
-#line 2248 "dpic.y" /* yacc.c:1646  */
+#line 2249 "dpic.y" /* yacc.c:1646  */
     { if ((drawmode == Pict2e) || (drawmode == TeX) ||
 		      (drawmode == tTeX) || (drawmode == xfig)) { markerror(858); }
 		  else if (((yyvsp[0]).prim != NULL) && ((yyvsp[-2]).prim != NULL)) {
@@ -3997,11 +3998,11 @@ yyreduce:
 		    }
 		    deletestringbox(&(yyvsp[0]).prim);
 		  }
-#line 4001 "dpic.tab.c" /* yacc.c:1646  */
+#line 4002 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 115:
-#line 2286 "dpic.y" /* yacc.c:1646  */
+#line 2287 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4009,11 +4010,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4013 "dpic.tab.c" /* yacc.c:1646  */
+#line 4014 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 116:
-#line 2295 "dpic.y" /* yacc.c:1646  */
+#line 2296 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4021,11 +4022,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4025 "dpic.tab.c" /* yacc.c:1646  */
+#line 4026 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 117:
-#line 2304 "dpic.y" /* yacc.c:1646  */
+#line 2305 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4040,11 +4041,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4044 "dpic.tab.c" /* yacc.c:1646  */
+#line 4045 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 118:
-#line 2320 "dpic.y" /* yacc.c:1646  */
+#line 2321 "dpic.y" /* yacc.c:1646  */
     { primp = NULL;
 	      prp = envblock->son;
 	      while (prp != NULL) { i = prp->ptype;
@@ -4061,11 +4062,11 @@ yyreduce:
 		      }
 		    }
 		  }
-#line 4065 "dpic.tab.c" /* yacc.c:1646  */
+#line 4066 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 119:
-#line 2339 "dpic.y" /* yacc.c:1646  */
+#line 2340 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XBLOCK, envblock);
 		  (yyval).prim->Upr.UBLOCK.here.xpos = 0.0;
 		  (yyval).prim->Upr.UBLOCK.here.ypos = 0.0;
@@ -4073,11 +4074,11 @@ yyreduce:
 		  tail = NULL;
 		  (yyval).lexval = 0;
 		  }
-#line 4077 "dpic.tab.c" /* yacc.c:1646  */
+#line 4078 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 120:
-#line 2350 "dpic.y" /* yacc.c:1646  */
+#line 2351 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-1]).lexval > XLprimitiv) && ((yyvsp[-1]).lexval < XLenvvar)) {
 			newprim(&(yyval).prim, (yyvsp[-1]).lexval, envblock);
 			eb = findenv(envblock);
@@ -4236,19 +4237,19 @@ yyreduce:
 			if (debuglevel > 0) { printobject((yyval).prim); }
 #endif
 		  }
-#line 4240 "dpic.tab.c" /* yacc.c:1646  */
+#line 4241 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 121:
-#line 2510 "dpic.y" /* yacc.c:1646  */
+#line 2511 "dpic.y" /* yacc.c:1646  */
     { if ((drawmode == PS) || (drawmode == PDF) || (drawmode == PSfrag)) {
 			printstate = ((printstate >> 1) * 2) + 1; }
 		  }
-#line 4248 "dpic.tab.c" /* yacc.c:1646  */
+#line 4249 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 122:
-#line 2515 "dpic.y" /* yacc.c:1646  */
+#line 2516 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			envblock = (yyvsp[-2]).prim->parent;
 			tail = NULL;
@@ -4299,27 +4300,27 @@ yyreduce:
 #endif
 		    }
 		  }
-#line 4303 "dpic.tab.c" /* yacc.c:1646  */
+#line 4304 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 123:
-#line 2567 "dpic.y" /* yacc.c:1646  */
+#line 2568 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XBLOCK, envblock);
 		  (yyval).prim->Upr.UBLOCK.here.xpos = 0.0;
 		  (yyval).prim->Upr.UBLOCK.here.ypos = 0.0;
 		  (yyval).lexval = 0;
 		  }
-#line 4313 "dpic.tab.c" /* yacc.c:1646  */
+#line 4314 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 124:
-#line 2575 "dpic.y" /* yacc.c:1646  */
+#line 2576 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XEMPTY; }
-#line 4319 "dpic.tab.c" /* yacc.c:1646  */
+#line 4320 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 126:
-#line 2581 "dpic.y" /* yacc.c:1646  */
+#line 2582 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-1]).prim != NULL) && (envblockB.env != NULL)) {
 			eb = findenv(envblock->parent);
 			if (eb != NULL) {  /* check and reset variables: */
@@ -4333,11 +4334,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 4337 "dpic.tab.c" /* yacc.c:1646  */
+#line 4338 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 128:
-#line 2599 "dpic.y" /* yacc.c:1646  */
+#line 2600 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[0]).lexval != XEMPTY) {
 			  With1 = &(yyvsp[-1]);
@@ -4352,11 +4353,11 @@ yyreduce:
 		    }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4356 "dpic.tab.c" /* yacc.c:1646  */
+#line 4357 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 129:
-#line 2615 "dpic.y" /* yacc.c:1646  */
+#line 2616 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[-3]).internal == NULL) { prp = (yyvsp[-3]).prim; }
 			else { prp = (yyvsp[-3]).internal; }
@@ -4364,160 +4365,160 @@ yyreduce:
 			if ((yyval).internal == NULL) { markerror(857); deletetree(&(yyval).prim); }
 		    }
 		  }
-#line 4368 "dpic.tab.c" /* yacc.c:1646  */
+#line 4369 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 130:
-#line 2625 "dpic.y" /* yacc.c:1646  */
+#line 2626 "dpic.y" /* yacc.c:1646  */
     { (yyval).yval = (yyvsp[0]).xval;
 #ifdef DDEBUG
 			if (debuglevel>1) prattribute("pair1",&(yyval));
 #endif
 			}
-#line 4378 "dpic.tab.c" /* yacc.c:1646  */
+#line 4379 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 131:
-#line 2632 "dpic.y" /* yacc.c:1646  */
+#line 2633 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) {
 			(yyval).xval += (yyvsp[0]).xval;
 			(yyval).yval += (yyvsp[0]).yval; }
 		  }
-#line 4387 "dpic.tab.c" /* yacc.c:1646  */
+#line 4388 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 132:
-#line 2639 "dpic.y" /* yacc.c:1646  */
+#line 2640 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).xval <= 0.0) { markerror(856); }
 		  else { (yyval).toklen = Rnd((yyvsp[-1]).xval); }
 		  }
-#line 4395 "dpic.tab.c" /* yacc.c:1646  */
+#line 4396 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 133:
-#line 2644 "dpic.y" /* yacc.c:1646  */
+#line 2645 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval <= 0.0) { markerror(856); }
 		  else { (yyval).toklen = -Rnd((yyvsp[-2]).xval); }
 		  }
-#line 4403 "dpic.tab.c" /* yacc.c:1646  */
+#line 4404 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 134:
-#line 2649 "dpic.y" /* yacc.c:1646  */
+#line 2650 "dpic.y" /* yacc.c:1646  */
     { (yyval).toklen = 0; }
-#line 4409 "dpic.tab.c" /* yacc.c:1646  */
+#line 4410 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 138:
-#line 2659 "dpic.y" /* yacc.c:1646  */
+#line 2660 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XBLOCK; }
-#line 4415 "dpic.tab.c" /* yacc.c:1646  */
+#line 4416 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 139:
-#line 2663 "dpic.y" /* yacc.c:1646  */
+#line 2664 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = 0.0;
 		  (yyval).yval = 0.0;
 		  (yyval).lexval = XEMPTY;
 		  }
-#line 4424 "dpic.tab.c" /* yacc.c:1646  */
+#line 4425 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 140:
-#line 2669 "dpic.y" /* yacc.c:1646  */
+#line 2670 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval += (yyvsp[0]).xval;
 		  (yyval).yval += (yyvsp[0]).yval;
 		  (yyval).lexval = XLfloat;
 		  }
-#line 4433 "dpic.tab.c" /* yacc.c:1646  */
+#line 4434 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 141:
-#line 2675 "dpic.y" /* yacc.c:1646  */
+#line 2676 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval -= (yyvsp[0]).xval;
 		  (yyval).yval -= (yyvsp[0]).yval;
 		  (yyval).lexval = XLfloat;
 		  }
-#line 4442 "dpic.tab.c" /* yacc.c:1646  */
+#line 4443 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 142:
-#line 2682 "dpic.y" /* yacc.c:1646  */
+#line 2683 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[-1]); }
-#line 4448 "dpic.tab.c" /* yacc.c:1646  */
+#line 4449 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 143:
-#line 2685 "dpic.y" /* yacc.c:1646  */
+#line 2686 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-3]).xval;
 		  (yyval).yval = (yyvsp[-1]).yval;
 		  }
-#line 4456 "dpic.tab.c" /* yacc.c:1646  */
+#line 4457 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 145:
-#line 2692 "dpic.y" /* yacc.c:1646  */
+#line 2693 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval *= (yyvsp[0]).xval;
 		  (yyval).yval *= (yyvsp[0]).xval;
 		  }
-#line 4464 "dpic.tab.c" /* yacc.c:1646  */
+#line 4465 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 146:
-#line 2697 "dpic.y" /* yacc.c:1646  */
+#line 2698 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { markerror(852); }
 		  else {
 			(yyval).xval /= (yyvsp[0]).xval;
 			(yyval).yval /= (yyvsp[0]).xval;
 		    }
 		  }
-#line 4475 "dpic.tab.c" /* yacc.c:1646  */
+#line 4476 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 147:
-#line 2706 "dpic.y" /* yacc.c:1646  */
+#line 2707 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, XEMPTY, &(yyval).xval, &(yyval).yval); }
-#line 4481 "dpic.tab.c" /* yacc.c:1646  */
+#line 4482 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 148:
-#line 2709 "dpic.y" /* yacc.c:1646  */
+#line 2710 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[-1]).prim, (yyvsp[0]).lexval, &(yyval).xval, &(yyval).yval); }
-#line 4487 "dpic.tab.c" /* yacc.c:1646  */
+#line 4488 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 149:
-#line 2712 "dpic.y" /* yacc.c:1646  */
+#line 2713 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, (yyvsp[-1]).lexval, &(yyvsp[0]).xval, &(yyvsp[0]).yval);
  		  (yyval) = (yyvsp[0]); }
-#line 4494 "dpic.tab.c" /* yacc.c:1646  */
+#line 4495 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 150:
-#line 2716 "dpic.y" /* yacc.c:1646  */
+#line 2717 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, (yyvsp[-2]).lexval, &(yyvsp[0]).xval, &(yyvsp[0]).yval);
  		  (yyval) = (yyvsp[0]); }
-#line 4501 "dpic.tab.c" /* yacc.c:1646  */
+#line 4502 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 151:
-#line 2720 "dpic.y" /* yacc.c:1646  */
+#line 2721 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = envblockB.here.xpos;
 		  (yyval).yval = envblockB.here.ypos;
 		  }
-#line 4509 "dpic.tab.c" /* yacc.c:1646  */
+#line 4510 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 153:
-#line 2728 "dpic.y" /* yacc.c:1646  */
+#line 2729 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { (yyval).xval = 1.0; }
     	  else { (yyval).xval = 0.0; }
 		  }
-#line 4517 "dpic.tab.c" /* yacc.c:1646  */
+#line 4518 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 154:
-#line 2733 "dpic.y" /* yacc.c:1646  */
+#line 2734 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).xval == 0.0) && ((yyvsp[0]).xval < 0.0)) { markerror(852); }
 		  else {
 			j = Rnd((yyvsp[0]).xval);
@@ -4527,11 +4528,11 @@ yyreduce:
 			else if ((yyvsp[-2]).xval != 0.0) { (yyval).xval = exp((yyvsp[0]).xval * log((yyvsp[-2]).xval));}
 			}
     	  }
-#line 4531 "dpic.tab.c" /* yacc.c:1646  */
+#line 4532 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 155:
-#line 2745 "dpic.y" /* yacc.c:1646  */
+#line 2746 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-1]).chbufx, &(yyvsp[-1]).toklen, 
                 (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
 		  prp = NULL;
@@ -4546,11 +4547,11 @@ yyreduce:
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  (yyval).prim = prp;
 		  }
-#line 4550 "dpic.tab.c" /* yacc.c:1646  */
+#line 4551 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 156:
-#line 2761 "dpic.y" /* yacc.c:1646  */
+#line 2762 "dpic.y" /* yacc.c:1646  */
     { (yyval).prim = nthprimobj(envblock->son, (yyvsp[-1]).toklen, (yyvsp[0]).lexval);
 		  if ((yyval).prim == NULL) { markerror(857); }
 #ifdef DDEBUG
@@ -4561,11 +4562,11 @@ yyreduce:
             }
 #endif
 		  }
-#line 4565 "dpic.tab.c" /* yacc.c:1646  */
+#line 4566 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 157:
-#line 2773 "dpic.y" /* yacc.c:1646  */
+#line 2774 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-1]).chbufx,
               &(yyvsp[-1]).toklen, (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
@@ -4575,52 +4576,52 @@ yyreduce:
 		    }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4579 "dpic.tab.c" /* yacc.c:1646  */
+#line 4580 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 158:
-#line 2784 "dpic.y" /* yacc.c:1646  */
+#line 2785 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).prim = nthprimobj((yyvsp[-3]).prim->son, (yyvsp[-1]).toklen, (yyvsp[0]).lexval);
 			if ((yyval).prim == NULL) { markerror(857); }
 		    }
 		  }
-#line 4589 "dpic.tab.c" /* yacc.c:1646  */
+#line 4590 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 160:
-#line 2794 "dpic.y" /* yacc.c:1646  */
+#line 2795 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4595 "dpic.tab.c" /* yacc.c:1646  */
+#line 4596 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 161:
-#line 2797 "dpic.y" /* yacc.c:1646  */
+#line 2798 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4601 "dpic.tab.c" /* yacc.c:1646  */
+#line 4602 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 163:
-#line 2803 "dpic.y" /* yacc.c:1646  */
+#line 2804 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).xval == 0.0) || ((yyvsp[0]).xval == 0.0)) { (yyval).xval = 0.0; }
 		  else { (yyval).xval = 1.0; }
 		  }
-#line 4609 "dpic.tab.c" /* yacc.c:1646  */
+#line 4610 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 164:
-#line 2809 "dpic.y" /* yacc.c:1646  */
+#line 2810 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XLstring) {
 			markerror(869);
 			(yyval).lexval = XLfloat;
 			deletestringbox(&(yyvsp[0]).prim);
 		    }
 		  }
-#line 4620 "dpic.tab.c" /* yacc.c:1646  */
+#line 4621 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 165:
-#line 2817 "dpic.y" /* yacc.c:1646  */
+#line 2818 "dpic.y" /* yacc.c:1646  */
     { i = cmpstring((yyvsp[-2]).prim, (yyvsp[0]).prim);
 		  if (i < 0) { (yyval).xval = 1.0; }
 		  else { (yyval).xval = 0.0; }
@@ -4628,19 +4629,19 @@ yyreduce:
 		  deletestringbox(&(yyvsp[0]).prim);
 		  deletestringbox(&(yyvsp[-2]).prim);
 		  }
-#line 4632 "dpic.tab.c" /* yacc.c:1646  */
+#line 4633 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 166:
-#line 2826 "dpic.y" /* yacc.c:1646  */
+#line 2827 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval < (yyvsp[0]).xval) { (yyval).xval = 1.0; }
 		  else { (yyval).xval = 0.0; }
 		  }
-#line 4640 "dpic.tab.c" /* yacc.c:1646  */
+#line 4641 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 169:
-#line 2836 "dpic.y" /* yacc.c:1646  */
+#line 2837 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval == XLstring) {
 			markerror(869);
 			bswitch = false;
@@ -4663,11 +4664,11 @@ yyreduce:
 		    }
 		  if (bswitch) { (yyval).xval = 1.0; } else { (yyval).xval = 0.0; }
 		  }
-#line 4667 "dpic.tab.c" /* yacc.c:1646  */
+#line 4668 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 170:
-#line 2860 "dpic.y" /* yacc.c:1646  */
+#line 2861 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval != XLstring) { markerror(869); bswitch = false; }
 		  else {
 			i = cmpstring((yyvsp[-2]).prim, (yyvsp[0]).prim);
@@ -4686,21 +4687,21 @@ yyreduce:
 		  (yyval).lexval = XLfloat;
 		  deletestringbox(&(yyvsp[0]).prim);
 		  }
-#line 4690 "dpic.tab.c" /* yacc.c:1646  */
+#line 4691 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 171:
-#line 2881 "dpic.y" /* yacc.c:1646  */
+#line 2882 "dpic.y" /* yacc.c:1646  */
     { if (envblock != NULL) {
 			eb = findenv(envblock);
 			(yyval).xval = eb->envinx((yyvsp[0]).lexval);
 		    }
 		  }
-#line 4700 "dpic.tab.c" /* yacc.c:1646  */
+#line 4701 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 172:
-#line 2888 "dpic.y" /* yacc.c:1646  */
+#line 2889 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf,
 		    &(yyvsp[-1]).chbufx, &(yyvsp[-1]).toklen, (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
     	  namptr = glfindname(envblock,chbuf,(yyvsp[-1]).chbufx,(yyvsp[-1]).toklen, &lastvar, &k);
@@ -4708,23 +4709,23 @@ yyreduce:
     	  else { (yyval).xval = namptr->val; }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4712 "dpic.tab.c" /* yacc.c:1646  */
+#line 4713 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 174:
-#line 2899 "dpic.y" /* yacc.c:1646  */
+#line 2900 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4718 "dpic.tab.c" /* yacc.c:1646  */
+#line 4719 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 176:
-#line 2904 "dpic.y" /* yacc.c:1646  */
+#line 2905 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).yval; }
-#line 4724 "dpic.tab.c" /* yacc.c:1646  */
+#line 4725 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 177:
-#line 2907 "dpic.y" /* yacc.c:1646  */
+#line 2908 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			switch ((yyvsp[0]).lexval) {
 			  case XLheight:
@@ -4783,25 +4784,25 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 4787 "dpic.tab.c" /* yacc.c:1646  */
+#line 4788 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 178:
-#line 2967 "dpic.y" /* yacc.c:1646  */
+#line 2968 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = ((double)random()) / randmax; }
-#line 4793 "dpic.tab.c" /* yacc.c:1646  */
+#line 4794 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 179:
-#line 2970 "dpic.y" /* yacc.c:1646  */
+#line 2971 "dpic.y" /* yacc.c:1646  */
     { srandom(Rnd((yyvsp[-1]).xval));
 		  (yyval).xval = ((double)random()) / randmax;
 		  }
-#line 4801 "dpic.tab.c" /* yacc.c:1646  */
+#line 4802 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 180:
-#line 2975 "dpic.y" /* yacc.c:1646  */
+#line 2976 "dpic.y" /* yacc.c:1646  */
     { switch ((yyval).lexval) {
 		    case XLabs: (yyval).xval = fabs((yyvsp[-1]).xval);
 		      break;
@@ -4850,11 +4851,11 @@ yyreduce:
 		      break;
 		    }
 		  }
-#line 4854 "dpic.tab.c" /* yacc.c:1646  */
+#line 4855 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 181:
-#line 3025 "dpic.y" /* yacc.c:1646  */
+#line 3026 "dpic.y" /* yacc.c:1646  */
     { switch ((yyvsp[-5]).lexval) {
 		    case XLatan2: (yyval).xval = datan((yyvsp[-3]).xval, (yyvsp[-1]).xval);
 		      break;
@@ -4873,23 +4874,23 @@ yyreduce:
 		      break;
 		    }
 		  }
-#line 4877 "dpic.tab.c" /* yacc.c:1646  */
+#line 4878 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 182:
-#line 3045 "dpic.y" /* yacc.c:1646  */
+#line 3046 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4883 "dpic.tab.c" /* yacc.c:1646  */
+#line 4884 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 183:
-#line 3048 "dpic.y" /* yacc.c:1646  */
+#line 3049 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4889 "dpic.tab.c" /* yacc.c:1646  */
+#line 4890 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 4893 "dpic.tab.c" /* yacc.c:1646  */
+#line 4894 "dpic.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -5117,7 +5118,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 3051 "dpic.y" /* yacc.c:1906  */
+#line 3052 "dpic.y" /* yacc.c:1906  */
  /* start of programs */
 
 int
