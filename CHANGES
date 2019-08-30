@@ -1,6 +1,7 @@
 Distribution dates other than those shown correspond to changes (usually of
 documentation) not involving run-time functionality.
 
+2019 08 30 Debug fixes.
 2019 07 30 Corrected typos, copyright notices, version number, string treatment.
 2019 07 20 Bugfix for buffer overflow with extreme arguments of wfloat().
 2019 06 20 This is a major clone of the previous distribution, which

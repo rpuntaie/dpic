@@ -1,9 +1,9 @@
 # These are the terminals (lexical tokens) of the dpic grammar.
 # This file is converted into a set of tables that drive the dpic lexical
 # analysis routine. The terminals are automatically assigned integer values in
-# sequence.  Terminals of the form "< ... >" have values but are not included
-# in the tables and must be identified separately by the lexical analyser.
-# Each input line is in one of the three forms shown:
+# sequence.  Terminals of the form "<identifier>" have values but are not
+# included in the tables and must be identified explicitly by the lexical
+# analyser.  Each input line is in one of the three forms shown:
 # identifier string
 #    =   string
 # identifier = string

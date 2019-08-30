@@ -8,17 +8,20 @@
    and flavors of Unix, with debugging done using a variety of pascal
    compilers.  The result was a strict LALR(1) grammar and table-driven
    parser with a fully accessible stack of production attributes.
-   Dpic has been distributed in C form by converting the pascal using
-   p2c and, more recently, the pascal code has also been included. The
-   distribution contained versions of p2c and the custom parser generator.
-   To avoid requiring the latter tools, it was decided to enter the
-   world of Linux orthodoxy, provide the source in C, and use GNU bison
-   to generate the parser.  However, dpic has been pretty solid for a
-   decade or more and in order not to introduce bugs, the C code has been
-   altered very little.  As a result, there are few C idioms used but some
-   p2c idiosyncracies (use of With, FORLIM ...) remain.  Starting from
-   scratch would have resulted in cleaner code but bugs would have been
-   introduced.  The main changes have resulted from going from parse code
+
+   For a while, dpic was distributed in C form by converting the pascal
+   using p2c.  More recently, the pascal code was also included and
+   consequently the distribution had to contain versions of p2c and
+   the custom parser generator.  To avoid requiring and maintaining the
+   latter tools, it was decided to enter the world of Linux orthodoxy,
+   provide the source in C, and use GNU bison to generate the parser.
+
+   Dpic has been pretty solid for a decade or more and in order not
+   to introduce bugs, the C code has been altered very little.  As a
+   result, there are few C idioms used but some p2c idiosyncracies
+   (use of With, FORLIM ...) remain.  Starting from scratch would
+   have resulted in cleaner code but bugs would have been introduced.
+   The main program changes have resulted from going from parse code
    exploiting a completely accessible stack to the more implicit mode
    of bison. Error recovery and some error messages are also different.
    To avoid changing how dpic handles input, the original lexical analyser
@@ -1473,7 +1476,7 @@ object	:	block /* object1 */
 			else { markerror(858); }
 		    }
 #ifdef DDEBUG
-	    if (debuglevel > 0) { printobject(With->prim); }
+	    if (debuglevel > 0) { printobject($$.prim); }
 #endif
 		  }
 
@@ -1491,7 +1494,7 @@ object	:	block /* object1 */
 			  }
 		    }
 #ifdef DDEBUG
-	    if (debuglevel > 0) { printobject(With->prim); }
+	    if (debuglevel > 0) { printobject($$.prim); }
 #endif
 		  }
 
