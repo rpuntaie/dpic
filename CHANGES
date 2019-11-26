@@ -1,6 +1,6 @@
-Distribution dates other than those shown correspond to changes (usually of
-documentation) not involving run-time functionality.
 
+2019 11 30 Minor fixes: Arc attribute bugfix, environment variable scope.
+           Improved error messages.  Generalized macro definition.
 2019 08 30 Debug fixes.
 2019 07 30 Corrected typos, copyright notices, version number, string treatment.
 2019 07 20 Bugfix for buffer overflow with extreme arguments of wfloat().

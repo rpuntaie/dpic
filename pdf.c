@@ -435,26 +435,23 @@ void
 pdflineopts (int lspec, double param, double thck, nametype * op) {
   pdfsetthick (thck);
   if (lspec == XLdashed) {
-    if (ismdistmax (param)) {
-      param = 6 * fsc;
-    }
+    if (ismdistmax (param)) { param = 6 * fsc; }
     pdfstream (" [", 2, &cx);
     pdfwfloat (param * 7 / 6 / fsc);
     pdfwfloat (param * 5 / 6 / fsc);
     pdfwln (" ] 0 d 0 j", 10, &cx);
     gsdashw = param;
     gsdashs = param;
-  } else if (lspec == XLdotted) {
-    if (ismdistmax (param)) {
-      param = 4 * fsc;
     }
+  else if (lspec == XLdotted) {
+    if (ismdistmax (param)) { param = 4 * fsc; }
     pdfstream (" [", 2, &cx);
     pdfwfloat (0.0);
     pdfwfloat (param / fsc);
     pdfwln ("] 0 d 1 J", 9, &cx);
     gsdashw = 0.0;
     gsdashs = param;
-  }
+    }
   pdfsetcolor (op, false);
 }
 

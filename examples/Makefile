@@ -102,7 +102,7 @@ man:
 	cp sources/man.tex sources/mode.tex .
 	for file in $(MANSRC) `(cd sources; ls man*.pic )` ; do \
       dpic -p sources/$$file > `basename $$file .pic`.tex ; done
-	latex --quiet --quiet man
+	latex --quiet man
 	dvips man
 
 clean:

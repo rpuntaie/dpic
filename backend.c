@@ -86,10 +86,10 @@ getlinshade (primitive * nod, primitive ** tn, nametype ** ss, nametype ** so,
     while (nod != NULL) {
       With = nod;
       if (With->shadedp != NULL) {
-	*ss = With->shadedp;
+	    *ss = With->shadedp;
       }
       if ((With->Upr.Uline.lfill >= 0.0) && (With->Upr.Uline.lfill <= 1.0)) {
-	*fillval = With->Upr.Uline.lfill;
+	    *fillval = With->Upr.Uline.lfill;
       }
       *tn = nod;
       nod = nod->son;

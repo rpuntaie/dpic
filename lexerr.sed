@@ -10,6 +10,7 @@ s%<arg>%$ argument%
 s%<START>%.PS%
 s%<END>%end of file or .PE%
 s%<END>%end of file or .PE%
+s%";"%"end of line or ;"%
 s%<endfor>%end of for {...} contents%
 s%<corner>%compass corner: .n .ne .center .end etc%
 s%<compare>%logical operator%

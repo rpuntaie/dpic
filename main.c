@@ -2116,7 +2116,7 @@ deletebufs (fbuffer ** buf) {
   }
   while ((*buf) != NULL) {
     bu = (*buf)->nextb;
-    Free ((*buf)->carray);
+    if (((*buf)->carray) != NULL) { Free ((*buf)->carray); }
     Free (*buf);
     *buf = bu;
   }

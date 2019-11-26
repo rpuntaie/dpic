@@ -3,7 +3,7 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 9.0.1, copyright (c) 2019 J. D. Aplevich under     #
+# Circuit_macros Version 9.1.1, copyright (c) 2019 J. D. Aplevich under     #
 # the LaTeX Project Public License. The files of this distribution may    #
 # be redistributed or modified provided that this copyright notice is     #
 # included and provided that modifications are clearly marked to          #
@@ -77,7 +77,7 @@ define slantbox { [
   N: 0.5 between NW and NE ; E: 0.5 between NE and SE
   S: 0.5 between SE and SW ; W: 0.5 between SW and NW
   C: 0.5 between SW and NE
-  line $5 from N to NE then to SE then to SW then to NW then to N
+  line from N to NE then to SE then to SW then to NW then to N $5
   ] }
 #                               arraymax( data array, n, index name, value)
 #                               Find the index in array[1:n] of the first
@@ -379,6 +379,22 @@ define prow {
   }
 
 define rnd {int($1+sign($1)/2)} # round function
+
+#                               Operations on complex numbers (x,y)
+define Zsum {($1+($2))}
+define Zdiff{($1-($2))}
+define Zprod {($1.x*$2.x-$1.y*$2.y,$1.y*$2.x+$1.x*$2.y)}
+define Zinv {($1.x/($1.x^2+$1.y^2),-$1.y/($1.x^2+$1.y^2))}
+define Zexp {((cos($1.y),sin($1.y))*expe($1.x))}
+define Zcos {(cos($1.x)*cosh($1.y),-sin($1.x)*sinh($1.y))}
+define Zsin {(sin($1.x)*cosh($1.y), cos(%1.x)*sinh($1.y))}
+define zabs {sqrt($1.x^2+$1.y^2)}
+define zarg {atan2($1.y,$1.x)}
+#                               Trig functions if undefined
+if "cosh"=="co"+"sh" then {
+  define cosh {((expe($1) + expe(-($1)))/2)}
+  define sinh {((expe($1) - expe(-($1)))/2)}
+}
 
 # print " *** dpic: dpictools.pic processed"
 define dpictools {1}

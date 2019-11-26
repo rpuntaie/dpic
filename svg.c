@@ -105,17 +105,11 @@ fillgray (double fll) {
 
 void
 svglineoptions (primitive * node, int lnspec) {
-  double param;
+  double param,fact,thk;
 
-  if (node->lthick >= 0.0) {
-    svgsetstroke (node->lthick);
-  }
-  if (soutline != NULL) {
-    svgsoutline (soutline);
-  }
-  if (node->ptype == XBLOCK) {
-    lnspec = XLinvis;
-  }
+  if (node->lthick >= 0.0) { svgsetstroke (node->lthick); }
+  if (soutline != NULL) { svgsoutline (soutline); }
+  if (node->ptype == XBLOCK) { lnspec = XLinvis; }
   switch (lnspec) {
 
   case XLdashed:
@@ -128,13 +122,15 @@ svglineoptions (primitive * node, int lnspec) {
     break;
 
   case XLdotted:
-    /* if ismdistmax(lparam) then param := 5/72*scale
-       else param := lparam; */
-    if (!ismdistmax (node->lparam)) {
-      param = node->lparam;
-    } else {
-      param = (qenv (node, XLlinethick, node->lthick) / 72) * 5 * scale;
-    }
+    if (!ismdistmax(node->lparam)) { param = node->lparam; }
+    else {
+	  if (node->lthick >= 0) { thk = node->lthick; }
+	  else { thk = qenv(node, XLlinethick, node->lthick); }
+	  if (thk >= 2) { fact = 2.5; }
+	  else if (thk < 1) { fact = 5.0; }
+	  else { fact = 7.5 - (thk * 2.5); }
+	  param = (thk / 72) * scale * fact;
+      }
     printf (" stroke-linecap=\"round\"");
     printf (" stroke-dasharray=\"0.5,");
     wfloat (&output, param / fsc);

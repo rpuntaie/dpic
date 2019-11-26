@@ -681,7 +681,8 @@ pstdraw (primitive * node) {
     if (node->textp != NULL) {
       wstring (&output, node->textp);
       putchar ('\n');
-    } else if (node->lthick >= 0.0) {
+      }
+    else if (node->lthick >= 0.0) {
       printf ("\\psset{linewidth=");
       wfloat (&output, node->lthick);
       printf ("pt}%%\n");

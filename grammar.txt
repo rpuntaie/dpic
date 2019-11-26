@@ -59,7 +59,8 @@ command: XLprint expression redirect
        | XLreset resetlist
        | systemcmd
        | XLcopy stringexpr
-       | defhead XRBRACE
+       | XLdefine XLname
+       | XLdefine XLabel
        | XLundefine XLname
        | XLundefine XLabel
 
@@ -116,9 +117,6 @@ resetlist: XLenvvar
          | resetlist Xcomma XLenvvar
 
 systemcmd: XLsh stringexpr
-
-defhead: XLdefine XLname optnl XLBRACE
-       | XLdefine XLabel optnl XLBRACE
 
 sprintf: XLsprintf Xlparen stringexpr
        | XLsprintf Xlparen stringexpr Xcomma exprlist

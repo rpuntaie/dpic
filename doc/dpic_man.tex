@@ -31,7 +31,7 @@
 %
 % Use {\tt "} instead of ".
 %
-\phead{DPIC}{1}{2019.08.30}{}{}\shead{NAME}
+\phead{DPIC}{1}{2019.11.30}{}{}\shead{NAME}
 dpic - convert pic-language input to LaTeX-compatible and other formats
 \shead{SYNOPSIS}
 {\tt dpic\ [\ -defghmprstvx\ ]\ [\ -z\ ]\ [}
@@ -404,7 +404,7 @@ Printing to a file is disabled by the -z option.
 \par\hskip-2pc{\bf Macros}\\
 The
 pic
-language includes macro definition and expansion, using
+language includes macro definition and expansion, using either
 
 {\tt \ \ \ define}
 {\it name}
@@ -412,14 +412,22 @@ language includes macro definition and expansion, using
 {\it anything}
 {\tt \},}
 
-so that, when
+or
+
+{\tt \ \ \ define}
+{\it name}
+{\tt X}
+{\it anything}
+{\tt X,}
+
+where X is any character except \{, so that, when
 {\it name}
 appears alone or with arguments as
 {\it name}
 {\tt (}
 {\it arg,\ ...}
 {\tt )}
-then it is replaced by the contents between the braces in the definition.
+then it is replaced by the contents between the delimiters in the definition.
 A comma in an argument list is ignored within a string or parentheses.
 In this substitution, occurrences of
 {\tt \$1}
@@ -521,7 +529,7 @@ explicitly as for other drawn objects, as shown:
 {\it expr}
 
 The thickness of lines defining an object are modified using
-the environmental variable
+the environment variable
 {\tt linethick}
 or the attribute
 
@@ -945,56 +953,56 @@ by assignment.
 They can be used in expressions like other variables.
 The variables, their default values, and default uses are given below
 
-{\tt \ \ \ arcrad\ \ \ \ \ \ \ }
-0.25   arc radius
+{\tt \ \ \ arcrad\ \ \ \ \ \ \ 0.25}
+   arc radius
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ arrowht\ \ \ \ \ \ }
-0.1    length of arrowhead
+{\tt \ \ \ arrowht\ \ \ \ \ \ 0.1\ }
+    length of arrowhead
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ arrowwid\ \ \ \ \ }
-0.05   width of arrowhead
+{\tt \ \ \ arrowwid\ \ \ \ \ 0.05}
+   width of arrowhead
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ boxht\ \ \ \ \ \ \ \ }
-0.5    box height
+{\tt \ \ \ boxht\ \ \ \ \ \ \ \ 0.5\ }
+    box height
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ boxrad\ \ \ \ \ \ \ }
-0      radius of rounded box corners
+{\tt \ \ \ boxrad\ \ \ \ \ \ \ 0\ \ \ }
+       radius of rounded box corners
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ boxwid\ \ \ \ \ \ \ }
-0.75   box width
+{\tt \ \ \ boxwid\ \ \ \ \ \ \ 0.75}
+   box width
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ circlerad\ \ \ \ }
-0.25   circle radius
+{\tt \ \ \ circlerad\ \ \ \ 0.25}
+circle radius
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ dashwid\ \ \ \ \ \ }
-0.05   dash length for dashed lines
+{\tt \ \ \ dashwid\ \ \ \ \ \ 0.05}
+dash length for dashed lines
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ ellipseht\ \ \ \ }
-0.5    ellipse height
+{\tt \ \ \ ellipseht\ \ \ \ 0.5\ }
+ellipse height
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ ellipsewid\ \ \ }
-0.75   ellipse width
+{\tt \ \ \ ellipsewid\ \ \ 0.75}
+ellipse width
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ lineht\ \ \ \ \ \ \ }
-0.5    height of vertical lines
+{\tt \ \ \ lineht\ \ \ \ \ \ \ 0.5\ }
+height of vertical lines
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ linewid\ \ \ \ \ \ }
-0.5    length of horizontal lines
+{\tt \ \ \ linewid\ \ \ \ \ \ 0.5\ }
+length of horizontal lines
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ movewid\ \ \ \ \ \ }
-0.5    length of horizontal moves
+{\tt \ \ \ moveht\ \ \ \ \ \ \ 0.5\ }
+length of vertical moves
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ movewid\ \ \ \ \ \ }
-0.5    length of horizontal moves
+{\tt \ \ \ movewid\ \ \ \ \ \ 0.5\ }
+length of horizontal moves
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ textht\ \ \ \ \ \ \ }
-0      assumed height of text (11pt for postscript, PDF, and SVG)
+{\tt \ \ \ textht\ \ \ \ \ \ \ 0\ \ \ }
+assumed height of text (11pt for postscript, PDF, and SVG)
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ textoffset\ \ \ }
-2.5/72 text justification gap
+{\tt \ \ \ textoffset\ \ \ 2.5/72}
+text justification gap
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ textwid\ \ \ \ \ \ }
-0      assumed width of text
+{\tt \ \ \ textwid\ \ \ \ \ \ 0\ \ \ }
+assumed width of text
 
 When a value is assigned to the environment variable
 {\tt scale,}
@@ -1009,20 +1017,20 @@ In addition when
 {\tt scale}
 is changed, the following are unchanged:
 
-{\tt \ \ \ arrowhead\ \ \ \ }
-1      arrowhead shape
+{\tt \ \ \ arrowhead\ \ \ \ 1\ \ \ }
+arrowhead shape
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ fillval\ \ \ \ \ \ }
-0.5    fill density
+{\tt \ \ \ fillval\ \ \ \ \ \ 0.5\ }
+fill density
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ linethick\ \ \ \ }
-0.8    line thickness in points
+{\tt \ \ \ linethick\ \ \ \ 0.8\ }
+line thickness in points
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ maxpsht\ \ \ \ \ \ }
-11.5   maximum allowed diagram height
+{\tt \ \ \ maxpsht\ \ \ \ \ \ 11.5}
+maximum allowed diagram height
 \\\hbox{}\hskip-1pt
-{\tt \ \ \ maxpswid\ \ \ \ \ }
-8.5    maximum allowed diagram width
+{\tt \ \ \ maxpswid\ \ \ \ \ 8.5\ }
+maximum allowed diagram width
 
 The variables
 {\tt maxpswid}

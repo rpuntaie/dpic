@@ -3,11 +3,12 @@
 # label token
 #   =  token
 # label = token
-BEGIN { 
-   debug = 0
-   ORDMAXCH = 127
 
-#  print "" >  "lexedit"  # sed commands symbolic tokens to integer
+# The token list for bison is generated together with the tables that
+# drive the lexical analyzer.
+
+BEGIN { 
+   ORDMAXCH = 127
 
    for (i=0; i<=ORDMAXCH; i++){
       entryhp[i] = 0
@@ -21,7 +22,7 @@ BEGIN {
    nhp = 0
 
 # init ord_
-    for (i = 0; i <= 127; i++) {
+    for (i = 0; i <= ORDMAXCH; i++) {
         t = sprintf("%c", i)
         ord_[t] = i
         }
@@ -29,25 +30,6 @@ BEGIN {
 
 function chr(i) { return sprintf("%c", i + 0) }
 function ord(c) { return ord_[c] }
-
-function visit(lxt,tt,tn,ly) {
-  ttt = tt lxch[lxt]
-  if (lxtv[lxt] != 0) {
-    print sprintf("%d %s %d",++tn,ttt,lxtv[lxt]) >> "tabletoks"
-    print sprintf("%d %s %d",  tn,ttt,lxtv[lxt])
-    }
-  ly = lxt
-  if (lxhp[lxt] != 0) { tn = visit(lxhp[lxt],ttt,tn) }
-  if (lxnp[ly] != 0) { tn = visit(lxnp[ly],  tt,tn) }
-  return tn
-  }
-
-function prtr(lx){
-    if (lt > 1) { print sprintf("token %s %d %c %d %d %d %s",
-      tok,lx,cx,lxnp[lx],lxhp[lx],lxtv[lx],ter) }
-    else { print sprintf("token %s (%d) %d %d %s",
-      tok,och,entryhp[och],entrytv[och],ter)}
-  }
 
 # Process the lines in the file:
    /^#/ || /^ *$/ { next }
@@ -71,26 +53,6 @@ function prtr(lx){
 
 END {
 
-if (debug){
-  print sprintf("nlabels=%d ntokens=%d ntv=%d",nlabels,ntokens,ntv)
-
-  print "\n labels > lex.list"
-  print nlabels " labels" > "lex.list"
-  for (i=0; i<=nlabels; i++) {
-    print sprintf("%d %s",labeltv[label[i]], label[i]) >> "lex.list" }
-
-# print "\n tokentv, tokens > tokens"
-# print "\n" ntokens " tokens" > "tokens"
-# for (i=1; i<=ntokens; i++) {
-#   print sprintf("%d %s",tokentv[token[i]], token[i]) >> "tokens" }
-
-# print "\n tokentv, tvtokens"
-# print "tokentv, tvtoken" > "tvtokens"
-# for (i=0; i<=ntv; i++) {
-#   print sprintf("%d %s",i, tvtoken[i])
-#   print sprintf("%d %s",i, tvtoken[i]) >> "tvtokens" }
-}
-
 #                           Sort the terminals
 for (i=1; i<=ntokens; i++) { stok[i] = token[i] }
 do { c="";
@@ -98,130 +60,71 @@ do { c="";
     if(stok[i]>stok[i+1]){ c=stok[i]; stok[i]=stok[i+1]; stok[i+1]=c } }
 } while(c!="")
 
-if (debug){
-  print "\nunsorted tokens, tv:"
-  for (i=1; i<=ntokens; i++) {
-    print sprintf("%d %s %d",i,token[i],tokentv[token[i]]) }
-
-  echo "sortedtoks"
-  print "tokens, tv" > "sortedtoks"
-  print "\nsorted tokens, tv:"
-  for (i=1; i<=ntokens; i++){
-    print sprintf("%d %s %d",i,stok[i],tokentv[stok[i]]) }
-  for (i=1; i<=ntokens; i++) {
-    print sprintf("%d %s %d",i,stok[i],tokentv[stok[i]]) >> "sortedtoks" }
-  }
-
   lxch[0] = "0"
 #                           Add the terminals to the tree
   for (tn=1; tn<=ntokens; tn++) {
     tok = stok[tn]
-    if (debug) ter = "A"
     ch = substr(tok,1,1)
     och = ord(ch)
-    lt = length(tok)
-    if (lt == 1) { entrytv[och] = tokentv[tok] }
+    tokln = length(tok)
+    if (tokln == 1) { entrytv[och] = tokentv[tok] }
     else {
       if (entryhp[och] == 0) { entryhp[och] = ++nhp }
       lxix = entryhp[och]
       chx = 2
-      while (chx <= lt) {
+      while (chx <= tokln) {
         cx = substr(tok,chx,1)
         if (ord(lxch[lxix]) == 0) { # empty node
           lxch[lxix] = cx
-          if (chx == lt) { lxtv[lxix] = tokentv[tok]; if (debug)ter=ter "B" }
-          else { if (debug)ter=ter "C"
-            lxhp[lxix] = ++nhp; lxix = nhp
-            }
+          if (chx == tokln) { lxtv[lxix] = tokentv[tok] }
+          else { lxhp[lxix] = ++nhp; lxix = nhp }
           }
         else if (lxch[lxix] == cx) {
-          if (chx == lt) { lxtv[lxix] = tokentv[tok]; if (debug)ter=ter "D" }
-          else if (lxhp[lxix] == 0) { if (debug)ter=ter "E"
-            lxhp[lxix] = ++nhp; lxix = nhp
-            }
-          else { lxix = lxhp[lxix]; if (debug)ter=ter "F" }
+          if (chx == tokln) { lxtv[lxix] = tokentv[tok] }
+          else if (lxhp[lxix] == 0) { lxhp[lxix] = ++nhp; lxix = nhp }
+          else { lxix = lxhp[lxix] }
           }
-        else if (lxnp[lxix] != 0) { if (debug)ter=ter "G"
+        else if (lxnp[lxix] != 0) {
           lxix = lxnp[lxix]
           chx--
           }
         else {
-          lxnp[lxix] = ++nhp
-          lxix = nhp
+          lxnp[lxix] = ++nhp; lxix = nhp
           lxch[lxix] = cx
-          if (chx == lt) { lxtv[lxix] = tokentv[tok]; if (debug)ter=ter "H" }
-          else { if (debug)ter=ter "I"
-            lxhp[lxix] = ++nhp; lxix = nhp
-            }
+          if (chx == tokln) { lxtv[lxix] = tokentv[tok] }
+          else { lxhp[lxix] = ++nhp; lxix = nhp }
           }
         chx++
-        } # while chx
-      } # lt > 1
-#   if (debug) prtr(lxix)
+        } # while chx <= tokln
+      } # tokln > 1
     } # for tn
 
   lxmax = nhp
-  
-if (debug){
-  print sprintf("\nentries:")
-  print sprintf("entries:") > "entries"
-  for (i=0; i<=127; i++) {
-    if ((entryhp[i] != 0) || (entrytv[i] !=0)) {
-      print sprintf("%d %c %d %d",i,chr(i),entryhp[i],entrytv[i]) }
-    if ((entryhp[i] != 0) || (entrytv[i] !=0)) {
-      print sprintf("%d %c %d %d",i,chr(i),entryhp[i],entrytv[i]) >> "entries" }
-    }
-  
-  print sprintf("\n%d table rows:",nhp)
-  for (i=0; i<=nhp; i++) {
-    print sprintf("%d %c %d %d %d",i,lxch[i],lxnp[i],lxhp[i],lxtv[i]) }
-#                           Verify the tables: should be the same as sorted toks
-  print "\ntabletoks"
-  print "ntok, token, tv" > "tabletoks"
-  tn = 0
-  for (i=33; i<=126; i++) {
-    tx = chr(i)
-    if (entrytv[i] != 0) {
-      print sprintf("%d %c %d",++tn,tx,entrytv[i]) >> "tabletoks" }
-    if (entrytv[i] != 0) {
-      print sprintf("%d %c %d",  tn,tx,entrytv[i]) }
-    if (entryhp[i] != 0) { tn = visit(entryhp[i],tx,tn) }
-    }
-  print ""
-  }
 
 #                           Print out the tables
    print "entryhp.h"
    print "entrytv.h"
-#  print "entry.csv"
    print "" > "entryhp.h"
    print "" > "entrytv.h"
-#  print "" > "entry.csv"
-   for (i=0; i<=127; i++){ if (i<127) {e = ","} else {e = " "}
+   for (i=0; i<=ORDMAXCH; i++){ if (i<ORDMAXCH) {e = ","} else {e = " "}
       printf("%d%c\n", entryhp[i],e) >> "entryhp.h"
       printf("%d%c\n", entrytv[i],e) >> "entrytv.h"
-      if ((i>32) && (i<127)) {cs = chr(i)} else {cs=" "}
-#     printf("'%c',%d,%d\n", cs,entryhp[i],entrytv[i]) >> "entry.csv"
       }
 
    print "lxch.h"
    print "lxhp.h"
    print "lxnp.h"
    print "lxtv.h"
-#  print "table.csv"
 
    print "" > "lxch.h"
    print "" > "lxhp.h"
    print "" > "lxnp.h"
    print "" > "lxtv.h"
-#  print "" > "table.csv"
    for (i=0; i<=lxmax; i++) { if (i<lxmax) {e = ","} else {e = " "}
       printf("'%c'%c\n",lxch[i],e) >> "lxch.h"
       printf("%d%c\n",lxhp[i],e) >> "lxhp.h"
       printf("%d%c\n",lxnp[i],e) >> "lxnp.h"
       printf("%d%c\n",lxtv[i],e) >> "lxtv.h"
-#     printf("%d,'%c',%d,%d,%d\n",
-#       i,lxch[i],lxnp[i],lxhp[i],lxtv[i]) >> "table.csv"
       }
 
 #                           Special constants
@@ -231,12 +134,9 @@ if (debug){
    print sprintf("#define	XLlastsc	%d",labeltv["XLtextwid"]) >> "lxvars.h"
    print sprintf("#define	XLlastenv	%d",labeltv["XLscale"]) >> "lxvars.h"
 
-#  print "lxcst.p"
    print "lxcst.h"
-#  print "" > "lxcst.p"
    print "" > "lxcst.h"
    for (i=0; i<=nlabels; i++) { if ( label[i] !~ /^<[a-zA-Z]/ ) { 
-#    print sprintf("%s = %d;",label[i],labeltv[label[i]]) >> "lxcst.p"
      print sprintf("#define	%s	%d",label[i],labeltv[label[i]]) >> "lxcst.h" }
      }
 

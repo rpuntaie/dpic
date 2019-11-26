@@ -1,0 +1,43 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<HTML>
+<HEAD>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<!--meta http-equiv="Content-Script-Type" content="text/javascript"-->
+<TITLE>Lindenmayer systems</TITLE>
+<style type="text/css">
+</style>
+</HEAD>
+
+<BODY>
+<H2>Lindenmayer systems</H2>
+<hr>
+
+define(`cfig',`
+<p>
+<!--[if lt IE 9]><embed src="$1.svg" sinclude($1.siz)><![endif]-->
+
+<!--[if gte IE 9]>
+<object data="$1.svg" sinclude($1.siz) type="image/svg+xml" class="img">
+  </object> <![endif]-->
+
+<!--[if !IE]><!-->
+<object data="$1.svg" sinclude($1.siz) type="image/svg+xml" class="img">
+  </object> <!--<![endif]-->
+
+<br>
+<a href="$1.txt" TYPE="text/plain" TARGET="_blank">$1.m4</a>
+</p>
+<hr>')
+
+define(`m4tt',`<g style="font-family:monospace">')
+
+<!--
+<embed pluginspage="http://www.adobe.com/svg/viewer/install/" />
+-->
+
+
+cfig(XXXXX)
+
+</BODY>
+</HTML>

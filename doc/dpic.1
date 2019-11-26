@@ -31,7 +31,7 @@
 .\" Use \(ts instead of ".
 .tr \(ts"
 .\"
-.TH DPIC 1 "2019.08.30"
+.TH DPIC 1 "2019.11.30"
 .SH NAME
 dpic \(hy convert pic\(hylanguage input to LaTeX\(hycompatible and other formats
 .SH SYNOPSIS
@@ -44,14 +44,14 @@ dpic \(hy convert pic\(hylanguage input to LaTeX\(hycompatible and other formats
 Typically,
 .I infile
 is of the form
-.I name\
+.I name
 .B "[.pic]"
 and
 .I outfile
 is of
 .br
 the form
-.I name\
+.I name
 .B ".[tex|eps|pdf|fig|mp|svg]"
 .SH "OPTIONS"
 .B (none)
@@ -405,7 +405,7 @@ Printing to a file is disabled by the \-z option.
 .SS Macros
 The
 pic
-language includes macro definition and expansion, using
+language includes macro definition and expansion, using either
 .P
 .B "   define"
 .I name
@@ -413,14 +413,22 @@ language includes macro definition and expansion, using
 .I anything
 .B "},"
 .P
-so that, when
+or
+.P
+.B "   define"
+.I name
+.B "X"
+.I anything
+.B "X,"
+.P
+where X is any character except {, so that, when
 .I name
 appears alone or with arguments as
 .I name
 .B "("
 .I "arg, ..."
 .B ")"
-then it is replaced by the contents between the braces in the definition.
+then it is replaced by the contents between the delimiters in the definition.
 A comma in an argument list is ignored within a string or parentheses.
 In this substitution, occurrences of
 .B $1
@@ -522,7 +530,7 @@ explicitly as for other drawn objects, as shown:
 .I expr
 .P
 The thickness of lines defining an object are modified using
-the environmental variable
+the environment variable
 .B linethick
 or the attribute
 .P
@@ -946,56 +954,56 @@ by assignment.
 They can be used in expressions like other variables.
 The variables, their default values, and default uses are given below
 .P
-.B "   arcrad       "
-0.25   arc radius
+.B "   arcrad       0.25"
+   arc radius
 .br
-.B "   arrowht      "
-0.1    length of arrowhead
+.B "   arrowht      0.1 "
+    length of arrowhead
 .br
-.B "   arrowwid     "
-0.05   width of arrowhead
+.B "   arrowwid     0.05"
+   width of arrowhead
 .br
-.B "   boxht        "
-0.5    box height
+.B "   boxht        0.5 "
+    box height
 .br
-.B "   boxrad       "
-0      radius of rounded box corners
+.B "   boxrad       0   "
+       radius of rounded box corners
 .br
-.B "   boxwid       "
-0.75   box width
+.B "   boxwid       0.75"
+   box width
 .br
-.B "   circlerad    "
-0.25   circle radius
+.B "   circlerad    0.25"
+circle radius
 .br
-.B "   dashwid      "
-0.05   dash length for dashed lines
+.B "   dashwid      0.05"
+dash length for dashed lines
 .br
-.B "   ellipseht    "
-0.5    ellipse height
+.B "   ellipseht    0.5 "
+ellipse height
 .br
-.B "   ellipsewid   "
-0.75   ellipse width
+.B "   ellipsewid   0.75"
+ellipse width
 .br
-.B "   lineht       "
-0.5    height of vertical lines
+.B "   lineht       0.5 "
+height of vertical lines
 .br
-.B "   linewid      "
-0.5    length of horizontal lines
+.B "   linewid      0.5 "
+length of horizontal lines
 .br
-.B "   movewid      "
-0.5    length of horizontal moves
+.B "   moveht       0.5 "
+length of vertical moves
 .br
-.B "   movewid      "
-0.5    length of horizontal moves
+.B "   movewid      0.5 "
+length of horizontal moves
 .br
-.B "   textht       "
-0      assumed height of text (11pt for postscript, PDF, and SVG)
+.B "   textht       0   "
+assumed height of text (11pt for postscript, PDF, and SVG)
 .br
-.B "   textoffset   "
-2.5/72 text justification gap
+.B "   textoffset   2.5/72"
+text justification gap
 .br
-.B "   textwid      "
-0      assumed width of text
+.B "   textwid      0   "
+assumed width of text
 .P
 When a value is assigned to the environment variable
 .B scale,
@@ -1010,20 +1018,20 @@ In addition when
 .B scale
 is changed, the following are unchanged:
 .P
-.B "   arrowhead    "
-1      arrowhead shape
+.B "   arrowhead    1   "
+arrowhead shape
 .br
-.B "   fillval      "
-0.5    fill density
+.B "   fillval      0.5 "
+fill density
 .br
-.B "   linethick    "
-0.8    line thickness in points
+.B "   linethick    0.8 "
+line thickness in points
 .br
-.B "   maxpsht      "
-11.5   maximum allowed diagram height
+.B "   maxpsht      11.5"
+maximum allowed diagram height
 .br
-.B "   maxpswid     "
-8.5    maximum allowed diagram width
+.B "   maxpswid     8.5 "
+maximum allowed diagram width
 .P
 The variables
 .B maxpswid

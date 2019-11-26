@@ -127,18 +127,26 @@ current GNU pic (gpic) processor~\cite{Raymond95}.
 However, a concise dpic language reference is included here in
 Appendix~A, and the context-free dpic input grammar is given in Appendix~B.
 
+The pic ``little language''
+is particularly suited for easily creating line diagrams
+such as electric circuits, and many persons use a set of macros
+called Circuit\_macros, which are processed using the m4 macro processor
+and \dpic.
+The pic language itself allows macro definitions, and both pic and m4 macros
+will be described.
+
+Many other software tools can produce line diagrams and the choice of
+tool is often subjective or a matter of prior knowledge. The advantages of
+\dpic\ are that its basic use is easy to learn and that
+arbitrary formatted diagram text can be included using \LaTeX.
+\Dpic\ will also produce
+SVG output for web files but the advantage of employing a word processor
+for text is not then directly available. 
+
 \Dpic accepts gpic input for the most part but
 there are minor differences.  The outputs of gpic and dpic are quite
 different but both can serve as preprocessors that create diagrams for
 inclusion in \LaTeX\ documents.
-
-The pic language is particularly suited for easily creating line diagrams
-such as electric circuits, and many persons use a set of macros
-called Circuit\_macros, which are processed using the m4 macro processor
-and \dpic.
-The pic language
-itself allows macro definitions, and both pic and m4 macros
-will be described.
 
 \Dpic usage will be reviewed, some programming examples that illustrate
 dpic extensions of the pic language will be given, and then
@@ -173,6 +181,7 @@ To produce other formats:
    {\sl file}.pic
      \tRA\ {\sl file}{\rm[}.tex{\VL}eps{\VL}pdf{\VL}mp{\VL}fig{\VL}svg{\rm]}}
 
+\pagebreak
 \subsection{Options}
 \Dpic accepts the following options:
 \begin{tabbing}
@@ -282,7 +291,7 @@ Some slightly less than obvious expected lexical values are:
 \begin{tabbing}
 \quad\=\hbox{\tt<primitiv>\ }\= \kill
 \> {\tt corner} \> a compass corner or {\tt.c}, {\tt .start}, {\tt .end} \\
-\> {\tt envvar} \> environmental variable \\
+\> {\tt envvar} \> environment variable) \\
 \> {\tt primitiv} \> {\tt box}, {\tt circle}, {\tt ellipse}, {\tt arc},
    {\tt line}, {\tt arrow}, {\tt move}, {\tt spline}
 \end{tabbing}
@@ -412,9 +421,12 @@ from which examples will be taken.
 %\subsection{Dpic macros}
 A dpic macro is defined by the statement
 \ntt{define {\sl name} \tLB\ {\sl contents} \tRB}\\
-where {\sl name} may begin with a lowercase or uppercase letter.  Then
-any separate appearance of {\sl name} in the following lines is replaced
-by the characters between the defining braces, including newlines.
+where {\sl name} may begin with a lowercase or uppercase letter.
+The form
+\ntt{define {\sl name} X {\sl contents} X}\\
+is also allowed, where {\tt X} is any character except \tLB.
+Then any separate appearance of {\sl name} in the following lines is replaced
+by the {\sl contents} characters, including newlines.
 If the name is given arguments of the form
 \ntt{{\sl name}({\sl x, y, z,~$\ldots$})}\\
 then, in the macro body,
@@ -486,7 +498,6 @@ where the second and third arguments define
 the search interval, the fourth argument specifies the solution
 precision, and the fifth argument is the name of the variable to be set
 to the root.  A basic version of {\tt bisect} is given by
-\pagebreak
 \begin{verbatim}
 define bisect {
   x_m = $2; x_M = $3
@@ -679,6 +690,14 @@ However, {\tt loop()} is a macro, so references to arguments
 in the body will refer to {\tt loop()} arguments, which may not be desired.
 In that case, use a {\tt for} loop.
 
+\subsection{Complex numbers}
+A complex number is an ordered pair of real numbers like a
+position, so it is natural to do complex algebra using macros such as
+the following example, which evaluates the
+product of two complex-number arguments:
+\ntt{%
+  define Zprod \{ ( \$1.x*\$2.x - \$1.y*\$2.y, \$1.y*\$2.x + \$1.x*\$2.y ) \} }
+
 \subsection{M4 macros}
 M4 is a simple but powerful macro language originally distributed with
 Unix systems \cite{KRm4}, but free versions are available for
@@ -742,10 +761,12 @@ below:
 \ntt{  m4postprocessor,svg,`{\sl SVG code}',}
 \ntt{  `{\sl default code}')}
 
+\enlargethispage{\baselineskip}
 \subsubsection{Extending pic: perpendiculars}
 The Circuit\_macros {\tt vperp} macro illustrates how m4 macros can extend
 the pic language.  The purpose is to generate a pair of values representing
 the unit vector perpendicular to a given line, say.
+\vspace*{-0.5\baselineskip}
 \begin{verbatim}
 define(`vperp',
  `define(`m4pdx',`(`$1'.end.x-`$1'.start.x)')dnl
@@ -830,7 +851,6 @@ In cases where a double-subscripted variable or label is part of a macro
 argument, protect the comma in the subscript with parentheses
 by writing, for example, {\tt x[(i,j)]} instead of {\tt x[i,j]}.
 
-\pagebreak
 \subsubsection{Assigning an array of numbers}
 We can assign an array of numbers to subscripted variables using
 statements such as
@@ -871,7 +891,7 @@ following figure, which shows the result of the command
 \ntt{spline up 1.5 then right 2 then down 1.5}\\[-1.5\baselineskip]
 \input spline.tex
 \par
-\enlargethispage{\baselineskip}
+%\enlargethispage{\baselineskip}
 A straight line is drawn along
 the first half of the first segment and the last half of the last segment.
 The curve is tangent to the centres of the segments.
@@ -909,8 +929,9 @@ strings, or SVG output formatted by macros or by hand.
 The result is that the size and position of text may need to be adjusted
 by hand for the particular workflow and postprocessor to be employed.
 
-  The \dpic\ {\tt textht} environmental variable often gives \dpic a
-  good estimate
+  The \dpic\ {\tt textht} environment variable
+  (see \SR{Appendix A:})
+  often gives \dpic a good estimate
   of the actual height of embedded text, but the width of the text is more
   difficult to estimate.
   Consequently, text is sometimes truncated by the figure 
@@ -976,6 +997,7 @@ identical effect with different postprocessors.
 %It is more of a challenge to design
 %macros that have identical effect with a variety of postprocessors,
 %since their syntax differs.
+\pagebreak
 The Circuit\_macros library contains
 several routines that produce equivalent or nearly equivalent results
 for several postprocessors.  It is probably a good rule to stick with
@@ -991,7 +1013,7 @@ one or two postprocessors such as Tikz-pgf or \PSTricks.
   variable {\tt dpicopt} is given the value corresponding to the output format
   specified on the command line.
   Therefore, conditional drawing with a {\tt case} statement as described on
-  page \PR{Branching:}, or with {\tt if} as in the following can be
+  \PR{Branching:}, or with {\tt if} as in the following can be
   performed:\\
   \ntt{if (dpicopt==optPS) || (dpicopt==optPDF) then \tLB}\\
       \hspace*{2em}{\sl drawing commands for postscript or pdf}$\;$ \tRB \tBS
@@ -1106,7 +1128,7 @@ For TikZ-PGF, try
   following code fragment, an assignment to {\tt x} is written to an
   external file so that the required value of {\tt x} will be known after
   the file is read on the second pass.
- \enlargethispage{\baselineskip}
+%\enlargethispage{\baselineskip}
   \ntt{x = {\sl default value}}
   \ntt{print "" >> "datafile" \hfill      \# Make sure the file exists}
   \ntt{copy "datafile" \hfill \# On second pass, read x = required value}
@@ -1222,6 +1244,7 @@ of dpic produce output that is not intended to be processed directly by
   In principle, this process might be automated using suitable macros
   and scripting (JavaScript, probably).
 
+\enlargethispage{\baselineskip}
 \subsection{Bounding boxes}
   The bounding box of a diagram is not always known exactly or even defined
   exactly, since it can depend on the context in which the diagram is to be
@@ -1254,7 +1277,6 @@ of dpic produce output that is not intended to be processed directly by
   use of dpic in server mode has induced a change that correctly
   defines the bounding box for very basic diagrams.  More explicitly,
   consider
-\pagebreak
 \begin{verbatim}
   .PS
   box with .sw at 0,0
@@ -1358,7 +1380,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   is not identical for dpic and gpic but the effects are identical for
   positive parameters.
 
-  Both gpic and recent versions of dpic allow the
+  Both gpic and dpic allow the
   loop index variable to be changed within the loop, so infinite
   repetition or control of termination by a test are possible.
 
@@ -1404,6 +1426,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
 % In all cases, putting comparisons inside parentheses will
 % render them robust to logical agreement and to error messages.
 
+\iffalse
 \subsection{{\tt then}}
   Versions of gpic up to 1.19 ignore the {\tt then} keyword, so that
    \ntt{line -> then up 0.5}\\
@@ -1411,11 +1434,14 @@ relate to the use of \LaTeX\ or the other dpic output formats.
    \ntt{line -> up 0.5}\\
   whereas dpic does not ignore {\tt then}, and draws two line segments.
   Newer versions of gpic also draw two segments.
+\fi
 
 \subsection{{\tt line}, {\tt spline}, {\tt arrow}, {\tt move}}
   Dpic treats the defaults for linear objects consistently with planar
-  objects with respect to the {\tt at} modifier.  Versions of gpic up to 1.19
-  treated them differently:
+  objects with respect to the {\tt at} modifier.
+% Versions of gpic up to 1.19 treated
+  Gpic treats
+  them differently:
 
   In dpic, {\tt line at Here} means {\tt line with .center at Here}.\\
   In gpic, {\tt line at Here} means {\tt line with .start at Here}.
@@ -1442,7 +1468,8 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   does not define a unique arc.
   There are two arcs, with centres on opposite sides of the line
   joining {\tt A} and {\tt B}, that satisfy this specification, and the
-  interpreter will choose one.
+  interpreter will choose one by attempting to minimize the angle between
+  the current direction and the initial arc tangent.
   Instead, use
    \ntt{arc cw from A to B with .c at C}
 
@@ -1625,7 +1652,7 @@ macro can be replaced by one customized to suit.
   parameters, which have to be changed explicitly by either of the
   following methods.  The line thickness is specified in points but the
   arrowhead size parameters are in drawing units:
-\enlargethispage{0.5\baselineskip}\vspace*{-0.5\baselineskip}
+%\enlargethispage{0.5\baselineskip}\vspace*{-0.5\baselineskip}
 \begin{verbatim}
 # Method 1 (global change within the current block):
   linethick = 2    # default 0.8 (bp)
@@ -1685,7 +1712,7 @@ box using
 \Gpic and \dpic place justified text slightly differently.  In the
 previous example, \gpic places the text with its left edge exactly
 at {\tt A}, with similar effect for right justification.  \Dpic
-uses the environmental variable {\tt textoffset}, which is 2\,pt by
+uses the environment variable {\tt textoffset}, which is 2\,pt by
 default, to place the left edge of the text at {\tt A + (textoffset,0)}
 with a similar gap for other relative positioning.  Assigning {\tt textoffset}
 to 0 sets the gap added by \dpic to zero.
@@ -1763,6 +1790,7 @@ to 0 sets the gap added by \dpic to zero.
   scalar multiplication:
   \ntt{X: Y*2/3}\ (but not {\tt X: 2/3*Y})
 
+\iffalse
 \subsection{Positions}
   If {\tt X} is a position, then {\tt (X)} is a valid position for dpic but
   not old versions of gpic, which gave an error for
@@ -1771,15 +1799,18 @@ to 0 sets the gap added by \dpic to zero.
   \ntt{a between A and B + (x,y)}\\
   which is not the same resulting position. Use dpic or a recent gpic
   if you need this construction.
+\fi
 
+\iffalse
 \subsection{{\tt int()}}
 % Gpic {\tt int()} up to version 1.19 computed the floor of its argument
 % rather than the integer part as specified by ATT pic.
   Dpic provides
   both the {\tt floor()} and {\tt int()} functions but {\tt int()}
   does not compute the
-  same value as these versions of gpic {\tt int()} for non-integer negative
+  same value as pre-1.19 versions of gpic {\tt int()} for non-integer negative
   arguments.
+\fi
 
 \subsection{{\tt exec}}
   In dpic the contents of a string can be executed using
@@ -1888,6 +1919,7 @@ command "\makeatletter\@ifundefined{ifPst@noCurrentPoint}%
   with\verb|\usepackage[97]{pstricks}| or\verb|\input{pstricks97.tex}|.
   However, this method precludes using the newer \PSTricks facilities.
 
+\pagebreak
 \pdfbookmark[section]{\refname}{refs}
 \bibliographystyle{plain}
 \bibliography{dpic-doc}
@@ -1895,7 +1927,7 @@ command "\makeatletter\@ifundefined{ifPst@noCurrentPoint}%
 %===============================================================================
 %\iffalse
 \clearpage
-\section{Appendix A: dpic man page}
+\section{Appendix A: dpic man page}\label{Appendix A:}
 %\verbatiminput{dpic.man}
 \input dpic_man.tex
 %\fi
@@ -1907,10 +1939,9 @@ in {\tt <} {\tt >} pairs are generated internally.  Equated tokens
 ({\tt ";" = "<NL>"}) have identical effect.
 
 \begin{verbatim}
-    emptyterm: "<EMPTY>"
     
     terminals:
-         "<ERROR>"
+         "<EMPTY>" "<ERROR>"
          "<" "cw" "ccw"
          "(" ")" "*" "+" "-" "/" "%" ";" = "<NL>"
          "^" "!" "&&" "||" 
@@ -1984,247 +2015,242 @@ in {\tt <} {\tt >} pairs are generated internally.  Equated tokens
 \end{verbatim}
 
 
-The expanded dpic grammar follows, with the production number on the left.
-The bison version of the distribution differs slightly but is equivalent
-for correct input.
+The expanded dpic grammar follows:
 \begin{verbatim}
-    0   METAGOAL = input "<EOF>" 
+        input = "<EMPTY>" 
+              | input picture NL 
 
-    1   input = "<EMPTY>" 
-    2         | input picture NL 
+        picture = start NL elementlist optnl "<END>" 
 
-    3   picture = start NL elementlist "<END>" 
-    4           | start NL elementlist NL "<END>" 
+        NL = ";" 
+           | "<ERROR>" 
 
-    5   NL = ";" 
-    6      | "<ERROR>" 
+        start = "<START>" 
+              | "<START>" term 
+              | "<START>" term term 
 
-    7   start = "<START>" 
-    8         | "<START>" term 
-    9         | "<START>" term term 
+        elementlist = "<EMPTY>" 
+                    | element 
+                    | elementlist NL element 
 
-   10   elementlist = "<EMPTY>" 
-   11               | element 
-   12               | elementlist NL element 
+        optnl = "<EMPTY>" 
+              | NL 
 
-   13   term = factor 
-   14        | term "*" factor 
-   15        | term "/" factor 
-   16        | term "%" factor 
+        term = factor 
+             | term "*" factor 
+             | term "/" factor 
+             | term "%" factor 
 
-   17   element = namedobj 
-   18           | "<Label>" suffix ":" position 
-   19           | assignlist 
-   20           | "<directon>" 
-   21           | "<LaTeX>" 
-   22           | command 
-   23           | lbrace "{" elementlist optnl "}" 
-   24           | ifpart 
-   25           | elsehead "{" elementlist optnl "}" 
-   26           | for "}" 
-   27           | "command" stringexpr 
-   28           | "exec" stringexpr 
+        element = namedobj 
+                | "<Label>" suffix ":" position 
+                | assignlist 
+                | "<directon>" 
+                | "<LaTeX>" 
+                | command 
+                | lbrace elementlist optnl "}" 
+                | ifpart 
+                | elsehead elementlist optnl "}" 
+                | for "}" 
+                | "command" stringexpr 
+                | "exec" stringexpr 
 
-   29   lbrace = "<EMPTY>" 
+        lbrace = "{" 
 
-   30   namedobj = object 
-   31            | "<Label>" suffix ":" object 
+        namedobj = object 
+                 | "<Label>" suffix ":" object 
 
-   32   suffix = "<EMPTY>" 
-   33          | "[" expression "]" 
-   34          | "[" position "]" 
+        suffix = "<EMPTY>" 
+               | "[" expression "]" 
+               | "[" position "]" 
 
-   35   position = pair 
-   36            | expression "between" position "and" position 
-   37            | expression "of" "the" "way" "between" position "and" position 
-   38            | expression "<" position "," position "<compare>" shift 
+        position = pair 
+                 | expression "between" position "and" position 
+                 | expression "of" "the" "way" "between" position "and" position 
+                 | expression "<" position "," position "<compare>" shift 
 
-   39   assignlist = assignment 
-   40              | assignlist "," assignment 
+        assignlist = assignment 
+                   | assignlist "," assignment 
 
-   41   command = "print" expression redirect 
-   42           | "print" position redirect 
-   43           | "print" stringexpr redirect 
-   44           | "reset" 
-   45           | "reset" resetlist 
-   46           | systemcmd 
-   47           | "copy" stringexpr 
-   48           | defhead optnl "{" "}" 
-   49           | "undefine" "<name>" 
-   50           | "undefine" "<Label>" 
+        command = "print" expression redirect 
+                | "print" position redirect 
+                | "print" stringexpr redirect 
+                | "reset" 
+                | "reset" resetlist 
+                | systemcmd 
+                | "copy" stringexpr 
+                | "define" "<name>" 
+                | "define" "<Label>" 
+                | "undefine" "<name>" 
+                | "undefine" "<Label>" 
 
-   51   optnl = "<EMPTY>" 
-   52         | NL 
+        ifpart = ifhead elementlist optnl "}" 
 
-   53   ifpart = ifhead "{" elementlist optnl "}" 
+        elsehead = ifpart "else" "{" 
 
-   54   elsehead = ifpart "else" 
+        for = forhead elementlist optnl 
+            | for forincr elementlist optnl 
 
-   55   for = forhead "{" elementlist optnl 
-   56       | for forincr "<endfor>" elementlist optnl 
+        stringexpr = string 
+                   | stringexpr "+" string 
 
-   57   stringexpr = string 
-   58              | stringexpr "+" string 
+        string = "<string>" 
+               | sprintf ")" 
 
-   59   string = "<string>" 
-   60          | sprintf ")" 
+        assignment = "<name>" suffix "=" assignrhs 
+                   | "<envvar>" "=" assignrhs 
 
-   61   assignment = "<name>" suffix "=" expression 
-   62              | "<name>" suffix "=" assignment 
-   63              | "<envvar>" "=" expression 
-   64              | "<envvar>" "=" assignment 
+        assignrhs = expression 
+                  | assignment 
 
-   65   expression = term 
-   66              | "+" term 
-   67              | "-" term 
-   68              | expression "+" term 
-   69              | expression "-" term 
+        expression = term 
+                   | "+" term 
+                   | "-" term 
+                   | expression "+" term 
+                   | expression "-" term 
 
-   70   ifhead = setlogic "if" logexpr "then" 
+        ifhead = setlogic logexpr "then" "{" 
 
-   71   setlogic = "<EMPTY>" 
+        setlogic = "if" 
 
-   72   logexpr = logprod 
-   73           | logexpr "||" logprod 
+        logexpr = logprod 
+                | logexpr "||" logprod 
 
-   74   forhead = "for" assignlist "to" expression do 
+        forhead = "for" assignlist "to" expression do "{"
 
-   75   forincr = "<EMPTY>" 
+        forincr = "<endfor>" 
 
-   76   do = "do" 
-   77      | by expression "do" 
+        do = "do" 
+           | by expression "do" 
 
-   78   by = "by" 
-   79      | "by" "*" 
+        by = "by" 
+           | "by" "*" 
 
-   80   redirect = "<EMPTY>" 
-   81            | "<compare>" stringexpr 
-   82            | "<compare>" "<compare>" stringexpr 
+        redirect = "<EMPTY>" 
+                 | "<compare>" stringexpr 
+                 | "<compare>" "<compare>" stringexpr 
 
-   83   resetlist = "<envvar>" 
-   84             | resetlist "," "<envvar>" 
+        resetlist = "<envvar>" 
+                  | resetlist "," "<envvar>" 
 
-   85   systemcmd = "sh" stringexpr 
+        systemcmd = "sh" stringexpr 
 
-   86   defhead = "define" "<name>" 
-   87           | "define" "<Label>" 
+        defhead = "<EMPTY>" 
 
-   88   sprintf = "sprintf" "(" stringexpr 
-   89           | "sprintf" "(" stringexpr "," exprlist 
+        sprintf = "sprintf" "(" stringexpr 
+                | "sprintf" "(" stringexpr "," exprlist 
 
-   90   exprlist = expression 
-   91            | expression "," exprlist 
+        exprlist = expression 
+                 | expression "," exprlist 
 
-   92   object = block 
-   93          | object "height" expression 
-   94          | object "width" expression 
-   95          | object "radius" expression 
-   96          | object "diameter" expression 
-   97          | object "thickness" expression 
-   98          | object "scaled" expression 
-   99          | object "<directon>" optexp 
-  100          | object "<linetype>" optexp 
-  101          | object "chop" optexp 
-  102          | object "filled" optexp 
-  103          | object "<arrowhd>" optexp 
-  104          | object "then" 
-  105          | object "cw" 
-  106          | object "ccw" 
-  107          | object "same" 
-  108          | object stringexpr 
-  109          | object "by" position 
-  110          | object "from" position 
-  111          | object "to" position 
-  112          | object "at" position 
-  113          | object "<textpos>" 
-  114          | object "<colrspec>" stringexpr 
-  115          | objectwith "at" position 
-  116          | objectwith "<corner>" "at" position 
-  117          | objectwith pair "at" position 
-  118          | "continue" 
+        object = block 
+               | object "height" expression 
+               | object "width" expression 
+               | object "radius" expression 
+               | object "diameter" expression 
+               | object "thickness" expression 
+               | object "scaled" expression 
+               | object "<directon>" optexp 
+               | object "<linetype>" optexp 
+               | object "chop" optexp 
+               | object "filled" optexp 
+               | object "<arrowhd>" optexp 
+               | object "then" 
+               | object "cw" 
+               | object "ccw" 
+               | object "same" 
+               | object stringexpr 
+               | object "by" position 
+               | object "from" position 
+               | object "to" position 
+               | object "at" position 
+               | object "<textpos>" 
+               | object "<colrspec>" stringexpr 
+               | objectwith "at" position 
+               | objectwith "<corner>" "at" position 
+               | objectwith pair "at" position 
+               | "continue" 
 
-  119   openblock = "<EMPTY>" 
+        openblock = "[" 
 
-  120   block = "<primitiv>" optexp 
-  121         | stringexpr 
-  122         | openblock "[" closeblock "]" 
-  123         | openblock "[]" 
+        block = "<primitiv>" optexp 
+              | stringexpr 
+              | openblock closeblock "]" 
+              | "[]" 
 
-  124   optexp = "<EMPTY>" 
-  125          | expression 
+        optexp = "<EMPTY>" 
+               | expression 
 
-  126   closeblock = elementlist optnl 
+        closeblock = elementlist optnl 
 
-  127   objectwith = object "with" 
-  128              | objectwith "." "<Label>" suffix 
-  129              | objectwith "." nth primobj 
+        objectwith = object "with" 
+                   | objectwith "." "<Label>" suffix 
+                   | objectwith "." nth primobj 
 
-  130   pair = expression "," expression 
-  131        | location shift 
+        pair = expression "," expression 
+             | location shift 
 
-  132   nth = ncount "th" 
-  133       | ncount "th" "last" 
-  134       | "last" 
+        nth = ncount "th" 
+            | ncount "th" "last" 
+            | "last" 
 
-  135   primobj = "<primitiv>" 
-  136           | "[]" 
-  137           | "<string>" 
-  138           | "[" "]" 
+        primobj = "<primitiv>" 
+                | "[]" 
+                | "<string>" 
+                | "[" "]" 
 
-  139   shift = "<EMPTY>" 
-  140         | shift "+" location 
-  141         | shift "-" location 
+        shift = "<EMPTY>" 
+              | shift "+" location 
+              | shift "-" location 
 
-  142   location = "(" position ")" 
-  143            | "(" position "," position ")" 
-  144            | place 
-  145            | location "*" factor 
-  146            | location "/" factor 
+        location = "(" position ")" 
+                 | "(" position "," position ")" 
+                 | place 
+                 | location "*" factor 
+                 | location "/" factor 
 
-  147   place = placename 
-  148         | placename "<corner>" 
-  149         | "<corner>" placename 
-  150         | "<corner>" "of" placename 
-  151         | "Here" 
+        place = placename 
+              | placename "<corner>" 
+              | "<corner>" placename 
+              | "<corner>" "of" placename 
+              | "Here" 
 
-  152   factor = primary 
-  153          | "!" primary 
-  154          | primary "^" factor 
+        factor = primary 
+               | "!" primary 
+               | primary "^" factor 
 
-  155   placename = "<Label>" suffix 
-  156             | nth primobj 
-  157             | placename "." "<Label>" suffix 
-  158             | placename "." nth primobj 
+        placename = "<Label>" suffix 
+                  | nth primobj 
+                  | placename "." "<Label>" suffix 
+                  | placename "." nth primobj 
 
-  159   ncount = "<float>" 
-  160          | "`" expression "'" 
-  161          | "{" expression "}" 
+        ncount = "<float>" 
+               | "`" expression "'" 
+               | "{" expression "}" 
 
-  162   logprod = logval 
-  163           | logprod "&&" logval 
+        logprod = logval 
+                | logprod "&&" logval 
 
-  164   logval = lcompare 
-  165          | stringexpr "<" stringexpr 
-  166          | expression "<" expression 
+        logval = lcompare 
+               | stringexpr "<" stringexpr 
+               | expression "<" expression 
 
-  167   lcompare = expression 
-  168            | stringexpr 
-  169            | lcompare "<compare>" expression 
-  170            | lcompare "<compare>" stringexpr 
+        lcompare = expression 
+                 | stringexpr 
+                 | lcompare "<compare>" expression 
+                 | lcompare "<compare>" stringexpr 
 
-  171   primary = "<envvar>" 
-  172           | "<name>" suffix 
-  173           | "<float>" 
-  174           | "(" logexpr ")" 
-  175           | location ".x" 
-  176           | location ".y" 
-  177           | placename "<param>" 
-  178           | "rand" "(" ")" 
-  179           | "rand" "(" expression ")" 
-  180           | "<func1>" "(" expression ")" 
-  181           | "<func2>" "(" expression "," expression ")" 
-  182           | "(" assignlist ")" 
-  183           | "(" systemcmd ")" 
+        primary = "<envvar>" 
+                | "<name>" suffix 
+                | "<float>" 
+                | "(" logexpr ")" 
+                | location ".x" 
+                | location ".y" 
+                | placename "<param>" 
+                | "rand" "(" ")" 
+                | "rand" "(" expression ")" 
+                | "<func1>" "(" expression ")" 
+                | "<func2>" "(" expression "," expression ")" 
+                | "(" assignlist ")" 
+                | "(" systemcmd ")" 
 \end{verbatim}
-
 \end{document}\endinput

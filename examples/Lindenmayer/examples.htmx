@@ -1,0 +1,80 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<HTML>
+<HEAD>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<!--meta http-equiv="Content-Script-Type" content="text/javascript"-->
+<TITLE>Lindenmayer systems</TITLE>
+<style type="text/css">
+.svg{display:none}
+*>.svg{display:inline}
+</style>
+</HEAD>
+
+<BODY>
+<H2>Fun with Lindenmayer systems</H2>
+
+<p> Lindenmayer systems (L-systems) produce fractal pictures using
+  recursion to rewrite a string of symbols, together with a drawing
+  mechanism to convert symbols to drawing elements.  M4 is a natural choice
+  for recursion, and dpic macros can control drawing actions.
+  </p>
+
+<p> The number of picture elements can be quite large and can overflow
+  the capacity of LaTeX, so the capabilities of dpic to produce diagrams
+  without invoking LaTeX are needed.
+  </p>
+
+<p>
+  Many of these examples are credited to Paul Bourke and others, see
+  <bp>
+  http://paulbourke.net/fractals/lsys/
+  <bp>
+  See also https://en.wikipedia.org/wiki/L-system
+  </p>
+
+define(`cfig',`
+<p>
+
+<!--[if lte IE 8]><embed src="$1.svg" sinclude($1.siz)><![endif]-->
+
+<!--[if gte IE 9]>
+<object dx="4" data="$1.svg" sinclude($1.siz) type="image/svg+xml" class="img">
+  </object> <![endif]-->
+
+<!--[if !IE]><!-->
+<object data="$1.svg" sinclude($1.siz) type="image/svg+xml" class="img">
+  </object> <!--<![endif]-->
+
+<br>
+<a href="$1.txt" TYPE="text/plain" TARGET="_blank" alt="$1">$1.m4</a>
+</p>
+<hr>')
+
+define(`m4tt',`<g style="font-family:monospace">')
+
+<p>
+<hr>
+
+cfig(Cantor)
+cfig(Dragon)
+cfig(Bush5)
+cfig(Algae1)
+cfig(Algae2)
+cfig(Bush1)
+cfig(Bush2)
+cfig(Bush3)
+cfig(Bush4)
+cfig(FractalPlant)
+cfig(HexagonalGosper)
+cfig(Koch)
+cfig(Leaf)
+cfig(Levycurve)
+cfig(OL)
+cfig(SierpinskiArrowhead)
+cfig(Sticks)
+cfig(Tiles1)
+cfig(Weed)
+
+</BODY>
+</HTML>
