@@ -1,9 +1,9 @@
 .PS
 # Spiral.m4 (Uses Circuit_macros library)
-# threeD_init Version 9.0.1: TikZ PGF m4 macro settings.
+# threeD_init Version 9.2: TikZ PGF m4 macro settings.
   
 # threeD_init begin
-  # gen_init Version 9.0.1: TikZ PGF m4 macro settings.
+  # gen_init Version 9.2: TikZ PGF m4 macro settings.
   
 
   define rpoint__ {
@@ -24,6 +24,7 @@
   # gen_init end
 
   
+# setview
  m4azim=(20)*(dtor_)
  m4elev=(20)*(dtor_)
  m4rot =0
@@ -39,15 +40,13 @@
 
 
 # threeD_init end
-# For this manual we have a local copy of dpictools.pic; normally
-# we would invoke the macro NeedDpicTools
-# copy "dpictools.pic"
 if "dpictools" != "1" then {
   copy "/cygdrive/d/Dwight/lib/dpictools.pic" }   
 
   azimuth = 15                     # Set view angles in degrees
   elevation = 35
   
+# setview
  m4azim=(azimuth)*(dtor_)
  m4elev=(elevation)*(dtor_)
  m4rot =0

@@ -1449,7 +1449,7 @@ skipwhite (void) {		/* D if debuglevel = 2 then writeln(log, 'skipwhite: ' ); D 
    struct*/
 void
 defineargbody (int *parenlevel, fbuffer ** p2) {
-  int j, n;
+  int j, n, bracketlevel;
   arg *ar;
   fbuffer *p;
   fbuffer *p1 = NULL;
@@ -1458,18 +1458,12 @@ defineargbody (int *parenlevel, fbuffer ** p2) {
   fbuffer *With;
 
   skipwhite ();
-  if ((*parenlevel) >= 0) {
-    inarg = true;
-  } else {
-    inarg = false;
-  }
+  bracketlevel = 0;
+  if ((*parenlevel) >= 0) { inarg = true; } else { inarg = false; }
   while (inarg) {
     newbuf (&p);
     p->attrib = -1;
-    if (p1 != NULL) {
-      p1->nextb = p;
-      p->prevb = p1;
-    }
+    if (p1 != NULL) { p1->nextb = p; p->prevb = p1; }
     p1 = p;
     j = CHBUFSIZ;
     instring = false;
@@ -1477,71 +1471,56 @@ defineargbody (int *parenlevel, fbuffer ** p2) {
     do {
       With = p1;
       if (prevch != bslch) {
-	if (instring && (ch == '"')) {
-	  instring = false;
-	} else if (ch == '"') {
-	  instring = true;
-	}
-      }
+	    if (instring && (ch == '"')) { instring = false; }
+        else if (ch == '"') { instring = true; }
+        }
       if (!instring) {
-	if (ch == '(') {
-	  (*parenlevel)++;
-	} else if (ch == ')') {
-	  (*parenlevel)--;
-	}
-      }
-      if ((!instring) && (((*parenlevel) < 0) ||
-			  (((*parenlevel) == 0) && (ch == ',')))) {
-	j = With->savedlen;
-	inarg = false;
-      } else if (ch != '$') {
-	prevch = ch;
-	if (With->savedlen < CHBUFSIZ) {
-	  With->savedlen++;
-	} else {
-	  markerror (872);
-	}
-	With->carray[With->savedlen] = ch;
-	inchar ();
-      } else {
-	prevch = ch;
-	inchar ();
-	if (isdigit (ch) != 0) {
-	  n = 0;
-	  do {
-	    n = (n * 10) + ch - '0';
+	    if (ch == '[') { bracketlevel++; }
+        else if (ch == ']') { bracketlevel--; }
+	    else if (ch == '(') { (*parenlevel)++; }
+        else if (ch == ')') { (*parenlevel)--; }
+        }
+      if ((!instring) && (bracketlevel == 0) && 
+          (((*parenlevel) < 0) || (((*parenlevel) == 0) && (ch == ',')))) {
+	    j = With->savedlen; inarg = false; }
+      else if (ch != '$') {
+	    prevch = ch;
+	    if (With->savedlen < CHBUFSIZ) { With->savedlen++; }
+        else { markerror (872); }
+	    With->carray[With->savedlen] = ch;
 	    inchar ();
-	  } while (isdigit (ch) != 0);
-	  ar = findarg (args, n);
-	  if (ar != NULL) {
-	    copyright (ar->argbody, &p1);
-	  }
-	} else {
-	  if (With->savedlen < CHBUFSIZ) {
-	    With->savedlen++;
-	  } else {
-	    markerror (872);
-	  }
-	  With->carray[With->savedlen] = prevch;
-	}
-      }
+        }
+      else {
+    	prevch = ch;
+    	inchar ();
+    	if (isdigit (ch) != 0) {
+    	  n = 0;
+    	  do {
+    	    n = (n * 10) + ch - '0';
+    	    inchar ();
+    	  } while (isdigit (ch) != 0);
+    	  ar = findarg (args, n);
+    	  if (ar != NULL) { copyright (ar->argbody, &p1); }
+          }
+        else {
+    	  if (With->savedlen < CHBUFSIZ) { With->savedlen++; }
+          else { markerror (872); }
+    	  With->carray[With->savedlen] = prevch;
+    	  }
+        }
       /* $ found in a macro arg */
       if (inputeof) {
-	markerror (806);
-	j = With->savedlen;
-	inarg = false;
-	*parenlevel = -1;
-      }
+	    markerror (806);
+	    j = With->savedlen;
+	    inarg = false;
+	    *parenlevel = -1;
+        }
     } while (p1->savedlen != j);
-  }
-  if (p1 != NULL) {
-    while (p1->prevb != NULL) {
-      p1 = p1->prevb;
     }
-  }
+  if (p1 != NULL) { while (p1->prevb != NULL) { p1 = p1->prevb; } }
   ch = ' ';
   *p2 = p1;
-}
+  }
 
 							/* String equality:
 							   0: identical

@@ -3,12 +3,12 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 9.1.1, copyright (c) 2019 J. D. Aplevich under     #
-# the LaTeX Project Public License. The files of this distribution may    #
-# be redistributed or modified provided that this copyright notice is     #
-# included and provided that modifications are clearly marked to          #
-# distinguish them from this distribution.  There is no warranty          #
-# whatsoever for these files.                                             #
+# Circuit_macros Version 9.2, copyright (c) 2020 J. D. Aplevich under      #
+# the LaTeX Project Public Licence in file Licence.txt. The files of       #
+# this distribution may be redistributed or modified provided that this    #
+# copyright notice is included and provided that modifications are clearly #
+# marked to distinguish them from this distribution.  There is no warranty #
+# whatsoever for these files.                                              #
 
 #                   findroot(function,left bound,right bound,tolerance,var name)
 #                   Solve function(x)=0 by the method of bisection
@@ -61,10 +61,55 @@ define loop {ld__+=1
 define array {
  for i_array=2 to $+ do { exec sprintf("$1[%g] = $%g",i_array-1,i_array); }}
 
+#                               array2(var,expr1,expr2,...)
+#                               var[expr1,1]=expr2; var[expr1,2]=expr3,...
+define array2 { for i_array=3 to $+ do {
+  exec sprintf("$1[%g,%g]=$%g",$2,i_array-2,i_array);}}
+
 #                               posarray(Var,position1,position2,...)
 #                               Var[1]:position1; Var[2]:Position2,...
 define posarray {
  for i_array=2 to $+ do { exec sprintf("$1[%g] : $%g",i_array-1,i_array); }}
+
+#                               posarray2(Var,expr,position1,position2,...)
+#                               Var[expr,1]:position1; Var[expr,2]:Position2,...
+define posarray2 { for i_array=3 to $+ do {
+  exec sprintf("$1[%g,%g] : $%g",$2,i_array-2,i_array); }}
+
+#                               Operations on 3-d vectors (could be generalized
+#                               except for cross):
+#                               $3 = $1 + $2
+define sum3 {
+ $3[1]=$1[1]+$2[1]
+ $3[2]=$1[2]+$2[2]
+ $3[3]=$1[3]+$2[3]}
+
+#                               $3 = $1 - $2
+define diff3 {
+ $3[1]=$1[1]-$2[1]
+ $3[2]=$1[2]-$2[2]
+ $3[3]=$1[3]-$2[3]}
+
+#                               $3 = $1 X $2
+define cross3 {
+ $3[1]=$1[2]*$2[3]-$1[3]*$2[2]
+ $3[2]=$1[3]*$2[1]-$1[1]*$2[3]
+ $3[3]=$1[1]*$2[2]-$1[2]*$2[1]}
+
+#                               $1 . $2
+define dot3 {($1[1]*$2[1]+$1[2]*$2[2]+$1[3]*$2[3])}
+
+#                               |$1|
+define length3 { sqrt($1[1]^2+$1[2]^2+$1[3]^2) }
+
+#                               Expand a vector
+define vec3 {$1[1],$1[2],$1[3]}
+
+#                               $2 = $1
+define copy3 {
+  $2[1] = $1[1]
+  $2[2] = $1[2]
+  $2[3] = $1[3] }
 
 #                               slantbox(wid,ht,xslant,yslant,attributes)
 define slantbox { [
@@ -367,15 +412,24 @@ define prval { print sprintf("$1=%g",$1) }
 define prval2 { print sprintf("$1=%g, $2=%g",$1,$2) }
 define prval3 { print sprintf("$1=%g, $2=%g, $3=%g",$1,$2,$3) }
 
-#                               prow(array name,lo,hi)
-#                               print array[lo:hi] as a row
-#                               eg array(x,6,4,5); prow(x,1,3)
+#                               prow(array name,rowno,lo,hi)
+#                               print array[rowno,lo:hi] as a row
+#                               rowno can be omitted, e.g.,
+#                               array(x,6,4,5); prow(x,1,3)
 define prow {
-  sh "echo -n \"print \\"\" > $1_xxx"
-  for i=$2 to $3-1 do { sh sprintf("echo -n \"%g \" >> $1_xxx",$1[i]) }
-  sh sprintf("echo \"%g\\"\" >> $1_xxx",$1[$3])
-  copy "$1_xxx"
-  sh "rm $1_xxx"
+  sh "echo -n \"print \\"\" > $1_prow"
+  if ($+ < 4) || ("$2"=="") then {
+    for i_prow=$2 to $3-1 do {
+      sh sprintf("echo -n \"%g \" >> $1_prow", $1[i_prow]) }
+    sh sprintf("echo \"%g\\"\" >> $1_prow", $1[$3])
+    } \
+  else {
+    for i_prow=$2 to $3-1 do {
+      sh sprintf("echo -n \"%g \" >> $1_prow", $1[($4,i_prow)]) }
+    sh sprintf("echo \"%g\\"\" >> $1_prow", $1[($4,$3)])
+    }
+  copy "$1_prow"
+  sh "rm $1_prow"
   }
 
 define rnd {int($1+sign($1)/2)} # round function

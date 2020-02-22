@@ -3,7 +3,7 @@ dnl i.e. autoconf configure.ac > ../configure
 
 dnl For most systems a configure script is hardly required.
 
-AC_INIT(dpic,2019.11.30)
+AC_INIT(dpic,2020.03.01)
 AC_CONFIG_AUX_DIR(autoconf/scripts)
 m4_include(m4/ax_check_compile_flag.m4)
 
@@ -11,7 +11,7 @@ AC_LANG_C
 
 PACKAGE=dpic
 UCPACKAGE=DPIC
-VERSION=2019.11.30
+VERSION=2020.03.01
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 AC_SUBST(UCPACKAGE)

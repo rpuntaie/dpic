@@ -16,7 +16,7 @@
    latter tools, it was decided to enter the world of Linux orthodoxy,
    provide the source in C, and use GNU bison to generate the parser.
 
-   Dpic has been pretty solid for a decade or more and in order not
+   Dpic has been quite solid for a decade or more and in order not
    to introduce bugs, the C code has been altered very little.  As a
    result, there are few C idioms used but some p2c idiosyncracies
    (use of With, FORLIM ...) remain.  Starting from scratch would
@@ -387,9 +387,9 @@ typedef double envarray[XLlastenv - XXenvvar];
 
 %% /* beginning of rules section */
 
-input:	/* input1 */
+input :                                                           /* input1 */
 
-		| input picture NL /* input2 */
+		| input picture NL                                        /* input2 */
 		{ deletetree(&envblock);
     	  deletefreeargs(&freearg);
     	  deletefreeinbufs(&freeinbuf);
@@ -405,7 +405,7 @@ input:	/* input1 */
 		  }
 		;
 
-picture	:	start NL elementlist optnl XEND /* picture1 */
+picture	:	start NL elementlist optnl XEND                     /* picture1 */
 		{ if (envblock != NULL ) { getnesw(envblock->son);
 #ifdef DDEBUG
 	      if (debuglevel > 0) {
@@ -477,25 +477,25 @@ picture	:	start NL elementlist optnl XEND /* picture1 */
 	      }
 		;
 
-NL	:	XNL /* NL1 */
+NL	:	XNL                                                          /* NL1 */
 
-		| error /* NL2 */
+		| error                                                      /* NL2 */
 		{ yyerrok; yyclearin; }
 		;
 
-start	:	XSTART /* start1 */
+start	:	XSTART                                                /* start1 */
 		{ dostart(); $$.xval = 0; $$.yval = 0;}
 
-		| XSTART term /* start2 */
+		| XSTART term                                             /* start2 */
 		{ dostart(); $$.xval = $2.xval; $$.yval = 0; }
 
-		| XSTART term term /* start3 */
+		| XSTART term term                                        /* start3 */
 		{ dostart(); $$.xval = $2.xval; $$.yval = $3.xval; }
 		;
 
-elementlist	:	/* elementlist1 */
+elementlist	:                                               /* elementlist1 */
 
-		| element /* elementlist2 */
+		| element                                           /* elementlist2 */
 		{ if (($1.prim != NULL) && ($1.lexval != XLcontinue)) {
             queueprim( $1.prim, envblock ); }
 #ifdef DDEBUG
@@ -503,7 +503,7 @@ elementlist	:	/* elementlist1 */
 #endif
     	  }
 
-		| elementlist NL element /* elementlist3 */
+		| elementlist NL element                            /* elementlist3 */
 		{ if (($3.prim != NULL) && ($3.lexval != XLcontinue)) {
             queueprim( $3.prim, envblock ); }
 #ifdef DDEBUG
@@ -512,17 +512,17 @@ elementlist	:	/* elementlist1 */
 		  }
 		;
 
-term	:	factor /* term1 */
+term	:	factor                                                 /* term1 */
 
-		| term Xmult factor /* term2 */
+		| term Xmult factor                                        /* term2 */
 		{ $$.xval = $1.xval * $3.xval; }
 
-		| term Xdiv factor /* term3 */
+		| term Xdiv factor                                         /* term3 */
 		{ if ($3.xval == 0.0) { markerror(852); $$.xval = 0.0; }
     		else { $$.xval = $1.xval / $3.xval; }
 		  }
 
-		| term Xpercent factor /* term4 */
+		| term Xpercent factor                                     /* term4 */
 		{ i = Rnd($1.xval);
     	  j = Rnd($3.xval);
     	  if (j == 0) { markerror(852); $$.xval = 0.0; }
@@ -530,7 +530,7 @@ term	:	factor /* term1 */
 		  }
 		;
 
-element	:	namedobj /* element1 */ /* chop operation for linear objects */
+element	:	namedobj /* chop operation for linear objects */    /* element1 */
 		{ if ($$.prim != NULL) {
 			prp = $$.prim;
 			if ((prp->ptype == XLspline) || (prp->ptype == XLmove) ||
@@ -577,7 +577,7 @@ element	:	namedobj /* element1 */ /* chop operation for linear objects */
 #endif
 			}
 
-		| XLabel suffix XCOLON position /* element2 */
+		| XLabel suffix XCOLON position                         /* element2 */
 		{ if ($2.lexval != XEMPTY) {
 		    addsuffix(chbuf, &$1.chbufx,&$1.toklen, $2.xval,$2.lexval,$2.yval);}
 		  prp = findplace(envblock->son, chbuf, $1.chbufx, $1.toklen);
@@ -601,21 +601,21 @@ element	:	namedobj /* element1 */ /* chop operation for linear objects */
 #endif
 		  }
 
-		| assignlist /* element3 */
+		| assignlist                                            /* element3 */
 
-		| XLdirecton /* element4 */
+		| XLdirecton                                            /* element4 */
 			{ envblock->direction = $1.lexval; }
 
-		| XLaTeX /* element5 */
+		| XLaTeX                                                /* element5 */
 		{ newprim(&$$.prim, XLaTeX, envblock);
     	  newstr(&$$.prim->textp);
     	  storestring($$.prim->textp, chbuf, $1.chbufx, $1.toklen, 1);
 		  clearchbuf($1.chbufx, $1.toklen);
 		  }
 
-		| command /* element6 */
+		| command                                               /* element6 */
 
-		| lbrace elementlist optnl XRBRACE /* element7 */
+		| lbrace elementlist optnl XRBRACE                      /* element7 */
 		{ envblockB.here.xpos = $1.xval;
     	  envblockB.here.ypos = $1.yval;
     	  if (($1.state == XLright) || ($1.state == XLleft) ||
@@ -626,13 +626,13 @@ element	:	namedobj /* element1 */ /* chop operation for linear objects */
 #endif
 		  }
 
-		| ifpart /* element8 */
+		| ifpart                                                /* element8 */
 
-		| elsehead elementlist optnl XRBRACE /* element9 */
+		| elsehead elementlist optnl XRBRACE                    /* element9 */
 
-		| for XRBRACE /* element10 */
+		| for XRBRACE                                          /* element10 */
 
-		| XLcommand stringexpr /* element11 */
+		| XLcommand stringexpr                                 /* element11 */
 		{ if ($2.prim != NULL) {
 			newprim(&$$.prim, XLaTeX, envblock);
 			$$.prim->textp = $2.prim->textp;
@@ -642,7 +642,7 @@ element	:	namedobj /* element1 */ /* chop operation for linear objects */
 			}
 		  }
 
-		| XLexec stringexpr /* element12 */
+		| XLexec stringexpr                                    /* element12 */
 		{ if ($2.prim == NULL) { }
           else if ($2.prim->textp == NULL) { }
           else if ($2.prim->textp->segmnt != NULL) {
@@ -666,16 +666,16 @@ element	:	namedobj /* element1 */ /* chop operation for linear objects */
 		  }
 		;
 
-lbrace	:	XLBRACE /* lbrace1 */
+lbrace	:	XLBRACE                                              /* lbrace1 */
 		{ $$.xval = envblockB.here.xpos;
     	  $$.yval = envblockB.here.ypos;
     	  $$.state = envblock->direction; }
 		;
 
-namedobj:	object /* namedobj1 */ /* then, arc, and deferred shift */
+namedobj:	object /* then, arc, and deferred shift */         /* namedobj1 */
 		{ donamedobj(&$$); }
 
-		| XLabel suffix XCOLON object /* namedobj2 */
+		| XLabel suffix XCOLON object                          /* namedobj2 */
 		{ if ($4.prim != NULL) {
 		    if ($2.lexval != XEMPTY) { addsuffix(chbuf, &$1.chbufx,
                   &$1.toklen, $2.xval,$2.lexval,$2.yval); }
@@ -694,13 +694,13 @@ namedobj:	object /* namedobj1 */ /* then, arc, and deferred shift */
 		  }
 		;
 
-suffix	: /* suffix1 */
+suffix	:                                                        /* suffix1 */
 		{ $$.lexval = XEMPTY; }
 
-		| XBRACKETL expression XBRACKETR /* suffix2 */ 
+		| XBRACKETL expression XBRACKETR                         /* suffix2 */
 		{ if ($2.xval > maxint) { fatal(9); } else { $$.xval = $2.xval; } }
 
-		| XBRACKETL position XBRACKETR /* suffix3 */ 
+		| XBRACKETL position XBRACKETR                           /* suffix3 */
     	{ $$.lexval = Xcomma;
     	  $$.xval = $2.xval;
     	  $$.yval = $2.yval;
@@ -708,23 +708,23 @@ suffix	: /* suffix1 */
 		  }
 		;
 
-position	:	pair /* position1 */ 
+position	:	pair                                           /* position1 */
 			{ $$ = $1; }
 
-		| expression XLbetween position XLand position  /* position1 */ 
+		| expression XLbetween position XLand position         /* position2 */
 		{ r = $1.xval;
     	  $$.xval = $3.xval + (r * ($5.xval - $3.xval));
     	  $$.yval = $3.yval + (r * ($5.yval - $3.yval)); }
 
 		| expression XLof XLthe XLway XLbetween position XLand position
-		/* position2 */ 
+                                                               /* position3 */
 		{
     	  r = $1.xval;
     	  $$.xval = $6.xval + (r * ($8.xval - $6.xval));
     	  $$.yval = $6.yval + (r * ($8.yval - $6.yval)); }
 
 		| expression XLT position Xcomma position XLcompare shift
-		/* position3 */
+                                                               /* position4 */
 		{ r = $1.xval;
     	  $$.xval = $3.xval + (r * ($5.xval - $3.xval));
     	  $$.yval = $3.yval + (r * ($5.yval - $3.yval));
@@ -736,13 +736,13 @@ position	:	pair /* position1 */
 		  }
 		;
 
-assignlist	:	assignment /* assignlist1 */
+assignlist	:	assignment                                   /* assignlist1 */
 
-		| assignlist Xcomma assignment /* assignlist2 */
+		| assignlist Xcomma assignment                       /* assignlist2 */
 		{ $$.xval = $3.xval; }
 		;
 
-command	:	XLprint expression redirect /* command1 */
+command	:	XLprint expression redirect                         /* command1 */
 		{ if ($3.lexval == XEMPTY) {
             wfloat(&errout, $2.xval); putc('\n', errout); }
     	  else if ($3.state == 0) {
@@ -754,7 +754,7 @@ command	:	XLprint expression redirect /* command1 */
 			}
 		  }
 
-		| XLprint position redirect /* command2 */
+		| XLprint position redirect                             /* command2 */
 		{ if ($3.lexval == XEMPTY) {
 	  		wpair(&errout, $2.xval, $2.yval); putc('\n', errout); }
     	  else if ($3.state == 0) {
@@ -767,7 +767,7 @@ command	:	XLprint expression redirect /* command1 */
 			}
 		  }
 
-		| XLprint stringexpr redirect /* command3 */
+		| XLprint stringexpr redirect                           /* command3 */
 		{ if ($3.lexval == XEMPTY) {
 	      	wstring(&errout, $2.prim->textp);
 			putc('\n', errout); }
@@ -783,14 +783,14 @@ command	:	XLprint expression redirect /* command1 */
 		  deletestringbox(&$2.prim);
 		  }
 
-		| XLreset /* command4 */ 
+		| XLreset                                               /* command4 */
 		{ resetenv(0, envblock); }
 
-		| XLreset resetlist /* command5 */ 
+		| XLreset resetlist                                     /* command5 */
 
-		| systemcmd /* command6 */ 
+		| systemcmd                                             /* command6 */
 
-		| XLcopy stringexpr /* command7 */ 
+		| XLcopy stringexpr                                     /* command7 */
 		{ if ($2.prim != NULL) {
 #ifdef SAFE_MODE
 			markerror(901);
@@ -801,52 +801,52 @@ command	:	XLprint expression redirect /* command1 */
     		}
 		  }
 
-		| XLdefine XLname /* command8 */
+		| XLdefine XLname                                       /* command8 */
 		{ currprod = 4;
           $$ = $2;
 		  dodefhead( &$$ );
           }
 
-		| XLdefine XLabel /* command9 */
+		| XLdefine XLabel                                       /* command9 */
 		{ currprod = 5;
           $$ = $2;
 		  dodefhead( &$$ );
           }
 		;
 
-		| XLundefine XLname /* command10 */ 
+		| XLundefine XLname                                    /* command10 */
 		{ $$ = $2; doundefine( &$2 );
 		  clearchbuf($2.chbufx, $2.toklen); }
 
-		| XLundefine XLabel /* command11 */ 
+		| XLundefine XLabel                                    /* command11 */
 		{ $$ = $2; doundefine( &$2 );
 		  clearchbuf($2.chbufx, $2.toklen); }
 		;
 
-optnl	: /* optnl1 */
+optnl	:                                                         /* optnl1 */
 
-		| NL /* optnl2 */
+		| NL                                                      /* optnl2 */
 		;
 
-ifpart	:	ifhead elementlist optnl XRBRACE /* ifpart1 */
+ifpart	:	ifhead elementlist optnl XRBRACE                     /* ifpart1 */
 		;
 
-elsehead:	ifpart XLelse XLBRACE /* elsehead1 */
+elsehead:	ifpart XLelse XLBRACE                              /* elsehead1 */
 		{ if ($1.xval == 1.0) { currprod = 1; skiptobrace(); } }
 		;
 
-for	:	forhead elementlist optnl /* for1 */
+for	:	forhead elementlist optnl                                   /* for1 */
 		{ forattr = $$;
 #ifdef DDEBUG
 		  if (debuglevel>0) prattribute("for1",&$$);
 #endif
 		  }
 
-		| for forincr elementlist optnl /* for2 */ 
+		| for forincr elementlist optnl /* for2 */
 		{ forattr = $$; }
 		;
 
-stringexpr:	string /* stringexpr1 */
+stringexpr:	string                                           /* stringexpr1 */
 		{
 #ifdef DDEBUG
 		  if (debuglevel>0) {
@@ -856,7 +856,7 @@ stringexpr:	string /* stringexpr1 */
 #endif
 		  }
 
-		| stringexpr Xplus string /* stringexpr2 */
+		| stringexpr Xplus string                            /* stringexpr2 */
 		{ if ($3.prim != NULL) { prp = $3.prim;
 		  $$.prim->Upr.Ubox.boxwidth += prp->Upr.Ubox.boxwidth;
 		  $$.prim->Upr.Ubox.boxheight = Max($1.prim->Upr.Ubox.boxheight,
@@ -878,7 +878,7 @@ stringexpr:	string /* stringexpr1 */
 		}
 		;
 
-string	:	XLstring /* string1 */
+string	:	XLstring                                             /* string1 */
 		{ newprim(&$$.prim, XLstring, envblock);
 		  eb = findenv(envblock);
 		  With2 = $$.prim;
@@ -911,11 +911,11 @@ string	:	XLstring /* string1 */
 		  clearchbuf($1.chbufx, $1.toklen);
 		  }
 
-		| sprintf Xrparen /* string2 */
+		| sprintf Xrparen                                        /* string2 */
 		;
 
   /*      assignment = "<name>" suffix "=" assignrhs   */
-assignment	:	XLname suffix XEQ assignrhs /* assignment1 */
+assignment	:	XLname suffix XEQ assignrhs                  /* assignment1 */
 		{ if ($2.lexval != XEMPTY) { addsuffix(chbuf, &$1.chbufx,
                 &$1.toklen, $2.xval,$2.lexval,$2.yval); }
 		    $$.varname = findname(envblock, chbuf, $1.chbufx, $1.toklen,
@@ -969,7 +969,7 @@ assignment	:	XLname suffix XEQ assignrhs /* assignment1 */
 		  clearchbuf($1.chbufx, $1.toklen);
           }
 
-		| XLenvvar XEQ assignrhs /* assignment2 */
+		| XLenvvar XEQ assignrhs                             /* assignment2 */
 		{ if (envblock != NULL) {
 		    if (($1.lexval == XLarrowhead) && (drawmode == TeX) &&
 		      ($3.xval == 0.0)) { markerror(858); }
@@ -996,27 +996,27 @@ assignment	:	XLname suffix XEQ assignrhs /* assignment1 */
 		  }
 		;
 
-assignrhs : expression /* assignrhs1 */
+assignrhs : expression                                        /* assignrhs1 */
 
-		| assignment /* assignrhs2 */
+		| assignment                                          /* assignrhs2 */
 		;
 
-expression	:	term /* expression1 */
+expression	:	term                                         /* expression1 */
 
-		| Xplus term /* expression2 */
+		| Xplus term                                         /* expression2 */
 		{ $$.xval = $2.xval; }
 
-		| Xminus term /* expression3 */
+		| Xminus term                                        /* expression3 */
 		{ $$.xval = -$2.xval; }
 
-		| expression Xplus term /* expression4 */
+		| expression Xplus term                              /* expression4 */
 		{ $$.xval = $1.xval + $3.xval; }
 
-		| expression Xminus term /* expression5 */
+		| expression Xminus term                             /* expression5 */
 		{ $$.xval = $1.xval - $3.xval; }
 		;
 
-ifhead	:	setlogic logexpr XLthen XLBRACE /* ifhead1 */
+ifhead	:	setlogic logexpr XLthen XLBRACE                      /* ifhead1 */
 		{ inlogic = false;
     	  $$.xval = $2.xval;
     	  if ($$.xval == 0.0) {
@@ -1026,19 +1026,19 @@ ifhead	:	setlogic logexpr XLthen XLBRACE /* ifhead1 */
 		  }
 		;
 
-setlogic:	XLif
+setlogic:	XLif                                               /* setlogic1 */
 		{ inlogic = true; }
 		;
 
-logexpr	:	logprod /* logexpr1 */
+logexpr	:	logprod                                             /* logexpr1 */
 
-		| logexpr XOROR logprod /* logexpr2 */
+		| logexpr XOROR logprod                                 /* logexpr2 */
 		{ if (($1.xval != 0.0) || ($3.xval != 0.0)) { $$.xval = 1.0; }
     	  else { $$.xval = 0.0; }
 		  }
 		;
 
-forhead	:	XFOR assignlist XLto expression do XLBRACE /* forhead1 */
+forhead	:	XFOR assignlist XLto expression do XLBRACE          /* forhead1 */
 		{
 		  $$.xval = $2.xval;                     /* initial value  */
 		  $$.yval = $5.xval;                          /* increment */
@@ -1071,15 +1071,13 @@ forhead	:	XFOR assignlist XLto expression do XLBRACE /* forhead1 */
 			if (envblockB.env == NULL) { inheritenv(envblock); }
 			envblock->envinx($$.startchop) = $$.xval; }
 		  else { resetscale($$.xval, XEQ, envblock); }
-		
+
 		  currprod = 3 /* forhead1 */ ;
 		  if ($$.toklen == 0) { skiptobrace(); }
-#ifdef DDEBUG
-		  if (debuglevel > 0) { fprintf(log_," forhead:\n"); }
-#endif
-		  readfor(NULL, 1, &inbuf, '}', true);
+          else { readfor(NULL, 1, &inbuf, '}', true); }
 #ifdef DDEBUG
     	  if (debuglevel > 0) {
+            fprintf(log_," forhead:\n");
 		    wrbufaddr(inbuf,0);
 		    fprintf(log_, "for: initial="); wfloat(&log_, $$.xval);
 		    fprintf(log_, " final="); wfloat(&log_, $$.endchop);
@@ -1089,7 +1087,7 @@ forhead	:	XFOR assignlist XLto expression do XLBRACE /* forhead1 */
 		  }
 		;
 
-forincr	: XLendfor	/* forincr1 */ 
+forincr	: XLendfor                                              /* forincr1 */
 		{ $$ = forattr;
 	    With1 = &$$;
 #ifdef DDEBUG
@@ -1131,23 +1129,23 @@ forincr	: XLendfor	/* forincr1 */
 		}
 		;
 
-do	:	XLdo /* do1 */ 
+do	:	XLdo                                                         /* do1 */
 		{ $$.xval = 1.0; }
 
-		| by expression XLdo /* do2 */ 
+		| by expression XLdo                                         /* do2 */
 		{ $$.xval = $2.xval; }
 		;
 
-by	:	XLby /* by1 */ 
+by	:	XLby                                                         /* by1 */
 
-		| XLby Xmult /* by2 */
+		| XLby Xmult                                                 /* by2 */
 		{ $$.lexval = $2.lexval; }
 		;
 
-redirect:	/* redirect1 */	
+redirect:                                                      /* redirect1 */
 		{ $$.lexval = XEMPTY; }
 
-		| XLcompare stringexpr /* redirect2 */
+		| XLcompare stringexpr                                 /* redirect2 */
 		{ With1 = &$2;
 		  $$.state = 1;
 		  bswitch = false;
@@ -1165,7 +1163,7 @@ redirect:	/* redirect1 */
 		  deletestringbox(&With1->prim);
 		  }
 
-		| XLcompare XLcompare stringexpr /* redirect3 */ 
+		| XLcompare XLcompare stringexpr                       /* redirect3 */
 		{ With1 = &$3;
 		  $$.state = 1;
 		  bswitch = false;
@@ -1185,14 +1183,14 @@ redirect:	/* redirect1 */
 		  }
 		;
 
-resetlist:	XLenvvar /* resetlist1 */ 
+resetlist:	XLenvvar                                          /* resetlist1 */
 		{ resetenv($1.lexval, envblock); }
 
-		| resetlist Xcomma XLenvvar /* resetlist2 */
+		| resetlist Xcomma XLenvvar                           /* resetlist2 */
 		{ resetenv($3.lexval, envblock); }
 		;
 
-systemcmd:	XLsh stringexpr /* systemcmd1 */
+systemcmd:	XLsh stringexpr                                   /* systemcmd1 */
 		{ $$.xval = -1.0;
 	      With1 = &$2;
 	      if (With1->prim != NULL) {
@@ -1216,23 +1214,23 @@ systemcmd:	XLsh stringexpr /* systemcmd1 */
 		  }
 		;
 
-sprintf	:	XLsprintf Xlparen stringexpr /* sprintf1 */
+sprintf	:	XLsprintf Xlparen stringexpr                        /* sprintf1 */
 		{ dosprintf( &$$, &$3, &$3, 0 ); }
-	 
-		| XLsprintf Xlparen stringexpr Xcomma exprlist /* sprintf2 */
+
+		| XLsprintf Xlparen stringexpr Xcomma exprlist          /* sprintf2 */
 		{ dosprintf( &$$, &$3, &$5, $5.state ); }
 		;
 
-exprlist:	expression /* exprlist1 */
+exprlist:	expression                                         /* exprlist1 */
 		{ $$.state = 1; }
 
-		| expression Xcomma exprlist /* exprlist2 */
+		| expression Xcomma exprlist                           /* exprlist2 */
 		{ $$.state = $3.state + 1; }
 		;
 
-object	:	block /* object1 */
+object	:	block                                                /* object1 */
 
-		| object XLht expression /* object2 */
+		| object XLht expression                                 /* object2 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			switch (With2->ptype) {
@@ -1320,7 +1318,7 @@ object	:	block /* object1 */
 		      }
 			}
 
-		| object XLwid expression /* object3 */
+		| object XLwid expression                                /* object3 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			switch (With2->ptype) {
@@ -1405,7 +1403,7 @@ object	:	block /* object1 */
 		    }
 	 	  }
 
-		| object XLrad expression /* object4 */
+		| object XLrad expression                                /* object4 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			switch (With2->ptype) {
@@ -1469,7 +1467,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLdiam expression /* object5 */
+		| object XLdiam expression                               /* object5 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			if (With2->ptype == XLcircle) {
@@ -1496,7 +1494,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLthick expression /* object6 */
+		| object XLthick expression                              /* object6 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			if ($3.xval < 0.0) {
@@ -1507,7 +1505,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLscaled expression /* object7 */
+		| object XLscaled expression                             /* object7 */
 		{ if (($1.prim != NULL) && ($3.lexval != XEMPTY)) {
 			With2 = $$.prim;
 			r = $3.xval - 1;
@@ -1608,7 +1606,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLdirecton optexp /* object8 */
+		| object XLdirecton optexp                               /* object8 */
 		{ if ($$.prim != NULL) {
 			With2 = $$.prim;
 			if ((With2->ptype == XLspline) || (With2->ptype == XLarrow) ||
@@ -1670,7 +1668,7 @@ object	:	block /* object1 */
 #endif
 		  }
 
-		| object XLlinetype optexp /* object9 */
+		| object XLlinetype optexp                               /* object9 */
 		{ if ($1.prim != NULL) {
 			setspec(&$$.prim->spec, $2.lexval);
 			if ($3.lexval == XEMPTY) {
@@ -1691,7 +1689,7 @@ object	:	block /* object1 */
 #endif
 		  }
 
-		| object XLchop optexp /* object10 */
+		| object XLchop optexp                                  /* object10 */
 		{ if ($1.prim != NULL) {
 			if (($1.prim->ptype != XLspline) &&
 			    ($1.prim->ptype != XLmove) &&
@@ -1714,7 +1712,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLfill optexp /* object11 */
+		| object XLfill optexp                                  /* object11 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			if ($3.lexval != XEMPTY) { s = $3.xval; }
@@ -1761,7 +1759,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLarrowhd optexp /* object12 */
+		| object XLarrowhd optexp                               /* object12 */
 		{ if ($$.prim != NULL) {
 			With2 = $$.prim;
 			if ((With2->ptype != XLspline) && (With2->ptype != XLarc) &&
@@ -1780,7 +1778,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLthen /* object13 */
+		| object XLthen                                         /* object13 */
 		{ if ($1.prim != NULL) {
 #ifdef DDEBUG
 		    if (debuglevel > 0) {
@@ -1792,7 +1790,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLcw /* object14 */
+		| object XLcw                                           /* object14 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			if (With2->ptype != XLarc) { markerror(858); }
@@ -1828,7 +1826,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLccw /* object15 */
+		| object XLccw                                          /* object15 */
 		{ if ($1.prim != NULL) {
 			With2 = $1.prim;
 			if (With2->ptype != XLarc) { markerror(858); }
@@ -1864,7 +1862,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLsame /* object16 */
+		| object XLsame                                         /* object16 */
 		{ if ($1.prim != NULL) {
 			prp = nthprimobj(envblock->son, 0, $1.prim->ptype);
 			if (prp == NULL) { markerror(857); }
@@ -1996,7 +1994,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object stringexpr /* object17 */
+		| object stringexpr                                     /* object17 */
 		{ if ($2.prim != NULL) {
 			if ($1.prim != NULL) {
 			  With2 = $1.prim;
@@ -2028,7 +2026,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLby position /* object18 */
+		| object XLby position                                  /* object18 */
 		{ if ($1.prim != NULL) {
 			$$  = $1;
 			if (($1.prim->ptype == XLmove) || ($1.prim->ptype == XLspline) ||
@@ -2051,7 +2049,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLfrom position /* object19 */
+		| object XLfrom position                                /* object19 */
 		{ if ($1.prim != NULL) {
 			With2 = $$.prim;
 			if ((With2->ptype == XLmove) || (With2->ptype == XLspline) ||
@@ -2088,9 +2086,8 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLto position /* object20 */
+		| object XLto position                                  /* object20 */
 		{
-  /*                            | object "to" position         */
           object_xx:
     	    if ($1.prim != NULL) {
     	      if (($1.prim->ptype == XLmove) || ($1.prim->ptype == XLspline) ||
@@ -2117,7 +2114,7 @@ object	:	block /* object1 */
                     sin(With2->Upr.Uline.endpos.xpos));
     	    	  dx = $3.xval - x1;
     	    	  dy = $3.yval - z1;
-    	    	  ts = (dx * dx) + (dy * dy); 
+    	    	  ts = (dx * dx) + (dy * dy);
     	    	  if (With2->direction != 0) { i = With2->direction; }
     	    	else { i = $$.toklen; }
 #ifdef DDEBUG
@@ -2189,7 +2186,7 @@ object	:	block /* object1 */
     	      }
 		   }
 
-		| object XLat position /* object21 */
+		| object XLat position                                  /* object21 */
 		{ if ($1.prim != NULL) {
 			$$.xval = $3.xval;
 			$$.yval = $3.yval;
@@ -2207,7 +2204,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLtextpos /* object22 */
+		| object XLtextpos                                      /* object22 */
 		{ if ($1.prim != NULL) {
 			namptr = $$.prim->textp;
 			if (namptr != NULL) {
@@ -2252,7 +2249,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| object XLcolrspec stringexpr /* object23 */
+		| object XLcolrspec stringexpr                          /* object23 */
 		{ if ((drawmode == Pict2e) || (drawmode == TeX) ||
 		      (drawmode == tTeX) || (drawmode == xfig)) { markerror(858); }
 		  else if (($3.prim != NULL) && ($1.prim != NULL)) {
@@ -2290,7 +2287,7 @@ object	:	block /* object1 */
 		    deletestringbox(&$3.prim);
 		  }
 
-		| objectwith XLat position /* object24 */
+		| objectwith XLat position                              /* object24 */
 		{ if ($1.prim != NULL) {
 			$$.xval = $3.xval;
 			$$.yval = $3.yval;
@@ -2299,7 +2296,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| objectwith XLcorner XLat position /* object25 */
+		| objectwith XLcorner XLat position                     /* object25 */
 		{ if ($1.prim != NULL) {
 			$$.xval = $4.xval;
 			$$.yval = $4.yval;
@@ -2308,7 +2305,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| objectwith pair XLat position /* object26 */
+		| objectwith pair XLat position                         /* object26 */
 		{ if ($1.prim != NULL) {
 			$$.xval = $4.xval;
 			$$.yval = $4.yval;
@@ -2324,7 +2321,7 @@ object	:	block /* object1 */
 		    }
 		  }
 
-		| XLcontinue /* object27 */
+		| XLcontinue                                            /* object27 */
 		{ primp = NULL;
 	      prp = envblock->son;
 	      while (prp != NULL) { i = prp->ptype;
@@ -2343,7 +2340,7 @@ object	:	block /* object1 */
 		  }
 		;
 
-openblock	:	XBRACKETL /* openblock1 */
+openblock	:	XBRACKETL                                     /* openblock1 */
 		{ newprim(&$$.prim, XBLOCK, envblock);
 		  $$.prim->Upr.UBLOCK.here.xpos = 0.0;
 		  $$.prim->Upr.UBLOCK.here.ypos = 0.0;
@@ -2354,7 +2351,7 @@ openblock	:	XBRACKETL /* openblock1 */
 		;
 
 							/* position values for basic drawn object */
-block	:	XLprimitiv optexp /* block1 */
+block	:	XLprimitiv optexp                                     /* block1 */
 		{ if (($1.lexval > XLprimitiv) && ($1.lexval < XLenvvar)) {
 			newprim(&$$.prim, $1.lexval, envblock);
 			eb = findenv(envblock);
@@ -2372,7 +2369,7 @@ block	:	XLprimitiv optexp /* block1 */
 			With2 = $$.prim;
 			switch ($1.lexval) {
 			  case XLbox:
-			    With2->Upr.Ubox.boxheight = eb->envinx(XLboxht); 
+			    With2->Upr.Ubox.boxheight = eb->envinx(XLboxht);
 			    With2->Upr.Ubox.boxwidth = eb->envinx(XLboxwid);
 			    With2->Upr.Ubox.boxradius = eb->envinx(XLboxrad);
 			    switch (With2->direction) {
@@ -2514,12 +2511,12 @@ block	:	XLprimitiv optexp /* block1 */
 #endif
 		  }
 
-		| stringexpr /* block2 */
+		| stringexpr                                              /* block2 */
 		{ if ((drawmode == PS) || (drawmode == PDF) || (drawmode == PSfrag)) {
 			printstate = ((printstate >> 1) * 2) + 1; }
 		  }
 
-		| openblock closeblock XBRACKETR /* block3 */
+		| openblock closeblock XBRACKETR                          /* block3 */
 		{ if ($1.prim != NULL) {
 			envblock = $1.prim->parent;
 			tail = NULL;
@@ -2571,7 +2568,7 @@ block	:	XLprimitiv optexp /* block1 */
 		    }
 		  }
 
-		| XBLOCK /* block4 */
+		| XBLOCK                                                  /* block4 */
 		{ newprim(&$$.prim, XBLOCK, envblock);
 		  $$.prim->Upr.UBLOCK.here.xpos = 0.0;
 		  $$.prim->Upr.UBLOCK.here.ypos = 0.0;
@@ -2579,13 +2576,13 @@ block	:	XLprimitiv optexp /* block1 */
 		  }
 		;
 
-optexp	:	/* optexp1 */ 
+optexp	:                                                        /* optexp1 */
 			{ $$.lexval = XEMPTY; }
 
-		| expression /* optexp2 */
+		| expression                                             /* optexp2 */
 		;
 
-closeblock	:	elementlist optnl /* closeblock1 */
+closeblock	:	elementlist optnl                            /* closeblock1 */
 		{ if (envblockB.env != NULL) {
 			eb = findenv(envblock->parent);
 			if (envblock->envinx(XLlinethick) != eb->envinx(XLlinethick)) {
@@ -2597,13 +2594,13 @@ closeblock	:	elementlist optnl /* closeblock1 */
 		  }
 		;
 
-objectwith	:	object XLwith /* objectwith1 */
+objectwith	:	object XLwith                                /* objectwith1 */
 
-		| objectwith Xdot XLabel suffix /* objectwith2 */
+		| objectwith Xdot XLabel suffix                      /* objectwith2 */
 		{ if ($1.prim != NULL) {
 			if ($4.lexval != XEMPTY) {
 			  With1 = &$3;
-			  addsuffix(chbuf, &With1->chbufx, &With1->toklen, 
+			  addsuffix(chbuf, &With1->chbufx, &With1->toklen,
 			    $4.xval,$4.lexval,$4.yval); }
 			if ($$.internal == NULL) { prp = $$.prim; }
 			else { prp = $$.internal; }
@@ -2615,7 +2612,7 @@ objectwith	:	object XLwith /* objectwith1 */
 		  clearchbuf($3.chbufx, $3.toklen);
 		  }
 
-		| objectwith Xdot nth primobj /* objectwith3 */
+		| objectwith Xdot nth primobj                        /* objectwith3 */
 		{ if ($1.prim != NULL) {
 			if ($1.internal == NULL) { prp = $1.prim; }
 			else { prp = $1.internal; }
@@ -2625,79 +2622,79 @@ objectwith	:	object XLwith /* objectwith1 */
 		  }
 		;
 
-pair	:	expression Xcomma expression /* pair1 */
+pair	:	expression Xcomma expression                           /* pair1 */
 		{ $$.yval = $3.xval;
 #ifdef DDEBUG
 			if (debuglevel>1) prattribute("pair1",&$$);
 #endif
 			}
 
-		| location shift /* pair2 */
+		| location shift                                           /* pair2 */
 		{ if ($2.lexval != XEMPTY) {
 			$$.xval += $2.xval;
 			$$.yval += $2.yval; }
 		  }
 		;
 
-nth	:	ncount XLnth /* nth1 */
+nth	:	ncount XLnth                                                /* nth1 */
 		{ if ($1.xval <= 0.0) { markerror(856); }
 		  else { $$.toklen = Rnd($1.xval); }
 		  }
 
-		| ncount XLnth XLlast /* nth2 */
+		| ncount XLnth XLlast                                       /* nth2 */
 		{ if ($1.xval <= 0.0) { markerror(856); }
 		  else { $$.toklen = -Rnd($1.xval); }
 		  }
 
-		| XLlast /* nth3 */
+		| XLlast                                                    /* nth3 */
 		{ $$.toklen = 0; }
 		;
 
-primobj	: XLprimitiv /* primobj1 */
+primobj	: XLprimitiv                                            /* primobj1 */
 
-		| XBLOCK /* primobj2 */
+		| XBLOCK                                                /* primobj2 */
 
-		| XLstring /* primobj3 */
+		| XLstring                                              /* primobj3 */
 
-		| XBRACKETL XBRACKETR /* primobj4 */
+		| XBRACKETL XBRACKETR                                   /* primobj4 */
 		{ $$.lexval = XBLOCK; }
 		;
 
-shift	: /* empty */
+shift	: /* empty */                                             /* shift1 */
 		{ $$.xval = 0.0;
 		  $$.yval = 0.0;
 		  $$.lexval = XEMPTY;
 		  }
 
-		| shift Xplus location 
+		| shift Xplus location                                    /* shift2 */
 		{ $$.xval += $3.xval;
 		  $$.yval += $3.yval;
 		  $$.lexval = XLfloat;
 		  }
 
-		| shift Xminus location 
+		| shift Xminus location                                   /* shift3 */
 		{ $$.xval -= $3.xval;
 		  $$.yval -= $3.yval;
 		  $$.lexval = XLfloat;
 		  }
 		;
 
-location	:	Xlparen position Xrparen /* location1 */
+location	:	Xlparen position Xrparen                       /* location1 */
 		{ $$ = $2; }
 
-		| Xlparen position Xcomma position Xrparen /* location2 */
+		| Xlparen position Xcomma position Xrparen             /* location2 */
 		{ $$.xval = $2.xval;
 		  $$.yval = $4.yval;
 		  }
 
-		| place /* location3 */
+		| place                                                /* location3 */
 
-		| location Xmult factor /* location4 */
+		| location Xmult factor                                /* location4 */
 		{ $$.xval *= $3.xval;
 		  $$.yval *= $3.xval;
 		  }
 
-		| location Xdiv factor /* location5 */
+		| location Xdiv factor                                 /* location5 */
 		{ if ($3.xval == 0.0) { markerror(852); }
 		  else {
 			$$.xval /= $3.xval;
@@ -2706,34 +2703,34 @@ location	:	Xlparen position Xrparen /* location1 */
 		  }
 		;
 
-place	:	placename /* place1 */
+place	:	placename                                             /* place1 */
 		{ corner($1.prim, XEMPTY, &$$.xval, &$$.yval); }
 
-		| placename XLcorner /* place2 */
+		| placename XLcorner                                      /* place2 */
 		{ corner($1.prim, $2.lexval, &$$.xval, &$$.yval); }
 
-		| XLcorner placename /* place3 */
+		| XLcorner placename                                      /* place3 */
 		{ corner($2.prim, $1.lexval, &$2.xval, &$2.yval);
  		  $$ = $2; }
 
-		| XLcorner XLof placename /* place4 */
+		| XLcorner XLof placename                                 /* place4 */
 		{ corner($3.prim, $1.lexval, &$3.xval, &$3.yval);
  		  $$ = $3; }
 
-		| XLHere /* place5 */
+		| XLHere                                                  /* place5 */
 		{ $$.xval = envblockB.here.xpos;
 		  $$.yval = envblockB.here.ypos;
 		  }
 		;
 
-factor	:	primary /* factor1 */
+factor	:	primary                                              /* factor1 */
 
-		| XNOT primary /* factor2 */
+		| XNOT primary                                           /* factor2 */
 		{ if ($2.xval == 0.0) { $$.xval = 1.0; }
     	  else { $$.xval = 0.0; }
 		  }
 
-		| primary Xcaret factor /* factor3 */
+		| primary Xcaret factor                                  /* factor3 */
 		{ if (($1.xval == 0.0) && ($3.xval < 0.0)) { markerror(852); }
 		  else {
 			j = Rnd($3.xval);
@@ -2745,8 +2742,8 @@ factor	:	primary /* factor1 */
     	  }
 		;
 
-placename	:	XLabel suffix /* placename1 */
-		{ if ($2.lexval != XEMPTY) { addsuffix(chbuf, &$1.chbufx, &$1.toklen, 
+placename	:	XLabel suffix                                 /* placename1 */
+		{ if ($2.lexval != XEMPTY) { addsuffix(chbuf, &$1.chbufx, &$1.toklen,
                 $2.xval,$2.lexval,$2.yval); }
 		  prp = NULL;
 		  primp = envblock;
@@ -2761,7 +2758,7 @@ placename	:	XLabel suffix /* placename1 */
 		  $$.prim = prp;
 		  }
 
-		| nth primobj /* placename2 */
+		| nth primobj                                         /* placename2 */
 		{ $$.prim = nthprimobj(envblock->son, $1.toklen, $2.lexval);
 		  if ($$.prim == NULL) { markerror(857); }
 #ifdef DDEBUG
@@ -2773,7 +2770,7 @@ placename	:	XLabel suffix /* placename1 */
 #endif
 		  }
 
-		| placename Xdot XLabel suffix /* placename3 */
+		| placename Xdot XLabel suffix                        /* placename3 */
 		{ if ($1.prim != NULL) {
 			if ($4.lexval != XEMPTY) { addsuffix(chbuf, &$3.chbufx,
               &$3.toklen, $4.xval,$4.lexval,$4.yval); }
@@ -2784,7 +2781,7 @@ placename	:	XLabel suffix /* placename1 */
 		  clearchbuf($3.chbufx, $3.toklen);
 		  }
 
-		| placename Xdot nth primobj /* placename4 */
+		| placename Xdot nth primobj                          /* placename4 */
 		{ if ($1.prim != NULL) {
 			$$.prim = nthprimobj($1.prim->son, $3.toklen, $4.lexval);
 			if ($$.prim == NULL) { markerror(857); }
@@ -2792,24 +2789,24 @@ placename	:	XLabel suffix /* placename1 */
 		  }
 		;
 
-ncount	:	XLfloat /* ncount1 */ 
+ncount	:	XLfloat                                              /* ncount1 */
 
-		| XSLQ expression XSRQ /* ncount2 */ 
+		| XSLQ expression XSRQ                                   /* ncount2 */
 		{ $$.xval = $2.xval; }
 
-		| XLBRACE expression XRBRACE /* ncount3 */ 
+		| XLBRACE expression XRBRACE                             /* ncount3 */
 		{ $$.xval = $2.xval; }
 		;
 
-logprod	:	logval /* logprod1 */ 
+logprod	:	logval                                              /* logprod1 */
 
-		| logprod XANDAND logval /* logprod2 */ 
+		| logprod XANDAND logval                                /* logprod2 */
 		{ if (($1.xval == 0.0) || ($3.xval == 0.0)) { $$.xval = 0.0; }
 		  else { $$.xval = 1.0; }
 		  }
 		;
 
-logval	:	lcompare /* logval1 */ 
+logval	:	lcompare                                             /* logval1 */
 		{ if ($1.lexval == XLstring) {
 			markerror(869);
 			$$.lexval = XLfloat;
@@ -2817,7 +2814,7 @@ logval	:	lcompare /* logval1 */
 		    }
 		  }
 
-		| stringexpr XLT stringexpr /* logval2 */ 
+		| stringexpr XLT stringexpr                              /* logval2 */
 		{ i = cmpstring($1.prim, $3.prim);
 		  if (i < 0) { $$.xval = 1.0; }
 		  else { $$.xval = 0.0; }
@@ -2826,17 +2823,17 @@ logval	:	lcompare /* logval1 */
 		  deletestringbox(&$1.prim);
 		  }
 
-		| expression XLT expression /* logval3 */ 
+		| expression XLT expression                              /* logval3 */
 		{ if ($1.xval < $3.xval) { $$.xval = 1.0; }
 		  else { $$.xval = 0.0; }
 		  }
 		;
 
-lcompare:	expression /* lcompare1 */ 
+lcompare:	expression                                         /* lcompare1 */
 
-		| stringexpr /* lcompare2 */ 
+		| stringexpr                                           /* lcompare2 */
 
-		| lcompare XLcompare expression /* lcompare3 */ 
+		| lcompare XLcompare expression                        /* lcompare3 */
 		{ if ($1.lexval == XLstring) {
 			markerror(869);
 			bswitch = false;
@@ -2860,7 +2857,7 @@ lcompare:	expression /* lcompare1 */
 		  if (bswitch) { $$.xval = 1.0; } else { $$.xval = 0.0; }
 		  }
 
-		| lcompare XLcompare stringexpr /* lcompare4 */ 
+		| lcompare XLcompare stringexpr                        /* lcompare4 */
 		{ if ($1.lexval != XLstring) { markerror(869); bswitch = false; }
 		  else {
 			i = cmpstring($1.prim, $3.prim);
@@ -2881,14 +2878,14 @@ lcompare:	expression /* lcompare1 */
 		  }
 		;
 
-primary	:	XLenvvar /* primary1 */
+primary	:	XLenvvar                                            /* primary1 */
 		{ if (envblock != NULL) {
 			eb = findenv(envblock);
 			$$.xval = eb->envinx($1.lexval);
 		    }
 		  }
 
-		| XLname suffix /* primary2 */
+		| XLname suffix                                         /* primary2 */
 		{ if ($2.lexval != XEMPTY) { addsuffix(chbuf,
 		    &$1.chbufx, &$1.toklen, $2.xval,$2.lexval,$2.yval); }
     	  namptr = glfindname(envblock,chbuf,$1.chbufx,$1.toklen, &lastvar, &k);
@@ -2897,17 +2894,17 @@ primary	:	XLenvvar /* primary1 */
 		  clearchbuf($1.chbufx, $1.toklen);
 		  }
 
-		| XLfloat /* primary3 */
+		| XLfloat                                               /* primary3 */
 
-		| Xlparen logexpr Xrparen /* primary4 */
+		| Xlparen logexpr Xrparen                               /* primary4 */
 		{ $$.xval = $2.xval; }
 
-		| location XLdx /* primary5 */
+		| location XLdx                                         /* primary5 */
 
-		| location XLdy /* primary6 */
+		| location XLdy                                         /* primary6 */
 		{ $$.xval = $1.yval; }
 
-		| placename XLparam /* primary7 */
+		| placename XLparam                                     /* primary7 */
 		{ if ($1.prim != NULL) {
 			switch ($2.lexval) {
 			  case XLheight:
@@ -2967,15 +2964,15 @@ primary	:	XLenvvar /* primary1 */
 		    }
 		  }
 
-		| XLrand Xlparen Xrparen /* primary8 */
+		| XLrand Xlparen Xrparen                                /* primary8 */
 		{ $$.xval = ((double)random()) / randmax; }
 
-		| XLrand Xlparen expression Xrparen /* primary9 */
+		| XLrand Xlparen expression Xrparen                     /* primary9 */
 		{ srandom(Rnd($3.xval));
 		  $$.xval = ((double)random()) / randmax;
 		  }
 
-		| XLfunc1 Xlparen expression Xrparen /* primary10 */
+		| XLfunc1 Xlparen expression Xrparen                   /* primary10 */
 		{ switch ($$.lexval) {
 		    case XLabs: $$.xval = fabs($3.xval);
 		      break;
@@ -3045,10 +3042,10 @@ primary	:	XLenvvar /* primary1 */
 		    }
 		  }
 
-		| Xlparen assignlist Xrparen /* primary12 */
+		| Xlparen assignlist Xrparen                           /* primary12 */
 		{ $$.xval = $2.xval; }
 
-		| Xlparen systemcmd Xrparen /* primary13 */
+		| Xlparen systemcmd Xrparen                            /* primary13 */
 		{ $$.xval = $2.xval; }
 		;
 
@@ -3795,7 +3792,7 @@ printobject(primitive *primp)
 		    for (i = 0; i <= HASHLIM; i++) {
 		      if (With->Upr.UBLOCK.vars[i] == NULL) {
 				 fprintf(log_, " %d nil;", i);}
-		      else { 
+		      else {
 				fprintf(log_, " %d %d;", i, ordp(With->Upr.UBLOCK.vars[i])); }
 		      }
 		    fprintf(log_, "\n env=");
@@ -3884,7 +3881,7 @@ prattribute(char *label, attribute *a)
     fprintf(log_, " ptype : %4d ", a->prim->ptype);
     snaptype(&log_,a->prim->ptype); }
   putc('\n', log_);
-  if (a->internal != NULL) { 
+  if (a->internal != NULL) {
     fprintf(log_, "intrtype: ");
     fprintf(log_, "%4d", a->internal->ptype);
     putc('\n', log_); }
@@ -5273,7 +5270,7 @@ int j,k;
       if (ijx > 10000) { return 0; }
       r = r->son;
       ijx++;
-      } 
+      }
     }
   return 1;
   }
@@ -5293,7 +5290,7 @@ checktree( primitive *p )
 							/* Shift a tree by (x,y) */
 void
 shift(primitive *pr, double x, double y)
-{ 
+{
 #ifdef DDEBUG
   if (debuglevel > 0) { fprintf(log_,"\nshift[%d]=",ordp(pr));
     wpair(&log_, x, y); putc('\n', log_);
@@ -6003,8 +6000,7 @@ dostart(void)
     makevar("optTeX", 6, TeX);
     makevar("opttTeX", 7, tTeX);
     makevar("optxfig", 7, xfig);
-    if ((drawmode >= 0) && (drawmode < 32) &&
-	(((1L << drawmode) & ((1L << SVG) | (1L << PDF) | (1L << PS))) != 0)) {
+    if ((drawmode == SVG) || (drawmode == PDF) || (drawmode == PS)) {
 	  makevar("dptextratio", 11, 0.66);
 	  makevar("dpPPI", 5, 96.0);
       }

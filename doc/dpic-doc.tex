@@ -847,9 +847,12 @@ and can be employed in expressions as usual.
 Similarly, {\tt P} and {\tt P[3]} are distinct labels.
 Writing the subscript as {\tt [{\sl position}]} for any defined
 position is the same as {\tt [{\sl position}.x, {\sl position}.y]}.
-In cases where a double-subscripted variable or label is part of a macro
+When using older versions of \dpic,
+in cases where a double-subscripted variable or label is part of a macro
 argument, protect the comma in the subscript with parentheses
 by writing, for example, {\tt x[(i,j)]} instead of {\tt x[i,j]}.
+Recent versions of \dpic\ do not require this, as the brackets protect
+the comma.
 
 \subsubsection{Assigning an array of numbers}
 We can assign an array of numbers to subscripted variables using
@@ -1204,9 +1207,9 @@ of dpic produce output that is not intended to be processed directly by
 % Initial versions of the experimental
 % SVG output of \dpic used the
 % nominal height but later versions now conform to \LaTeX\ usage by treating
-  \Dpic treats
-  {\it y} as the true graphical height in drawing units.
-  Thus for example, {\tt "text" ht 10bp} produces output {\tt 10bp} high.
+  \Dpic treats {\it y} as the true graphical height in drawing units.
+  Thus for example, {\tt "text" ht 10*(scale/72)} produces output
+  {\tt 10bp} high.
 
   To assist with the above and similar issues
   when the {\tt -v} option is invoked, \dpic performs the equivalent
@@ -1257,12 +1260,12 @@ of dpic produce output that is not intended to be processed directly by
   to enlarge the bounding box as illustrated at the end of the discussion
   below.
 
-  Dpic uses the constant-width Courier font in pdf files, which allows
+  Dpic uses the constant-width Courier font in pdf files, thus allowing
   the width of strings to be calculated from their height, which is
   specified by {\tt textht} with default $11\,$pt, or by the
-  ``{\tt height} {\sl number}'' attribute.  The string width is calculated
+  ``{\tt height} {\sl expression}'' attribute.  The string width is calculated
   from the height and character count, but can be set explicitly
-  by using {\tt width} {\sl number} as the rightmost string attribute.
+  by using {\tt width} {\sl expression} as the rightmost string attribute.
 
   {\em Psfrag output} is another special case.  If {\tt textht} is set to a
   nonzero value, then its value relative to $11\,$bp is
@@ -1511,8 +1514,8 @@ arguments can be arbitrary expressions rather than the constants shown.
   character in a string, so {\tt"\tBS""} is a length-one string containing
   the double quote.  Otherwise, the backslash is an ordinary string
   character.
-  For example, the characters\verb|\\"U| in a string are output as\verb|\"U|
-  to produce \"U when processed by \LaTeX.
+  For example, the characters\verb|\\"u| in a string are output as\verb|\"u|
+  to produce \"u when processed by \LaTeX.
   A string with a backslash as last character
   has to be generated using a macro; for example, if we write
   {\tt define charstr \tLB"\$1"\tRB} then {\tt charstr(abc\tBS)}
@@ -1555,7 +1558,7 @@ arguments can be arbitrary expressions rather than the constants shown.
       thru {\sl macro} {\rm[} until {\sl word} {\rm]}}
 
   These functions and many more are readily implementable with dpic in any
-  unix-like environment.
+  Unix-like environment.
 %  To customize an operation such as
 %    \ntt{copy {\sl filename} thru {\sl macro}}\\
 %  modify the following example, as appropriate.
@@ -1884,7 +1887,7 @@ A few additional mathematical functions are defined in dpic:
   which prevents\verb|\psbezier| (and other commands)
   from taking the current point as the first coordinate pair.
   The following line inserted into a latex document avoids an
-  error message if the \PSTricks version is August 2010 or later:
+  error if the \PSTricks version is August 2010 or later:
 \begin{verbatim}
  \psset{noCurrentPoint}
 \end{verbatim}
