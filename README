@@ -2,12 +2,9 @@
 Dpic is an implementation of the pic "little language" for creating line
 drawings and illustrations for documents, web pages, and other uses.
 
-This file applies to versions of dpic later than June 15, 2019, which contain
-C source exclusively.
-
 Copying: 
    The files in this distribution are subject to copyrights listed in
-   the file Copyright.txt.  The source files are copyright (c) 2019,
+   the file Copyright.txt.  The source files are copyright (c) 2020,
    J. D. Aplevich, under a BSD licence, and the manual dpic-doc.pdf is
    subject to a Creative Commons attribution licence.
 
@@ -40,7 +37,7 @@ Options:
    -z        safe mode (sh and copy disabled)
 
 Testing:
-   Test the installation by typing
+   Test the installation by finding quick.pic in the top directory and typing
 
      dpic -p quick.pic > quick.tex
      or

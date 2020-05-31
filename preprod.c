@@ -4,22 +4,19 @@
 extern void prvars (primitive *);
 
 #include "parscst.h"
+#include "lxvars.h"
 
 int p, newp;
-p = yyn;
 if (debuglevel > 0) {
+  p = yyn;
   newp = 1 - yylen;
 
   fprintf (log_, "\nProduction(newp=%d", newp);
-  if (p >= 0) {
+  if ((p >= 0) && (yyvsp[newp].lexval <= XLlastenv)) {
     fprintf (log_, ",lexval=%d", yyvsp[newp].lexval);
-  }
+    }
   fprintf (log_, ",p=%d)", p);
-/*
-    fprintf(errout, "\nProduction(newp=%d", newp);
-    if (p >= 0) { fprintf(errout, ",lexval=%d", yyvsp[newp].lexval); }
-    fprintf(errout, ",p=%d", p);
-*/
+
   switch (p) {
   case primary4:
     fprintf (log_, " opr: (");

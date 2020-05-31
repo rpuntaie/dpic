@@ -3,5 +3,6 @@ Installation on a non-unix PC:
    If you do not wish to compile the program, copy dpic.exe from the
    Windows directory at https://ece.uwaterloo.ca/~aplevich/dpic
    into your folder of executable files.
+
    Note that this version will search for files using PC format for the
    file path; that is, with backslash separators.

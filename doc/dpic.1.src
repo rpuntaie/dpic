@@ -2,7 +2,7 @@
 .\"
 .\" BSD Licence:
 .\" 
-.\" Copyright (c) 2019, J. D. Aplevich
+.\" Copyright (c) 2020, J. D. Aplevich
 .\" All rights reserved.
 .\" 
 .\" Redistribution and use in source and binary forms, with or without
@@ -421,15 +421,14 @@ or
 .I anything
 .B "X,"
 .P
-where X is any character except {, so that, when
+where X is any character except {. When
 .I name
-appears alone or with arguments as
-.I name
-.B "("
-.I "arg, ..."
-.B ")"
-then it is replaced by the contents between the delimiters in the definition.
-A comma in an argument list is ignored within a string or parentheses.
+appears alone or with arguments in parentheses as
+.I "name(arg, ...)"
+then it is replaced by the contents between the delimiters in the macro
+definition.
+Arguments are separated by commas except that
+a comma in an argument is ignored within a string, parentheses, or brackets.
 In this substitution, occurrences of
 .B $1
 are replaced literally by the first argument (not by its value, if any),
@@ -1263,7 +1262,7 @@ illustrations.)
 .P
 J. D. Aplevich,
 .I Drawing with dpic,
-2019,
+2020,
 .\" .br
 http://ece.uwaterloo.ca/~aplevich/dpic/dpic-doc.pdf
 .\" .br
@@ -1283,7 +1282,7 @@ pic.)
 .P
 J. D. Aplevich,
 .I M4 Macros for Electric Circuit Diagrams in LaTeX Documents,
-2019.
+2020.
 File Circuit_macros.pdf in the graphics/Circuit_macros section
 of CTAN repositories.
 (Extension of the pic
@@ -1292,7 +1291,7 @@ and other diagrams.)
 .\"
 .SH AUTHOR
     Dwight Aplevich <aplevich at uwaterloo dot ca>
-.\"   Copyright (c) 2019, J. D. Aplevich
+.\"   Copyright (c) 2020, J. D. Aplevich
 .\"   .SH BSD licence:
 .\"   .P
 .\"   All rights reserved.

@@ -3,7 +3,7 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 9.2, copyright (c) 2020 J. D. Aplevich under      #
+# Circuit_macros Version 9.3, copyright (c) 2020 J. D. Aplevich under      #
 # the LaTeX Project Public Licence in file Licence.txt. The files of       #
 # this distribution may be redistributed or modified provided that this    #
 # copyright notice is included and provided that modifications are clearly #
@@ -149,9 +149,9 @@ define arraymin { { $3 = -1; if "$4" != "" then { $4 = 0 }; m_arrm = 1e25
 #                               for data separated by comma, spaces, or tabs
 define copythru {
  sh "sed -e 's/^[ 	]*/$1(/' -e 's/[ 	]*$/)/' -e 's/[, 	][ 	]*/,/g' $2 \
-   > copy_tmp__"
- copy "copy_tmp__"
- sh "rm -f copy_tmp__";}
+   > copythru_tmp__"
+ copy "copythru_tmp__"
+ sh "rm -f copythru_tmp__";}
 
 #                               randn(array_name,n,mean,stddev)
 #                               Assign n Gaussian random numbers

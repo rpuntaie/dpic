@@ -1,4 +1,4 @@
-							/* Output routines */
+#define EXTRN extern
 #include "dpic.h"
 #include "lxcst.h"
 
@@ -31,6 +31,7 @@ extern void pprop (postype, postype *, double, double, double);
 extern void wcoord (FILE **, double, double);
 extern void wfloat (FILE **, double);
 extern void initnesw (void);
+extern void markerror (int);
 extern void newstr (nametype **);
 extern void nesw (primitive *);
 extern void wrand (void);
@@ -41,26 +42,18 @@ extern primitive *(findenv (primitive *));
 							/* Test (bit 4) if this segment has no parent */
 boolean
 firstsegment (primitive * pr) {
-  if (pr == NULL) {
-    return false;
-  } else {
-    return (((pr->spec >> 3) & 1) == 0);
-  }
+  if (pr == NULL) { return false; }
+  else { return (((pr->spec >> 3) & 1) == 0); }
 }
 
 							/* Test shaded, filled, dashed, dotted, solid */
 boolean
 drawn (primitive * node, int linesp, double fill) {
-  if (node == NULL) {
-    return false;
-  } else if (node->shadedp != NULL) {
-    return true;
-  } else if ((linesp == XLdotted) || (linesp == XLdashed) ||
-	     (linesp == XLsolid) || ((fill >= 0.0) && (fill <= 1.0))) {
-    return true;
-  } else {
-    return false;
-  }
+  if (node == NULL) { return false; }
+  else if (node->shadedp != NULL) { return true; }
+  else if ((linesp == XLdotted) || (linesp == XLdashed) ||
+	(linesp == XLsolid) || ((fill >= 0.0) && (fill <= 1.0))) { return true; }
+  else { return false; }
 }
 
 							/* Shading parameters for linear objects */
@@ -74,30 +67,22 @@ getlinshade (primitive * nod, primitive ** tn, nametype ** ss, nametype ** so,
   *fillval = -1.0;
   while ((*tn) != NULL) {
     With = *tn;
-    if (With->outlinep != NULL) {
-      *so = With->outlinep;
-    }
+    if (With->outlinep != NULL) { *so = With->outlinep; }
     *tn = (*tn)->son;
   }
   *tn = nod;
-  if (*hshade) {
-    *hshade = false;
-  } else {
+  if (*hshade) { *hshade = false; }
+  else {
     while (nod != NULL) {
       With = nod;
-      if (With->shadedp != NULL) {
-	    *ss = With->shadedp;
-      }
-      if ((With->Upr.Uline.lfill >= 0.0) && (With->Upr.Uline.lfill <= 1.0)) {
-	    *fillval = With->Upr.Uline.lfill;
-      }
+      if (With->shadedp != NULL) { *ss = With->shadedp; }
+      if ((With->linefill_ >= 0.0) && (With->linefill_ <= 1.0)) {
+	    *fillval = With->linefill_; }
       *tn = nod;
       nod = nod->son;
     }
   }
-  if (((*ss) != NULL) || ((*fillval) >= 0.0)) {
-    *hshade = true;
-  }
+  if (((*ss) != NULL) || ((*fillval) >= 0.0)) { *hshade = true; }
 }
 
 							/* Count the number of spline segments */
@@ -118,9 +103,7 @@ getlinespec (primitive * nd, int *lsp, primitive ** lastnd) {
 
   if ((nd->ptype == XLarc) || (nd->ptype == XLarrow) ||
       (nd->ptype == XLline) || (nd->ptype == XLspline)) {
-    while (tn->son != NULL) {
-      tn = tn->son;
-    }
+    while (tn->son != NULL) { tn = tn->son; }
   }
   *lastnd = tn;
   *lsp = lspec (tn->spec);
@@ -145,35 +128,24 @@ dahead (postype point, postype shaft, double ht, double wid, double ltu, postype
 
   *C = affang (shaft, point);	/* shaft direction cosines */
   po = ahoffset (ht, wid, ltu);
-  if (po > ht) {
-    po = ht;
-  }
+  if (po > ht) { po = ht; }
   *P = affine (po, 0.0, point, *C);	/* point adjusted by line thickness */
   h = ht - (ltu / 2);
   *x = h - po;
-  if (ht == 0.0) {
-    v = 0.0;
-  } else {
-    v = (wid / 2) * (*x) / ht;
-  }
+  if (ht == 0.0) { v = 0.0; }
+  else { v = (wid / 2) * (*x) / ht; }
   *R = affine (h, v, point, *C);
   *L = affine (h, -v, point, *C);
-  if ((*x) == 0.0) {
-    t = 1.0;
-  } else {
-    t = ht / (*x);
-  }
+  if ((*x) == 0.0) { t = 1.0; }
+  else { t = ht / (*x); }
   Rx->xpos = point.xpos + ((R->xpos - P->xpos) * t);	/* right corner */
   Rx->ypos = point.ypos + ((R->ypos - P->ypos) * t);
   Lx->xpos = point.xpos + ((L->xpos - P->xpos) * t);	/* left corner  */
   Lx->ypos = point.ypos + ((L->ypos - P->ypos) * t);
   Px->xpos = (point.xpos + Lx->xpos + Rx->xpos) / 3;	/* type 3 center pt */
   Px->ypos = (point.ypos + Lx->ypos + Rx->ypos) / 3;
-  if (ht == 0.0) {
-    *y = 0.0;
-  } else {
-    *y = ht - po + (ltu * wid / ht / 4);
-  }
+  if (ht == 0.0) { *y = 0.0; }
+  else { *y = ht - po + (ltu * wid / ht / 4); }
 }
 
 							/* Parameters and positions for traced arrows*/
@@ -187,11 +159,8 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   postype Q;
   double TEMP, TEMP1;
 
-  if (radius * angle > 0) {
-    *ccw = 1.0;
-  } else {
-    *ccw = -1.0;
-  }
+  if (radius * angle > 0) { *ccw = 1.0; }
+  else { *ccw = -1.0; }
   *startarrow = (radius >= 0);
   ht = fabs (ht);
   wid = fabs (wid);
@@ -203,8 +172,8 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
 							/* Centres of the wing arcs */
   if (d == 0) {
     Q.xpos = 1.0;
-    Q.ypos = 0.0;
-  } else {
+    Q.ypos = 0.0; }
+  else {
     Q.xpos = ht / d;
     Q.ypos = (*ccw) * wid / 2 / d;
   }
@@ -212,11 +181,8 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   Q.ypos = -Q.ypos;
   *Co = affine (C.xpos - point.xpos, C.ypos - point.ypos, point, Q);
 							/* Outer corner */
-  if (radius == 0) {
-    t = 0.0;
-  } else {
-    t = Min (pi / 2, d / radius);
-  }
+  if (radius == 0) { t = 0.0; }
+  else { t = Min (pi / 2, d / radius); }
   Q.xpos = cos (t);
   Q.ypos = (*ccw) * sin (t);
   *Ao = affine (point.xpos - Co->xpos, point.ypos - Co->ypos, *Co, Q);
@@ -230,39 +196,30 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   TEMP1 = C.ypos - Ci->ypos;
   cc = (TEMP * TEMP) + (TEMP1 * TEMP1) - (radius * radius);
   s = (bb * bb) - (4 * aa * cc);
-  if (s < 0) {
-    v = aa;
-  } else {
-    v = (sqrt (s) - bb) / 2;
-  }
+  if (s < 0) { v = aa; }
+  else { v = (sqrt (s) - bb) / 2; }
   *Ai = *Ao;
   pprop (C, Ai, aa - v, v, aa);
 							/* Point adjusted for line thickness */
-  if (d == 0) {
-    *P = point;
-  } else if (radius == 0) {
-    *P = C;
-  } else if (ht == d) {
-    *P = *Ao;
-  } else {
+  if (d == 0) { *P = point; }
+  else if (radius == 0) { *P = C; }
+  else if (ht == d) { *P = *Ao; }
+  else {
     b = 2 * radius * sqrt ((1 - (ht / d)) / 2);	/* distance C to Co */
 							/* Angle from Co-C to P, center C */
     Q.xpos = ((b * b) - (lw * lw) + (2 * lw * radius)) / (2 * b * radius);
     if (fabs (Q.xpos) > 1) {
       P->xpos = (Ao->xpos + Ai->xpos) / 2;
-      P->ypos = (Ao->ypos + Ai->ypos) / 2;
-    } else {
+      P->ypos = (Ao->ypos + Ai->ypos) / 2; }
+    else {
       Q.ypos = -(*ccw) * sqrt (1 - (Q.xpos * Q.xpos));
       *P = affine (radius * (Co->xpos - C.xpos) / b,
 		   radius * (Co->ypos - C.ypos) / b, C, Q);
     }
   }
 							/* Type 3 center and corners */
-  if (radius == 0) {
-    t = 0.0;
-  } else {
-    t = Min (pi / 2, (ht / radius) * 2 / 3);
-  }
+  if (radius == 0) { t = 0.0; }
+  else { t = Min (pi / 2, (ht / radius) * 2 / 3); }
   Q.xpos = cos (t);
   Q.ypos = (*ccw) * sin (t);
   *Px = affine (point.xpos - C.xpos, point.ypos - C.ypos, C, Q);
@@ -271,13 +228,9 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   TEMP = Ao->xpos - Px->xpos;
   TEMP1 = Ao->ypos - Px->ypos;
   d = (TEMP * TEMP) + (TEMP1 * TEMP1);
-  if (d == 0) {
-    s = sqrt (v);
-  } else if (v / d < 0.25) {
-    s = 0.0;
-  } else {
-    s = sqrt ((v / d) - 0.25);
-  }
+  if (d == 0) { s = sqrt (v); }
+  else if (v / d < 0.25) { s = 0.0; }
+  else { s = sqrt ((v / d) - 0.25); }
   Cox->xpos =
     ((Px->xpos + Ao->xpos) / 2) - ((*ccw) * (Ao->ypos - Px->ypos) * s);
   Cox->ypos =
@@ -286,13 +239,9 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
   TEMP = Ai->xpos - Px->xpos;
   TEMP1 = Ai->ypos - Px->ypos;
   d = (TEMP * TEMP) + (TEMP1 * TEMP1);
-  if (d == 0) {
-    s = sqrt (v);
-  } else if (v / d < 0.25) {
-    s = 0.0;
-  } else {
-    s = sqrt ((v / d) - 0.25);
-  }
+  if (d == 0) { s = sqrt (v); }
+  else if (v / d < 0.25) { s = 0.0; }
+  else { s = sqrt ((v / d) - 0.25); }
   Cix->xpos =
     ((Px->xpos + Ai->xpos) / 2) - ((*ccw) * (Ai->ypos - Px->ypos) * s);
   Cix->ypos =
@@ -304,58 +253,39 @@ void
 startarc (primitive * n, postype X0, double lth, double *h, double *w) {
   double x, y;
 
-  *h = qenv (n, XLarrowht, n->Upr.Uline.height);
-  *w = qenv (n, XLarrowwid, n->Upr.Uline.width);
+  *h = qenv (n, XLarrowht, n->lineheight_);
+  *w = qenv (n, XLarrowwid, n->linewidth_);
   y = ahoffset (*h, *w, (lth / 72) * scale);
-  if ((n->Upr.Uline.aradius * n->Upr.Uline.aradius) - (y * y) <= 0.0) {
-    x = 0.0;
-  } else {
-    x =
-      2 * atan (y /
-		sqrt ((n->Upr.Uline.aradius * n->Upr.Uline.aradius) -
-		      (y * y)));
-  }
-  if (n->Upr.Uline.endpos.ypos >= 0.0) {
-    n->Upr.Uline.endpos.xpos += x;
-    n->Upr.Uline.endpos.ypos -= x;
-  } else {
-    n->Upr.Uline.endpos.xpos -= x;
-    n->Upr.Uline.endpos.ypos += x;
-  }
+  if ((n->aradius_ * n->aradius_) - (y * y) <= 0.0) { x = 0.0; }
+  else { x = 2 * atan (y / sqrt ((n->aradius_ * n->aradius_) - (y * y))); }
+  if (n->arcangle_ >= 0.0) {
+    n->startangle_ += x;
+    n->arcangle_ -= x; }
+  else {
+    n->startangle_ -= x;
+    n->arcangle_ += x;
+    }
 }
 
 							/* End of arc when there is a final arrowhead*/
 void
 endarc (primitive * n, postype X0, double lth, double *h, double *w) {
   double x, y;
-
-  *h = qenv (n, XLarrowht, n->Upr.Uline.height);
-  *w = qenv (n, XLarrowwid, n->Upr.Uline.width);
+  *h = qenv (n, XLarrowht, n->lineheight_);
+  *w = qenv (n, XLarrowwid, n->linewidth_);
   y = ahoffset (*h, *w, (lth / 72) * scale);
-  if ((n->Upr.Uline.aradius * n->Upr.Uline.aradius) - (y * y) <= 0.0) {
-    x = 0.0;
-  } else {
-    x =
-      2 * atan (y /
-		sqrt ((n->Upr.Uline.aradius * n->Upr.Uline.aradius) -
-		      (y * y)));
-  }
-  if (n->Upr.Uline.endpos.ypos >= 0.0) {
-    n->Upr.Uline.endpos.ypos -= x;
-  } else {
-    n->Upr.Uline.endpos.ypos += x;
-  }
+  if ((n->aradius_ * n->aradius_) - (y * y) <= 0.0) { x = 0.0; }
+  else { x = 2 * atan (y / sqrt ((n->aradius_ * n->aradius_) - (y * y))); }
+  if (n->arcangle_ >= 0.0) { n->arcangle_ -= x; }
+  else { n->arcangle_ += x; }
 }
 
 							/* Arc start point */
 postype
 arcstart (primitive * n) {
   postype X;
-
-  X.xpos =
-    n->aat.xpos + (n->Upr.Uline.aradius * cos (n->Upr.Uline.endpos.xpos));
-  X.ypos =
-    n->aat.ypos + (n->Upr.Uline.aradius * sin (n->Upr.Uline.endpos.xpos));
+  X.xpos = n->aat.xpos + (n->aradius_ * cos (n->startangle_));
+  X.ypos = n->aat.ypos + (n->aradius_ * sin (n->startangle_));
   return X;
 }
 
@@ -363,15 +293,8 @@ arcstart (primitive * n) {
 postype
 arcend (primitive * n) {
   postype X;
-
-  X.xpos =
-    n->aat.xpos +
-    (n->Upr.Uline.aradius *
-     cos (n->Upr.Uline.endpos.xpos + n->Upr.Uline.endpos.ypos));
-  X.ypos =
-    n->aat.ypos +
-    (n->Upr.Uline.aradius *
-     sin (n->Upr.Uline.endpos.xpos + n->Upr.Uline.endpos.ypos));
+  X.xpos = n->aat.xpos + (n->aradius_ * cos (n->startangle_ + n->arcangle_));
+  X.ypos = n->aat.ypos + (n->aradius_ * sin (n->startangle_ + n->arcangle_));
   return X;
 }
 
@@ -386,7 +309,7 @@ texstacktext (primitive * np, nametype * tp) {
   if (tp == NULL) {
     return;
   }
-  tx = tp->next_;
+  tx = tp->nextname;
   if (tx != NULL) {
     printf ("\\shortstack{");
   }
@@ -409,7 +332,7 @@ texstacktext (primitive * np, nametype * tp) {
     if (L || R) {
       putchar ('}');
     }
-    tp = tp->next_;
+    tp = tp->nextname;
     if (tp != NULL) {
       printf ("\\\\%%\n");
     }
@@ -545,19 +468,14 @@ treedraw (primitive * node) {
       xfigdraw (node);
       break;
     }
-    if (node->son != NULL) {
-      treedraw (node->son);
-    }
-    if (drawmode == PDF) {
-      resetgs (node);
-    } else if ((drawmode == xfig) && (node->ptype == XBLOCK) &&
-	       (node->direction == (-1))) {
-      printf ("-6\n");
-    }
+    if (node->son != NULL) { treedraw (node->son); }
+    if (drawmode == PDF) { resetgs (node); }
+    else if ((drawmode == xfig) && (node->ptype == XBLOCK) &&
+	       (node->direction == (-1))) { printf ("-6\n"); }
     bfill = false;
     sshade = NULL;
     soutline = NULL;
-    node = node->next_;
+    node = node->nextname;
   }
 }
 
@@ -629,7 +547,7 @@ drawtree (double n, double s, double e, double w, primitive * eb) {
       texprelude (n, s, e, w);
       treedraw (eb);
       texpostlude ();
-    }
+      }
     break;
   }
 }

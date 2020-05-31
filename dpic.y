@@ -32,10 +32,11 @@
 */
 
 %{
+#define EXTRN extern
 #include "dpic.h"
 #define Rnd(x)	((long)floor(x + 0.5))
-#define envinx(x)	Upr.UBLOCK.env[(int)(Rnd(x)-XLenvvar-1)]
-#define envblockB	envblock->Upr.UBLOCK
+
+#define envinx(x)	blockparms.env[(int)(Rnd(x)-XLenvvar-1)]
 
 int yyerror(char*);
 
@@ -113,7 +114,6 @@ void wrbuf(fbuffer *, int, int);
 #ifdef DDEBUG
 int lspec(int);
 void logaddr(fbuffer *);
-void prattstack(attribute *);
 void prattribute(char *, attribute *);
 void printobject(primitive *);
 void prvars(primitive *);
@@ -418,8 +418,8 @@ picture	:	start NL elementlist optnl XEND                     /* picture1 */
 #endif
 		  envblock->aat.xpos = (east + west) * 0.5;
 		  envblock->aat.ypos = (north + south) * 0.5;
-		  envblock->Upr.UBLOCK.blockheight = north - south;
-		  envblock->Upr.UBLOCK.blockwidth = east - west;
+		  envblock->blockheight_ = north - south;
+		  envblock->blockwidth_ = east - west;
 	      if (drawmode == xfig) {
 		    shift(envblock, -west, -south);
 		    north -= south;
@@ -468,6 +468,9 @@ picture	:	start NL elementlist optnl XEND                     /* picture1 */
 		      dptextratio = findvar("dptextratio", 11);
 		      if (dptextratio == 0) { dptextratio = 1.0; }
 		      dpPPI = findvar("dpPPI", 5); }
+            else if (drawmode == xfig) {
+              xfigres = findvar("xfigres", 7);
+              xdispres = findvar("xdispres", 8); }
 	        drawtree(north, south, east, west, envblock);
 #ifdef DDEBUG
 	        if (debuglevel > 0) {
@@ -536,8 +539,8 @@ element	:	namedobj /* chop operation for linear objects */    /* element1 */
 			if ((prp->ptype == XLspline) || (prp->ptype == XLmove) ||
 			    (prp->ptype == XLarrow) || (prp->ptype == XLline)) {
 			  if ($$.startchop != 0.0) {
-				dx = prp->Upr.Uline.endpos.xpos - prp->aat.xpos;
-				dy = prp->Upr.Uline.endpos.ypos - prp->aat.ypos;
+				dx = prp->endpos_.xpos - prp->aat.xpos;
+				dy = prp->endpos_.ypos - prp->aat.ypos;
 				s = linlen(dx, dy);
 #ifdef DDEBUG
 				if (debuglevel == 2) { fprintf(log_, " element1 startchop=");
@@ -552,8 +555,8 @@ element	:	namedobj /* chop operation for linear objects */    /* element1 */
 			    }
 			  while (prp->son != NULL) { prp = prp->son; }
 			  if ($$.endchop != 0.0) {
-				dx = prp->Upr.Uline.endpos.xpos - prp->aat.xpos;
-				dy = prp->Upr.Uline.endpos.ypos - prp->aat.ypos;
+				dx = prp->endpos_.xpos - prp->aat.xpos;
+				dy = prp->endpos_.ypos - prp->aat.ypos;
 				s = linlen(dx, dy);
 #ifdef DDEBUG
 				if (debuglevel == 2) { fprintf(log_, " element1 endchop=");
@@ -563,16 +566,16 @@ element	:	namedobj /* chop operation for linear objects */    /* element1 */
 #endif
 				if (s != 0.0) {
 				  t = $$.endchop / s;
-				  prp->Upr.Uline.endpos.xpos -= t * dx;
-				  prp->Upr.Uline.endpos.ypos -= t * dy; }
+				  prp->endpos_.xpos -= t * dx;
+				  prp->endpos_.ypos -= t * dy; }
 			    }
 			  }
-			FindExitPoint(prp, &envblockB.here); }
+			FindExitPoint(prp, &envblock->here_); }
 #ifdef DDEBUG
 			if (debuglevel > 0) { prattribute("element1", &$$);
 			  fprintf(log_, " element1 Here=");
-			  wpair(&log_, envblock->Upr.UBLOCK.here.xpos,
-				envblock->Upr.UBLOCK.here.ypos); putc('\n', log_);
+			  wpair(&log_, envblock->here_.xpos, envblock->here_.ypos);
+              putc('\n', log_);
 			  printobject($$.prim); }
 #endif
 			}
@@ -616,8 +619,8 @@ element	:	namedobj /* chop operation for linear objects */    /* element1 */
 		| command                                               /* element6 */
 
 		| lbrace elementlist optnl XRBRACE                      /* element7 */
-		{ envblockB.here.xpos = $1.xval;
-    	  envblockB.here.ypos = $1.yval;
+		{ envblock->here_.xpos = $1.xval;
+    	  envblock->here_.ypos = $1.yval;
     	  if (($1.state == XLright) || ($1.state == XLleft) ||
 			  ($1.state == XLdown) || ($1.state == XLup)) {
 			envblock->direction = $1.state; }
@@ -667,8 +670,8 @@ element	:	namedobj /* chop operation for linear objects */    /* element1 */
 		;
 
 lbrace	:	XLBRACE                                              /* lbrace1 */
-		{ $$.xval = envblockB.here.xpos;
-    	  $$.yval = envblockB.here.ypos;
+		{ $$.xval = envblock->here_.xpos;
+    	  $$.yval = envblock->here_.ypos;
     	  $$.state = envblock->direction; }
 		;
 
@@ -858,9 +861,8 @@ stringexpr:	string                                           /* stringexpr1 */
 
 		| stringexpr Xplus string                            /* stringexpr2 */
 		{ if ($3.prim != NULL) { prp = $3.prim;
-		  $$.prim->Upr.Ubox.boxwidth += prp->Upr.Ubox.boxwidth;
-		  $$.prim->Upr.Ubox.boxheight = Max($1.prim->Upr.Ubox.boxheight,
-			       prp->Upr.Ubox.boxheight);
+		  $$.prim->boxwidth_ += prp->boxwidth_;
+		  $$.prim->boxheight_ = Max($1.prim->boxheight_, prp->boxheight_);
 		  if (prp->textp != NULL) {
     	    if ($1.prim->textp == NULL) {
 			  $$.prim->textp = prp->textp; prp->textp = NULL; }
@@ -882,21 +884,19 @@ string	:	XLstring                                             /* string1 */
 		{ newprim(&$$.prim, XLstring, envblock);
 		  eb = findenv(envblock);
 		  With2 = $$.prim;
-		  With2->Upr.Ubox.boxheight = eb->envinx(XLtextht);
-		  With2->Upr.Ubox.boxwidth = eb->envinx(XLtextwid);
-		  if (With2->Upr.Ubox.boxwidth == 0.0) {
+		  With2->boxheight_ = eb->envinx(XLtextht);
+		  With2->boxwidth_ = eb->envinx(XLtextwid);
+		  if (With2->boxwidth_ == 0.0) {
 			switch (drawmode) {
 		  	  case xfig:
 							/* To keep xfig from crashing, assume text height
 							   is 0.1 and a character is 0.1*0.75 wide */
-		  	  	if ($$.prim->Upr.Ubox.boxheight == 0.0) {
-		  	      $$.prim->Upr.Ubox.boxheight = 0.1 * eb->envinx(XLscale); }
-		  	  	$$.prim->Upr.Ubox.boxwidth =
-				  $$.prim->Upr.Ubox.boxheight * $1.toklen * 0.75;
+		  	  	if ($$.prim->boxheight_ == 0.0) {
+		  	      $$.prim->boxheight_ = 0.1 * eb->envinx(XLscale); }
+		  	  	$$.prim->boxwidth_ = $$.prim->boxheight_ * $1.toklen * 0.75;
 		  	  	break;
 		  	  case PDF:
-		  	  	$$.prim->Upr.Ubox.boxwidth =
-				  $$.prim->Upr.Ubox.boxheight * $1.toklen * 0.6;
+		  	  	$$.prim->boxwidth_ = $$.prim->boxheight_ * $1.toklen * 0.6;
 		  	  	break;
 		  	  }
 		    }
@@ -919,7 +919,7 @@ assignment	:	XLname suffix XEQ assignrhs                  /* assignment1 */
 		{ if ($2.lexval != XEMPTY) { addsuffix(chbuf, &$1.chbufx,
                 &$1.toklen, $2.xval,$2.lexval,$2.yval); }
 		    $$.varname = findname(envblock, chbuf, $1.chbufx, $1.toklen,
-					     &lastvar, &k);
+			     &lastvar, &k);
 		    if (($$.varname == NULL) && ($3.lexval != XEQ)) {
 			  $$.varname = glfindname(envblock->parent, chbuf,
 				 $1.chbufx, $1.toklen, &namptr, &kk); }
@@ -940,26 +940,26 @@ assignment	:	XLname suffix XEQ assignrhs                  /* assignment1 */
 			    }
 		#endif
 			With2 = envblock;
-			if (lastvar == NULL) { With2->Upr.UBLOCK.vars[j] = $$.varname; }
+			if (lastvar == NULL) { With2->blockparms.vars[j] = $$.varname; }
 			else if (k < 0) {
-			  if (With2->Upr.UBLOCK.vars[j]->next_ == NULL) {
-			    With2->Upr.UBLOCK.vars[j]->next_ = $$.varname; }
+			  if (With2->blockparms.vars[j]->nextname == NULL) {
+			    With2->blockparms.vars[j]->nextname = $$.varname; }
 			  else {
-				$$.varname->next_ = lastvar->next_;
-				lastvar->next_ = $$.varname; }
+				$$.varname->nextname = lastvar->nextname;
+				lastvar->nextname = $$.varname; }
 			    }
-			else if (lastvar == With2->Upr.UBLOCK.vars[j]) {
-			  $$.varname->next_ = With2->Upr.UBLOCK.vars[j];
-			  With2->Upr.UBLOCK.vars[j] = $$.varname; }
+			else if (lastvar == With2->blockparms.vars[j]) {
+			  $$.varname->nextname = With2->blockparms.vars[j];
+			  With2->blockparms.vars[j] = $$.varname; }
 			else {
-			  namptr = With2->Upr.UBLOCK.vars[j];
+			  namptr = With2->blockparms.vars[j];
 							/* while (namptr^.next<>nil) and
 							   (namptr^.next<>lastvar) do */
-			  while (namptr->next_ != lastvar) { namptr = namptr->next_; }
-			  namptr->next_ = $$.varname;
-			  $$.varname->next_ = lastvar;
+			  while (namptr->nextname != lastvar) { namptr = namptr->nextname; }
+			  namptr->nextname = $$.varname;
+			  $$.varname->nextname = lastvar;
 			  }
-			With2->Upr.UBLOCK.nvars[j]++;
+			With2->blockparms.nvars[j]++;
 			$$.varname->val = 0.0;
 		    }
 		  if ($3.lexval == XEQ) { $$.varname->val = $4.xval; }
@@ -974,7 +974,7 @@ assignment	:	XLname suffix XEQ assignrhs                  /* assignment1 */
 		    if (($1.lexval == XLarrowhead) && (drawmode == TeX) &&
 		      ($3.xval == 0.0)) { markerror(858); }
 		    else {
-		      if (envblockB.env == NULL) { inheritenv(envblock); }
+		      if (envblock->blockparms.env == NULL) { inheritenv(envblock); }
 		      if ($1.lexval == XLscale) {
 			    resetscale($3.xval, $2.lexval, envblock); }
 		      else { eqop(&envblock->envinx($1.lexval), $2.lexval, $3.xval); }
@@ -1068,7 +1068,7 @@ forhead	:	XFOR assignlist XLto expression do XLBRACE          /* forhead1 */
 			$$.varname = $2.varname;
 			$$.varname->val = $$.xval; }
 		  else if ((Rnd($$.startchop)) != XLscale) {
-			if (envblockB.env == NULL) { inheritenv(envblock); }
+			if (envblock->blockparms.env == NULL) { inheritenv(envblock); }
 			envblock->envinx($$.startchop) = $$.xval; }
 		  else { resetscale($$.xval, XEQ, envblock); }
 
@@ -1237,11 +1237,11 @@ object	:	block                                                /* object1 */
 			  case XLbox:
 			  case XBLOCK:
 			    if (With2->ptype == XBLOCK) {
-			      r = 0.5 * ($3.xval - With2->Upr.UBLOCK.blockheight);
-			      With2->Upr.UBLOCK.blockheight = $3.xval; }
+			      r = 0.5 * ($3.xval - With2->blockheight_);
+			      With2->blockheight_ = $3.xval; }
 			    else {
-			      r = 0.5 * ($3.xval - With2->Upr.Ubox.boxheight);
-			      With2->Upr.Ubox.boxheight = $3.xval; }
+			      r = 0.5 * ($3.xval - With2->boxheight_);
+			      With2->boxheight_ = $3.xval; }
 			    if (!teststflag($1.state, XLat)) {
 			      switch (With2->direction) {
 			        case XLleft:
@@ -1257,9 +1257,9 @@ object	:	block                                                /* object1 */
 			      }
 			    break;
 			  case XLstring:
-	  			With2->Upr.Ubox.boxheight = $3.xval;
+	  			With2->boxheight_ = $3.xval;
 	  			if ((drawmode == PDF) && (With2->textp != NULL)) {
-	      		  With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+	      		  With2->boxwidth_ = With2->boxheight_ *
 					With2->textp->len * 0.6;
 	  			  }
 	  			break;
@@ -1270,16 +1270,14 @@ object	:	block                                                /* object1 */
 			        case XLright:
 				      break; /* blank case */
 			        case XLup:
-				      With2->aat.ypos +=
-				        (0.5 * $3.xval) - With2->Upr.Ucircle.radius;
+				      With2->aat.ypos += (0.5 * $3.xval) - With2->circleradius_;
 				      break;
 			        case XLdown:
-				      With2->aat.ypos +=
-				        With2->Upr.Ucircle.radius - (0.5 * $3.xval);
+				      With2->aat.ypos += With2->circleradius_ - (0.5 * $3.xval);
 				      break;
 			        }
 			      }
-			    With2->Upr.Ucircle.radius = $3.xval * 0.5;
+			    With2->circleradius_ = $3.xval * 0.5;
 			    break;
 			  case XLellipse:
 			    if (!teststflag($1.state, XLat)) {
@@ -1289,15 +1287,15 @@ object	:	block                                                /* object1 */
 				      break; /* blank case */
 			        case XLup:
 				      With2->aat.ypos +=
-				        0.5 * ($3.xval - With2->Upr.Uellipse.elheight);
+				        0.5 * ($3.xval - With2->ellipseheight_);
 				      break;
 			        case XLdown:
 				      With2->aat.ypos +=
-				        0.5 * (With2->Upr.Uellipse.elheight - $3.xval);
+				        0.5 * (With2->ellipseheight_ - $3.xval);
 				      break;
 			        }
 			      }
-			    With2->Upr.Uellipse.elheight = $3.xval;
+			    With2->ellipseheight_ = $3.xval;
 			    break;
 			  case XLline:
 			  case XLarrow:
@@ -1306,7 +1304,7 @@ object	:	block                                                /* object1 */
 			  case XLspline:
 			    prp = $1.prim;
 			    while (prp != NULL) {
-			      prp->Upr.Uline.height = $3.xval;
+			      prp->lineheight_ = $3.xval;
 			      if (isthen(prp)) { prp = prp->parent; } else { prp = NULL; }
 			      }
 			    break;
@@ -1325,11 +1323,11 @@ object	:	block                                                /* object1 */
 			  case XLbox:
 			  case XBLOCK:
 			    if (With2->ptype == XBLOCK) {
-			      r = 0.5 * ($3.xval - With2->Upr.UBLOCK.blockwidth);
-			      With2->Upr.UBLOCK.blockwidth = $3.xval; }
+			      r = 0.5 * ($3.xval - With2->blockwidth_);
+			      With2->blockwidth_ = $3.xval; }
 			  else {
-			      r = 0.5 * ($3.xval - With2->Upr.Ubox.boxwidth);
-			      With2->Upr.Ubox.boxwidth = $3.xval; }
+			      r = 0.5 * ($3.xval - With2->boxwidth_);
+			      With2->boxwidth_ = $3.xval; }
 			  if (!teststflag($1.state, XLat)) {
 			    switch (With2->direction) {
 			      case XLup:
@@ -1345,7 +1343,7 @@ object	:	block                                                /* object1 */
 			    }
 			  break;
 			case XLstring:
-			  With2->Upr.Ubox.boxwidth = $3.xval;
+			  With2->boxwidth_ = $3.xval;
 			  break;
 			case XLcircle:
 			  if (!teststflag($1.state, XLat)) {
@@ -1354,16 +1352,14 @@ object	:	block                                                /* object1 */
 			      case XLdown:
 				    break; /* blank case */
 			      case XLright:
-				    With2->aat.xpos +=
-				      (0.5 * $3.xval) - With2->Upr.Ucircle.radius;
+				    With2->aat.xpos += (0.5 * $3.xval) - With2->circleradius_;
 				    break;
 			      case XLleft:
-				    With2->aat.xpos +=
-				      With2->Upr.Ucircle.radius - (0.5 * $3.xval);
+				    With2->aat.xpos += With2->circleradius_ - (0.5 * $3.xval);
 				    break;
 			      }
 			    }
-			  With2->Upr.Ucircle.radius = $3.xval * 0.5;
+			  With2->circleradius_ = $3.xval * 0.5;
 			  break;
 			case XLellipse:
 			  if (!teststflag($1.state, XLat)) {
@@ -1372,16 +1368,14 @@ object	:	block                                                /* object1 */
 			      case XLdown:
 				    break; /* blank case */
 			      case XLright:
-				    With2->aat.xpos +=
-				      0.5 * ($3.xval - With2->Upr.Uellipse.elwidth);
+				    With2->aat.xpos += 0.5 * ($3.xval - With2->ellipsewidth_);
 				    break;
 			      case XLleft:
-				    With2->aat.xpos +=
-				      0.5 * (With2->Upr.Uellipse.elwidth - $3.xval);
+				    With2->aat.xpos += 0.5 * (With2->ellipsewidth_ - $3.xval);
 				    break;
 			      }
 			    }
-			  With2->Upr.Uellipse.elwidth = $3.xval;
+			  With2->ellipsewidth_ = $3.xval;
 			  break;
 			case XLline:
 			case XLarrow:
@@ -1390,9 +1384,8 @@ object	:	block                                                /* object1 */
 			case XLspline:
 			  prp = $1.prim;
 			  while (prp != NULL) {
-			    prp->Upr.Uline.width = $3.xval;
-			    if (isthen(prp)) { prp = prp->parent; }
-			      else { prp = NULL; }
+			    prp->linewidth_ = $3.xval;
+			    if (isthen(prp)) { prp = prp->parent; } else { prp = NULL; }
 			    }
 			  break;
 			case XLabel:
@@ -1408,35 +1401,33 @@ object	:	block                                                /* object1 */
 			With2 = $1.prim;
 			switch (With2->ptype) {
 			  case XLbox:
-			    With2->Upr.Ubox.boxradius = $3.xval;
+			    With2->boxradius_ = $3.xval;
 			    break;
 			  case XLarc:
 			    t = $3.xval;
 			    if (With2->direction == 0) {
-			      $3.xval = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos( With2->Upr.Uline.endpos.xpos +
-                         With2->Upr.Uline.endpos.ypos));
-			      $3.yval = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin( With2->Upr.Uline.endpos.xpos +
-                         With2->Upr.Uline.endpos.ypos));
-			      r = cos(With2->Upr.Uline.endpos.xpos);
-			      s = sin(With2->Upr.Uline.endpos.xpos);
-			      With2->aat.xpos += With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos += With2->Upr.Uline.aradius * s;
-			      With2->Upr.Uline.aradius = t;
-			      With2->aat.xpos -= With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos -= With2->Upr.Uline.aradius * s;
+			      $3.xval = With2->aat.xpos + (With2->aradius_ *
+                    cos( With2->startangle_ + With2->arcangle_));
+			      $3.yval = With2->aat.ypos + (With2->aradius_ *
+                    sin( With2->startangle_ + With2->arcangle_));
+			      r = cos(With2->startangle_);
+			      s = sin(With2->startangle_);
+			      With2->aat.xpos += With2->aradius_ * r;
+			      With2->aat.ypos += With2->aradius_ * s;
+			      With2->aradius_ = t;
+			      With2->aat.xpos -= With2->aradius_ * r;
+			      With2->aat.ypos -= With2->aradius_ * s;
 			      setstflag(&$1.state, XLradius);
 			      goto object_xx;
 			      }
 			    else {
-			      r = cos(With2->Upr.Uline.endpos.xpos);
-			      s = sin(With2->Upr.Uline.endpos.xpos);
-			      $$.prim->aat.xpos += With2->Upr.Uline.aradius * r;
-			      $$.prim->aat.ypos += With2->Upr.Uline.aradius * s;
-			      $$.prim->Upr.Uline.aradius = t;
-			      $$.prim->aat.xpos -= With2->Upr.Uline.aradius * r;
-			      $$.prim->aat.ypos -= With2->Upr.Uline.aradius * s;
+			      r = cos(With2->startangle_);
+			      s = sin(With2->startangle_);
+			      $$.prim->aat.xpos += With2->aradius_ * r;
+			      $$.prim->aat.ypos += With2->aradius_ * s;
+			      $$.prim->aradius_ = t;
+			      $$.prim->aat.xpos -= With2->aradius_ * r;
+			      $$.prim->aat.ypos -= With2->aradius_ * s;
 			      setstflag(&$$.state, XLradius);
 				  }
 			    break;
@@ -1444,20 +1435,20 @@ object	:	block                                                /* object1 */
 			    if (!teststflag($1.state, XLat)) {
 			      switch (With2->direction) {
 			        case XLleft:
-				      With2->aat.xpos += With2->Upr.Ucircle.radius - $3.xval;
+				      With2->aat.xpos += With2->circleradius_ - $3.xval;
 				      break;
 			        case XLright:
-				      With2->aat.xpos += $3.xval - With2->Upr.Ucircle.radius;
+				      With2->aat.xpos += $3.xval - With2->circleradius_;
 				      break;
 			        case XLup:
-				      With2->aat.ypos += $3.xval - With2->Upr.Ucircle.radius;
+				      With2->aat.ypos += $3.xval - With2->circleradius_;
 				      break;
 			        case XLdown:
-				      With2->aat.ypos += With2->Upr.Ucircle.radius - $3.xval;
+				      With2->aat.ypos += With2->circleradius_ - $3.xval;
 				      break;
 			        }
 			      }
-			    With2->Upr.Ucircle.radius = $3.xval;
+			    With2->circleradius_ = $3.xval;
 			    setstflag(&$1.state, XLradius);
 			    break;
 			  default:
@@ -1475,20 +1466,20 @@ object	:	block                                                /* object1 */
 			  if (!teststflag($1.state, XLat)) {
 				switch (With2->direction) {
 				  case XLleft:
-				    With2->aat.xpos += With2->Upr.Ucircle.radius - r;
+				    With2->aat.xpos += With2->circleradius_ - r;
 				    break;
 				  case XLright:
-				    With2->aat.xpos += r - With2->Upr.Ucircle.radius;
+				    With2->aat.xpos += r - With2->circleradius_;
 				    break;
 				  case XLup:
-				    With2->aat.ypos += r - With2->Upr.Ucircle.radius;
+				    With2->aat.ypos += r - With2->circleradius_;
 				    break;
 				  case XLdown:
-				    With2->aat.ypos += With2->Upr.Ucircle.radius - r;
+				    With2->aat.ypos += With2->circleradius_ - r;
 				    break;
 				  }
 			    }
-			  With2->Upr.Ucircle.radius = r;
+			  With2->circleradius_ = r;
 			  }
 			else { markerror(858); }
 		    }
@@ -1519,12 +1510,12 @@ object	:	block                                                /* object1 */
 			      dy = 0.0;
 			      }
 			    else if (With2->ptype == XBLOCK) {
-			      dx = With2->Upr.UBLOCK.blockwidth * r / 2;
-			      dy = With2->Upr.UBLOCK.blockheight * r / 2;
+			      dx = With2->blockwidth_ * r / 2;
+			      dy = With2->blockheight_ * r / 2;
 			      }
 			    else {
-			      dx = With2->Upr.Ubox.boxwidth * r / 2;
-			      dy = With2->Upr.Ubox.boxheight * r / 2;
+			      dx = With2->boxwidth_ * r / 2;
+			      dy = With2->boxheight_ * r / 2;
 			      }
 			    scaleobj($$.prim, $3.xval);
 			    switch (With2->direction) {
@@ -1543,47 +1534,47 @@ object	:	block                                                /* object1 */
 			      }
 			    break;
 			  case XLcircle:
-			    With2->Upr.Ucircle.radius = $3.xval * With2->Upr.Ucircle.radius;
+			    With2->circleradius_ = $3.xval * With2->circleradius_;
 			    if (!teststflag($1.state, XLat)) {
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 + With2->Upr.Ucircle.radius;
+				      With2->aat.ypos = z1 + With2->circleradius_;
 				      break;
 			        case XLdown:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 - With2->Upr.Ucircle.radius;
+				      With2->aat.ypos = z1 - With2->circleradius_;
 				      break;
 			        case XLright:
-				      With2->aat.xpos = x1 + With2->Upr.Ucircle.radius;
+				      With2->aat.xpos = x1 + With2->circleradius_;
 				      With2->aat.ypos = z1;
 				      break;
 			        case XLleft:
-				      With2->aat.xpos = x1 - With2->Upr.Ucircle.radius;
+				      With2->aat.xpos = x1 - With2->circleradius_;
 				      With2->aat.ypos = z1;
 				      break;
 			        }
 			      }
 			    break;
 			  case XLellipse:
-			    With2->Upr.Uellipse.elwidth *= $3.xval;
-			    With2->Upr.Uellipse.elheight *= $3.xval;
+			    With2->ellipsewidth_ *= $3.xval;
+			    With2->ellipseheight_ *= $3.xval;
 			    if (!teststflag($1.state, XLat)) {
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 + (With2->Upr.Uellipse.elheight / 2);
+				      With2->aat.ypos = z1 + (With2->ellipseheight_ / 2);
 				      break;
 			        case XLdown:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 - (With2->Upr.Uellipse.elheight / 2);
+				      With2->aat.ypos = z1 - (With2->ellipseheight_ / 2);
 				      break;
 			        case XLright:
-				      With2->aat.xpos = x1 + (With2->Upr.Uellipse.elwidth / 2);
+				      With2->aat.xpos = x1 + (With2->ellipsewidth_ / 2);
 				      With2->aat.ypos = z1;
 				      break;
 			        case XLleft:
-				      With2->aat.xpos = x1 - (With2->Upr.Uellipse.elwidth / 2);
+				      With2->aat.xpos = x1 - (With2->ellipsewidth_ / 2);
 				      With2->aat.ypos = z1;
 				      break;
 			        }
@@ -1617,25 +1608,25 @@ object	:	block                                                /* object1 */
 			  eb = findenv(envblock);
 			  switch (With2->ptype) {
 			    case XLarc:
-			      r = cos(With2->Upr.Uline.endpos.xpos);
-			      s = sin(With2->Upr.Uline.endpos.xpos);
-			      With2->aat.xpos += With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos += With2->Upr.Uline.aradius * s;
+			      r = cos(With2->startangle_);
+			      s = sin(With2->startangle_);
+			      With2->aat.xpos += With2->aradius_ * r;
+			      With2->aat.ypos += With2->aradius_ * s;
 				  nwi = With2->direction;
 			      if (((nwi == XLup) && (i == XLleft)) ||
 				      ((nwi == XLdown) && (i == XLright)) ||
 				      ((nwi == XLright) && (i == XLup)) ||
 				      ((nwi == XLleft) && (i == XLdown))) {
-				    With2->Upr.Uline.endpos.ypos = pi * 0.5; }
+				    With2->arcangle_ = pi * 0.5; }
 			      else if (((nwi == XLup) && (i == XLright)) ||
 				      ((nwi == XLdown) && (i == XLleft)) ||
 				      ((nwi == XLright) && (i == XLdown)) ||
 				      ((nwi == XLleft) && (i == XLup))) {
-				    With2->Upr.Uline.endpos.ypos = (-pi) * 0.5; }
+				    With2->arcangle_ = (-pi) * 0.5; }
 			      if ($3.lexval != XEMPTY) {
-				    With2->Upr.Uline.aradius = $3.xval; }
-			      With2->aat.xpos -= With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos -= With2->Upr.Uline.aradius * s;
+				    With2->aradius_ = $3.xval; }
+			      With2->aat.xpos -= With2->aradius_ * r;
+			      With2->aat.ypos -= With2->aradius_ * s;
 			      With2->direction = i;
 			      break;
 			    case XLline:
@@ -1724,19 +1715,17 @@ object	:	block                                                /* object1 */
 			while (prp != NULL) {
 			  switch (With2->ptype) {
 			    case XLbox:
-			      prp->Upr.Ubox.boxfill = s;
+			      prp->boxfill_ = s;
 			      break;
 			    case XLcircle:
-			      prp->Upr.Ucircle.cfill = s;
+			      prp->circlefill_ = s;
 			      break;
 			    case XLellipse:
-			      prp->Upr.Uellipse.efill = s;
+			      prp->ellipsefill_ = s;
 			      break;
 			    default:
-			      if ((drawmode >= 0) && (drawmode < 32) &&
-				  (((1L << drawmode) &
-				    ((1L << TeX) | (1L << tTeX) | (1L << Pict2e))) != 0)) {
-				    markerror(858); }
+                  if ((drawmode == TeX) || (drawmode == tTeX) ||
+                      (drawmode == Pict2e)) { markerror(858); }
 			      else {
 				    switch (With2->ptype) {
 				      case XLline:
@@ -1744,7 +1733,7 @@ object	:	block                                                /* object1 */
 				      case XLmove:
 				      case XLspline:
 				      case XLarc:
-				        prp->Upr.Uline.lfill = s;
+				        prp->linefill_ = s;
 				        break;
 				      default:
 				        markerror(858);
@@ -1766,14 +1755,13 @@ object	:	block                                                /* object1 */
 			    (With2->ptype != XLarrow) && (With2->ptype != XLline)) {
 			  markerror(858); }
 			else {
-			  With2->Upr.Uline.atype =
-                pahlex(With2->Upr.Uline.atype,$2.lexval);
+			  With2->lineatype_ = pahlex(With2->lineatype_,$2.lexval);
 			  if ($3.lexval != XEMPTY) { lj = Rnd($3.xval); }
 			  else {
 				eb = findenv(envblock);
 				lj = (long)floor(eb->envinx(XLarrowhead)+0.5);
 			    }
-			  With2->Upr.Uline.atype = pahnum(With2->Upr.Uline.atype, lj);
+			  With2->lineatype_ = pahnum(With2->lineatype_, lj);
 			  }
 		    }
 		  }
@@ -1795,31 +1783,29 @@ object	:	block                                                /* object1 */
 			With2 = $1.prim;
 			if (With2->ptype != XLarc) { markerror(858); }
 			else {
-			  if ((With2->Upr.Uline.endpos.ypos > 0.0) &&
-                  (With2->direction == 0)) {
-				With2->Upr.Uline.endpos.ypos = -fabs(
-				  principal((2.0 * pi) - With2->Upr.Uline.endpos.ypos,2.0*pi));}
+			  if ((With2->arcangle_ > 0.0) && (With2->direction == 0)) {
+				With2->arcangle_ = -fabs(
+				  principal((2.0 * pi) - With2->arcangle_,2.0*pi));}
 			  else if (With2->direction != 0) {
 				With2->aat = arcstart($$.prim);
 				switch (With2->direction) {
 				  case XLup:
-				    With2->aat.xpos += With2->Upr.Uline.aradius;
+				    With2->aat.xpos += With2->aradius_;
 				    break;
 				  case XLdown:
-				    With2->aat.xpos -= With2->Upr.Uline.aradius;
+				    With2->aat.xpos -= With2->aradius_;
 				    break;
 				  case XLleft:
-				    With2->aat.ypos += With2->Upr.Uline.aradius;
+				    With2->aat.ypos += With2->aradius_;
 				    break;
 				  case XLright:
-				    With2->aat.ypos -= With2->Upr.Uline.aradius;
+				    With2->aat.ypos -= With2->aradius_;
 				    break;
 				  }
-				if (With2->Upr.Uline.endpos.ypos > 0.0) {
-				    With2->Upr.Uline.endpos.xpos =
-                      principal(With2->Upr.Uline.endpos.xpos + pi, pi); }
-				With2->Upr.Uline.endpos.ypos =
-                 -fabs(With2->Upr.Uline.endpos.ypos);
+				if (With2->arcangle_ > 0.0) {
+				  With2->startangle_ =
+                    principal(With2->startangle_ + pi, pi); }
+				  With2->arcangle_ = -fabs(With2->arcangle_);
 			    }
 			  setstflag(&$$.state, XLcw);
 			  }
@@ -1831,31 +1817,21 @@ object	:	block                                                /* object1 */
 			With2 = $1.prim;
 			if (With2->ptype != XLarc) { markerror(858); }
 			else {
-			  if ((With2->Upr.Uline.endpos.ypos < 0.0) &&
-                (With2->direction == 0)) {
-				With2->Upr.Uline.endpos.ypos = fabs(
-				  principal(With2->Upr.Uline.endpos.ypos - (2.0 * pi),2.0*pi));}
+			  if ((With2->arcangle_ < 0.0) && (With2->direction == 0)) {
+				With2->arcangle_ =
+                  fabs(principal(With2->arcangle_ - (2.0 * pi),2.0*pi)); }
 			  else if (With2->direction != 0) {
 				With2->aat = arcstart($1.prim);
 				switch (With2->direction) {
-				  case XLup:
-				    With2->aat.xpos -= With2->Upr.Uline.aradius;
-				    break;
-				  case XLdown:
-				    With2->aat.xpos += With2->Upr.Uline.aradius;
-				    break;
-				  case XLleft:
-				    With2->aat.ypos -= With2->Upr.Uline.aradius;
-				    break;
-				  case XLright:
-				    With2->aat.ypos += With2->Upr.Uline.aradius;
-				    break;
+				  case XLup: With2->aat.xpos -= With2->aradius_; break;
+				  case XLdown: With2->aat.xpos += With2->aradius_; break;
+				  case XLleft: With2->aat.ypos -= With2->aradius_; break;
+				  case XLright: With2->aat.ypos += With2->aradius_; break;
 				  }
-				if (With2->Upr.Uline.endpos.ypos < 0.0) {
-				  With2->Upr.Uline.endpos.xpos =
-                    principal( With2->Upr.Uline.endpos.xpos + pi, pi); }
-				With2->Upr.Uline.endpos.ypos =
-                  fabs(With2->Upr.Uline.endpos.ypos);
+				if (With2->arcangle_ < 0.0) {
+				  With2->startangle_ =
+                    principal( With2->startangle_ + pi, pi); }
+				  With2->arcangle_ = fabs(With2->arcangle_);
 			    }
 			  setstflag(&$1.state, XLccw);
 			  }
@@ -1886,27 +1862,26 @@ object	:	block                                                /* object1 */
 				    switch (With2->direction) {
 				      case XLup:
 				        With2->aat.ypos += 0.5 *
-					    (prp->Upr.Ubox.boxheight - With2->Upr.Ubox.boxheight);
+					      (prp->boxheight_ - With2->boxheight_);
 				        break;
 				      case XLdown:
 				        With2->aat.ypos -= 0.5 *
-					    (prp->Upr.Ubox.boxheight - With2->Upr.Ubox.boxheight);
+					      (prp->boxheight_ - With2->boxheight_);
 				        break;
 				      case XLleft:
 				        With2->aat.xpos -=
-				          0.5 * (prp->Upr.Ubox.boxwidth -
-						    With2->Upr.Ubox.boxwidth);
+				          0.5 * (prp->boxwidth_ - With2->boxwidth_);
 				        break;
 				      case XLright:
 				        With2->aat.xpos +=
-				          0.5*(prp->Upr.Ubox.boxwidth-With2->Upr.Ubox.boxwidth);
+				          0.5 * (prp->boxwidth_-With2->boxwidth_);
 				        break;
 				      }
 			        }
-			      With2->Upr.Ubox.boxfill = prp->Upr.Ubox.boxfill;
-			      With2->Upr.Ubox.boxheight = prp->Upr.Ubox.boxheight;
-			      With2->Upr.Ubox.boxwidth = prp->Upr.Ubox.boxwidth;
-			      With2->Upr.Ubox.boxradius = prp->Upr.Ubox.boxradius;
+			      With2->boxfill_ = prp->boxfill_;
+			      With2->boxheight_ = prp->boxheight_;
+			      With2->boxwidth_ = prp->boxwidth_;
+			      With2->boxradius_ = prp->boxradius_;
 			      break;
 			    case XBLOCK:
 			      markerror(858);
@@ -1915,75 +1890,71 @@ object	:	block                                                /* object1 */
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.ypos +=
-                        prp->Upr.Ucircle.radius - With2->Upr.Ucircle.radius;
+                        prp->circleradius_ - With2->circleradius_;
 				      break;
 			        case XLdown:
 				      With2->aat.ypos +=
-                        With2->Upr.Ucircle.radius - prp->Upr.Ucircle.radius;
+                        With2->circleradius_ - prp->circleradius_;
 				      break;
 			        case XLleft:
 				      With2->aat.xpos +=
-                        With2->Upr.Ucircle.radius - prp->Upr.Ucircle.radius;
+                        With2->circleradius_ - prp->circleradius_;
 				      break;
 			        case XLright:
 				      With2->aat.xpos +=
-                        prp->Upr.Ucircle.radius - With2->Upr.Ucircle.radius;
+                        prp->circleradius_ - With2->circleradius_;
 				      break;
 			        }
-			      With2->Upr.Ucircle.cfill = prp->Upr.Ucircle.cfill;
-			      With2->Upr.Ucircle.radius = prp->Upr.Ucircle.radius;
+			      With2->circlefill_ = prp->circlefill_;
+			      With2->circleradius_ = prp->circleradius_;
 			      break;
 			    case XLellipse:
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.ypos +=
-				        0.5 * (prp->Upr.Uellipse.elheight -
-                          With2->Upr.Uellipse.elheight);
+				        0.5 * (prp->ellipseheight_ - With2->ellipseheight_);
 				      break;
 			        case XLdown:
 				      With2->aat.ypos -=
-				        0.5 * (prp->Upr.Uellipse.elheight -
-                          With2->Upr.Uellipse.elheight);
+				        0.5 * (prp->ellipseheight_ - With2->ellipseheight_);
 				      break;
 			        case XLleft:
 				      With2->aat.xpos -=
-				        0.5 * (prp->Upr.Uellipse.elwidth -
-                          With2->Upr.Uellipse.elwidth);
+				        0.5 * (prp->ellipsewidth_ - With2->ellipsewidth_);
 				      break;
 			        case XLright:
 				      With2->aat.xpos +=
-				        0.5 * (prp->Upr.Uellipse.elwidth -
-                          With2->Upr.Uellipse.elwidth);
+				        0.5 * (prp->ellipsewidth_ - With2->ellipsewidth_);
 				      break;
 			        }
-			      With2->Upr.Uellipse.efill = prp->Upr.Uellipse.efill;
-			      With2->Upr.Uellipse.elheight = prp->Upr.Uellipse.elheight;
-			      With2->Upr.Uellipse.elwidth = prp->Upr.Uellipse.elwidth;
+			      With2->ellipsefill_ = prp->ellipsefill_;
+			      With2->ellipseheight_ = prp->ellipseheight_;
+			      With2->ellipsewidth_ = prp->ellipsewidth_;
 			      break;
 			    case XLarc:
-			      x1 = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos(With2->Upr.Uline.endpos.xpos));
-			      z1 = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin(With2->Upr.Uline.endpos.xpos));
-			      With2->Upr.Uline.aradius = prp->Upr.Uline.aradius;
-			      With2->Upr.Uline.endpos.xpos = prp->Upr.Uline.endpos.xpos;
-			      With2->aat.xpos = x1 - (With2->Upr.Uline.aradius *
-						      cos(With2->Upr.Uline.endpos.xpos));
-			      With2->aat.ypos = z1 - (With2->Upr.Uline.aradius *
-						      sin(With2->Upr.Uline.endpos.xpos));
-			      With2->Upr.Uline.endpos.ypos = prp->Upr.Uline.endpos.ypos;
+			      x1 = With2->aat.xpos +
+                    (With2->aradius_ * cos(With2->startangle_));
+			      z1 = With2->aat.ypos + 
+                    (With2->aradius_ * sin(With2->startangle_));
+			      With2->aradius_ = prp->aradius_;
+			      With2->startangle_ = prp->startangle_;
+			      With2->aat.xpos = x1 -
+                    (With2->aradius_ * cos(With2->startangle_));
+			      With2->aat.ypos = z1 -
+                    (With2->aradius_ * sin(With2->startangle_));
+			      With2->arcangle_ = prp->arcangle_;
 			      break;
 			    case XLline:
 			    case XLarrow:
 			    case XLmove:
 			    case XLspline:
-			      With2->Upr.Uline.endpos.xpos =
-				    With2->aat.xpos + prp->Upr.Uline.endpos.xpos-prp->aat.xpos;
-			      With2->Upr.Uline.endpos.ypos =
-				    With2->aat.ypos + prp->Upr.Uline.endpos.ypos-prp->aat.ypos;
-			      With2->Upr.Uline.height = prp->Upr.Uline.height;
-			      With2->Upr.Uline.width = prp->Upr.Uline.width;
-			      With2->Upr.Uline.atype = prp->Upr.Uline.atype;
+			      With2->endpos_.xpos =
+				    With2->aat.xpos + prp->endpos_.xpos-prp->aat.xpos;
+			      With2->endpos_.ypos =
+				    With2->aat.ypos + prp->endpos_.ypos-prp->aat.ypos;
+			      With2->lineheight_ = prp->lineheight_;
+			      With2->linewidth_ = prp->linewidth_;
+			      With2->lineatype_ = prp->lineatype_;
 			      break;
 			    case XLabel:
 			    case XLaTeX:
@@ -2002,18 +1973,18 @@ object	:	block                                                /* object1 */
 			  else {
 				namptr = With2->textp;
 				i = 1;
-				while (namptr->next_ != NULL) { namptr = namptr->next_; i++; }
-				namptr->next_ = $2.prim->textp;
+				while (namptr->nextname != NULL) { namptr = namptr->nextname; i++; }
+				namptr->nextname = $2.prim->textp;
 				if (With2->ptype == XLstring) {
 				  if (drawmode == SVG) {
 					eb = findenv(envblock);
 					if (eb != NULL) {
 					  r = findvar("dptextratio", 11);
 					  if (r == 0) { r = 1.0; }
-					  With2->Upr.Ubox.boxheight += eb->envinx(XLtextht) / r;
+					  With2->boxheight_ += eb->envinx(XLtextht) / r;
 					  }
 				    }
-				  else { With2->Upr.Ubox.boxheight *= ((i + 1) / i); }
+				  else { With2->boxheight_ *= ((i + 1) / i); }
 				  }
 			    }
 			  if ((drawmode == PS) || (drawmode == PDF) ||
@@ -2036,10 +2007,8 @@ object	:	block                                                /* object1 */
 			    x1 = $3.xval + With2->aat.xpos;
 			    z1 = $3.yval + With2->aat.ypos;
 			    if (With2->ptype == XLarc) {
-				  x1 += With2->Upr.Uline.aradius *
-                    cos(With2->Upr.Uline.endpos.xpos);
-				  z1 += With2->Upr.Uline.aradius *
-                    sin(With2->Upr.Uline.endpos.xpos);
+				  x1 += With2->aradius_ * cos(With2->startangle_);
+				  z1 += With2->aradius_ * sin(With2->startangle_);
 			      }
 			    $3.xval = x1;
 			    $3.yval = z1;
@@ -2059,17 +2028,15 @@ object	:	block                                                /* object1 */
 				 r = $3.xval;
 				 s = $3.yval;
 				if (teststflag($1.state, XLto)) {
-				  $3.xval = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos( With2->Upr.Uline.endpos.xpos +
-                        With2->Upr.Uline.endpos.ypos));
-				  $3.yval = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin( With2->Upr.Uline.endpos.xpos +
-                         With2->Upr.Uline.endpos.ypos));
+				  $3.xval = With2->aat.xpos + (With2->aradius_ *
+                    cos( With2->startangle_ + With2->arcangle_));
+				  $3.yval = With2->aat.ypos + (With2->aradius_ *
+                    sin( With2->startangle_ + With2->arcangle_));
 				  }
-				With2->aat.xpos = r - (With2->Upr.Uline.aradius *
-						       cos(With2->Upr.Uline.endpos.xpos));
-				With2->aat.ypos = s - (With2->Upr.Uline.aradius *
-						       sin(With2->Upr.Uline.endpos.xpos));
+				With2->aat.xpos = r -
+                  (With2->aradius_ * cos(With2->startangle_));
+				With2->aat.ypos = s -
+                  (With2->aradius_ * sin(With2->startangle_));
 				if (teststflag($1.state, XLto)) { goto object_xx; }
 			    }
 			  else if (!teststflag($1.state, XLto)) {
@@ -2104,14 +2071,14 @@ object	:	block                                                /* object1 */
     	          }
     	        With2 = $$.prim;
     	        if (With2->ptype != XLarc) {
-    	    	  With2->Upr.Uline.endpos.xpos = $3.xval;
-    	    	  With2->Upr.Uline.endpos.ypos = $3.yval;
+    	    	  With2->startangle_ = $3.xval;
+    	    	  With2->arcangle_ = $3.yval;
     	          }
     	        else {
-    	    	  x1 = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos(With2->Upr.Uline.endpos.xpos));
-    	    	  z1 = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin(With2->Upr.Uline.endpos.xpos));
+    	    	  x1 = With2->aat.xpos + (With2->aradius_ *
+                    cos(With2->startangle_));
+    	    	  z1 = With2->aat.ypos + (With2->aradius_ *
+                    sin(With2->startangle_));
     	    	  dx = $3.xval - x1;
     	    	  dy = $3.yval - z1;
     	    	  ts = (dx * dx) + (dy * dy);
@@ -2124,37 +2091,33 @@ object	:	block                                                /* object1 */
     	    	  fprintf(log_, " ts="); wfloat(&log_, ts);
     	    	  fprintf(log_, " i=%d", i); }
 #endif
-    	    	if (ts == 0.0) { With2->Upr.Uline.endpos.ypos = 0.0; }
+    	    	if (ts == 0.0) { With2->arcangle_ = 0.0; }
     	    	else {
-    	    	    t = sqrt(Max(0.0, (4.0 * With2->Upr.Uline.aradius * With2->
-    	    				 Upr.Uline.aradius) - ts) / ts);
+    	    	    t = sqrt(Max(0.0,(4.0 *
+                          With2->aradius_ * With2->aradius_) - ts) / ts);
 #ifdef DDEBUG
     	    	    if (debuglevel == 2) {
     	    		  fprintf(log_, " t="); wfloat(&log_, t);
     	    		  fprintf(log_, " |arcangle|=");
-    	    		  wfloat(&log_, With2->Upr.Uline.endpos.ypos * 180 / pi);
+    	    		  wfloat(&log_, With2->arcangle_ * 180 / pi);
     	    		  putc('\n', log_); }
 #endif
     	    	    r = sqrt(ts);               /* t is always nonnegative  */
-    	    	    if (t <= 0.0) { With2->Upr.Uline.aradius = 0.5 * r; }
+    	    	    if (t <= 0.0) { With2->aradius_ = 0.5 * r; }
     	    	    switch (i) {
 							/* Determine which of the two default arcs to
 							   draw: */
     	    	    case XLup:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        ((-dx) - (t * dy)) < 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * ((-dx) - (t * dy)) < 0.0) {t= -t; }
     	    	      break;
     	    	    case XLdown:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        ((-dx) - (t * dy)) > 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * ((-dx) - (t * dy)) > 0.0) { t=-t; }
     	    	      break;
     	    	    case XLright:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        (dy - (t * dx)) < 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * (dy - (t * dx)) < 0.0) { t = -t; }
     	    	      break;
     	    	    case XLleft:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        (dy - (t * dx)) > 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * (dy - (t * dx)) > 0.0) { t = -t; }
     	    	      break;
     	    	      }
     	    	    With2->aat.xpos = x1 + (0.5 * (dx + (t * dy)));
@@ -2163,23 +2126,23 @@ object	:	block                                                /* object1 */
     	    	    if (debuglevel == 2) {
     	    		  fprintf(log_, " t="); wfloat(&log_, t);
     	    		  fprintf(log_, " aradius=");
-    	    		  wfloat(&log_, With2->Upr.Uline.aradius);
+    	    		  wfloat(&log_, With2->aradius_);
     	    		  fprintf(log_, " aat=");
     	    		  wpair(&log_, With2->aat.xpos, With2->aat.ypos);
     	    		  putc('\n', log_);
     	    	      }
 #endif
-    	    	    setangles(&With2->Upr.Uline.endpos.xpos,
-    	    		      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1,
+    	    	    setangles(&With2->startangle_,
+    	    		      &With2->arcangle_, With2->aat, x1, z1,
     	    		      $3.xval, $3.yval);
-    	    	}
+    	    	    }
 							/* ratio centre-to-chord/half-chord */
-    	    	    if (With2->direction != 0) { $$.toklen = With2->direction; }
-    	    	    With2->direction = 0;
-    	            }
-    	          setstflag(&$$.state, XLto);
+    	    	  if (With2->direction != 0) { $$.toklen = With2->direction; }
+    	    	  With2->direction = 0;
+    	          }
+    	        setstflag(&$$.state, XLto);
 #ifdef DDEBUG
-    	          if (debuglevel > 0) { printobject($$.prim); }
+    	        if (debuglevel > 0) { printobject($$.prim); }
 #endif
     	        }
     	      else { markerror(858); }
@@ -2208,11 +2171,12 @@ object	:	block                                                /* object1 */
 		{ if ($1.prim != NULL) {
 			namptr = $$.prim->textp;
 			if (namptr != NULL) {
-			  while (namptr->next_ != NULL) { namptr = namptr->next_; }
+			  while (namptr->nextname != NULL) { namptr = namptr->nextname; }
 			  setjust(namptr, $2.lexval);
 			  if (drawmode == SVG) {
 				With2 = $$.prim;
-				if (!teststflag($$.state, XLat)) {
+				if ((!teststflag($$.state, XLat)) &&
+                    (With2->ptype == XLstring)) {
 				  $$.xval = With2->aat.xpos;
 				  $$.yval = With2->aat.ypos;
 				  setstflag(&$$.state, XLat); }
@@ -2327,7 +2291,7 @@ object	:	block                                                /* object1 */
 	      while (prp != NULL) { i = prp->ptype;
 		    if ( (i != XLaTeX) && (i != XLstring) && (i != XBLOCK)
 			  && (i != XLabel) ) { primp = prp; }
-		    prp = prp->next_; }
+		    prp = prp->nextname; }
 	      if (primp == NULL) { markerror(857); }
 	      else {
 		    while (primp->son != NULL) { primp = primp->son; }
@@ -2342,8 +2306,8 @@ object	:	block                                                /* object1 */
 
 openblock	:	XBRACKETL                                     /* openblock1 */
 		{ newprim(&$$.prim, XBLOCK, envblock);
-		  $$.prim->Upr.UBLOCK.here.xpos = 0.0;
-		  $$.prim->Upr.UBLOCK.here.ypos = 0.0;
+		  $$.prim->here_.xpos = 0.0;
+		  $$.prim->here_.ypos = 0.0;
 		  envblock = $$.prim;
 		  tail = NULL;
 		  $$.lexval = 0;
@@ -2358,8 +2322,7 @@ block	:	XLprimitiv optexp                                     /* block1 */
 			if (( ($1.lexval != XLmove) && ((drawmode == MPost) ||
 			      (drawmode == Pict2e) || (drawmode == PDF) ||
 			      (drawmode == PS) || (drawmode == SVG) ||
-			      (drawmode == PSfrag)) ) ||
-			    ($1.lexval == XLarc)) {
+			      (drawmode == PSfrag)) ) || ($1.lexval == XLarc)) {
 			  $$.prim->lthick = eb->envinx(XLlinethick); }
 			if (($2.lexval != XEMPTY) &&               /* check expr allowed */
 			    ($1.lexval != XLmove) &&
@@ -2369,93 +2332,92 @@ block	:	XLprimitiv optexp                                     /* block1 */
 			With2 = $$.prim;
 			switch ($1.lexval) {
 			  case XLbox:
-			    With2->Upr.Ubox.boxheight = eb->envinx(XLboxht);
-			    With2->Upr.Ubox.boxwidth = eb->envinx(XLboxwid);
-			    With2->Upr.Ubox.boxradius = eb->envinx(XLboxrad);
+			    With2->boxheight_ = eb->envinx(XLboxht);
+			    With2->boxwidth_ = eb->envinx(XLboxwid);
+			    With2->boxradius_ = eb->envinx(XLboxrad);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->aat.ypos += With2->Upr.Ubox.boxheight * 0.5;
+			        With2->aat.ypos += With2->boxheight_ * 0.5;
 			        break;
 			      case XLdown:
-			        With2->aat.ypos -= With2->Upr.Ubox.boxheight * 0.5;
+			        With2->aat.ypos -= With2->boxheight_ * 0.5;
 			        break;
 			      case XLleft:
-			        With2->aat.xpos -= With2->Upr.Ubox.boxwidth * 0.5;
+			        With2->aat.xpos -= With2->boxwidth_ * 0.5;
 			        break;
 			      case XLright:
-			        With2->aat.xpos += With2->Upr.Ubox.boxwidth * 0.5;
+			        With2->aat.xpos += With2->boxwidth_ * 0.5;
 			        break;
 			      }
 			    break;
 			  case XLcircle:
-			    With2->Upr.Ucircle.radius = eb->envinx(XLcirclerad);
+			    With2->circleradius_ = eb->envinx(XLcirclerad);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->aat.ypos += With2->Upr.Ucircle.radius;
+			        With2->aat.ypos += With2->circleradius_;
 			        break;
 			      case XLdown:
-			        With2->aat.ypos -= With2->Upr.Ucircle.radius;
+			        With2->aat.ypos -= With2->circleradius_;
 			        break;
 			      case XLleft:
-			        With2->aat.xpos -= With2->Upr.Ucircle.radius;
+			        With2->aat.xpos -= With2->circleradius_;
 			        break;
 			      case XLright:
-			        With2->aat.xpos += With2->Upr.Ucircle.radius;
+			        With2->aat.xpos += With2->circleradius_;
 			        break;
 			      }
 			    break;
 			  case XLellipse:
-			    With2->Upr.Uellipse.elheight = eb->envinx(XLellipseht);
-			    With2->Upr.Uellipse.elwidth = eb->envinx(XLellipsewid);
+			    With2->ellipseheight_ = eb->envinx(XLellipseht);
+			    With2->ellipsewidth_ = eb->envinx(XLellipsewid);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->aat.ypos += With2->Upr.Uellipse.elheight * 0.5;
+			        With2->aat.ypos += With2->ellipseheight_ * 0.5;
 			        break;
 			      case XLdown:
-			        With2->aat.ypos -= With2->Upr.Uellipse.elheight * 0.5;
+			        With2->aat.ypos -= With2->ellipseheight_ * 0.5;
 			        break;
 			      case XLleft:
-			        With2->aat.xpos -= With2->Upr.Uellipse.elwidth * 0.5;
+			        With2->aat.xpos -= With2->ellipsewidth_ * 0.5;
 			        break;
 			      case XLright:
-			        With2->aat.xpos += With2->Upr.Uellipse.elwidth * 0.5;
+			        With2->aat.xpos += With2->ellipsewidth_ * 0.5;
 			        break;
 			      }
 			    break;
 			  case XLarc:
-			    With2->Upr.Uline.aradius =
-                  eb->envinx(XLarcrad);
+			    With2->aradius_ = eb->envinx(XLarcrad);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->Upr.Uline.endpos.xpos = 0.0;
-			        With2->aat.xpos -= With2->Upr.Uline.aradius;
+			        With2->startangle_ = 0.0;
+			        With2->aat.xpos -= With2->aradius_;
 			        break;
 			      case XLdown:
-			        With2->Upr.Uline.endpos.xpos = pi;
-			        With2->aat.xpos += With2->Upr.Uline.aradius;
+			        With2->startangle_ = pi;
+			        With2->aat.xpos += With2->aradius_;
 			        break;
 			      case XLleft:
-			        With2->Upr.Uline.endpos.xpos = 0.5 * pi;
-			        With2->aat.ypos -= With2->Upr.Uline.aradius;
+			        With2->startangle_ = 0.5 * pi;
+			        With2->aat.ypos -= With2->aradius_;
 			        break;
 			      case XLright:
-			        With2->Upr.Uline.endpos.xpos = (-0.5) * pi;
-			        With2->aat.ypos += With2->Upr.Uline.aradius;
+			        With2->startangle_ = (-0.5) * pi;
+			        With2->aat.ypos += With2->aradius_;
 			        break;
 			      }
-			    With2->Upr.Uline.height = eb->envinx(XLarrowht);
-			    With2->Upr.Uline.width = eb->envinx(XLarrowwid);
-			    With2->Upr.Uline.atype = pahnum(pahlex(0, XEMPTY),
+			    With2->lineheight_ = eb->envinx(XLarrowht);
+			    With2->linewidth_ = eb->envinx(XLarrowwid);
+			    With2->lineatype_ = pahnum(pahlex(0, XEMPTY),
 			      Rnd(eb->envinx(XLarrowhead)));
-			    With2->Upr.Uline.endpos.ypos = pi * 0.5;
+			    With2->arcangle_ = pi * 0.5;
 			    break;
 			  case XLline:
 			  case XLarrow:
 			  case XLspline:
 			  case XLmove:
-			    With2->Upr.Uline.endpos = With2->aat;
+			    With2->endpos_ = With2->aat;
 			    if ((With2->ptype == XLspline) && ($2.lexval != XEMPTY)) {
-			      With2->Upr.Uline.aradius = $2.xval;
+			      With2->aradius_ = $2.xval;
 			      $2.lexval = XEMPTY; }
 			    if ($2.lexval != XEMPTY) { r = $2.xval; }
 			    else if (With2->ptype == XLmove) {
@@ -2484,24 +2446,24 @@ block	:	XLprimitiv optexp                                     /* block1 */
 			      }
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->Upr.Uline.endpos.ypos = With2->aat.ypos + r;
+			        With2->endpos_.ypos = With2->aat.ypos + r;
 			        break;
 			      case XLdown:
-			        With2->Upr.Uline.endpos.ypos = With2->aat.ypos - r;
+			        With2->endpos_.ypos = With2->aat.ypos - r;
 			        break;
 			      case XLleft:
-			        With2->Upr.Uline.endpos.xpos = With2->aat.xpos - r;
+			        With2->endpos_.xpos = With2->aat.xpos - r;
 			        break;
 			      case XLright:
-			        With2->Upr.Uline.endpos.xpos = With2->aat.xpos + r;
+			        With2->endpos_.xpos = With2->aat.xpos + r;
 			        break;
 			      }
-			    With2->Upr.Uline.height = eb->envinx(XLarrowht);
-			    With2->Upr.Uline.width = eb->envinx(XLarrowwid);
+			    With2->lineheight_ = eb->envinx(XLarrowht);
+			    With2->linewidth_ = eb->envinx(XLarrowwid);
 			    if (With2->ptype == XLarrow) {
-			      With2->Upr.Uline.atype = pahlex(0, XRIGHTHEAD); }
-			    else { With2->Upr.Uline.atype = pahlex(0, XEMPTY); }
-			  With2->Upr.Uline.atype = pahnum(With2->Upr.Uline.atype,
+			      With2->lineatype_ = pahlex(0, XRIGHTHEAD); }
+			    else { With2->lineatype_ = pahlex(0, XEMPTY); }
+			  With2->lineatype_ = pahnum(With2->lineatype_,
 			    Rnd(eb->envinx(XLarrowhead)));
 			  break;
 			  }
@@ -2522,24 +2484,24 @@ block	:	XLprimitiv optexp                                     /* block1 */
 			tail = NULL;
 			getnesw($1.prim->son);
 			With2 = $1.prim;
-			With2->Upr.UBLOCK.blockwidth = east - west;
-			With2->Upr.UBLOCK.blockheight = north - south;
+			With2->blockwidth_ = east - west;
+			With2->blockheight_ = north - south;
 			With2->aat.xpos = (east + west) * 0.5;
 			With2->aat.ypos = (north + south) * 0.5;
-			dx = envblockB.here.xpos - With2->aat.xpos;
-			dy = envblockB.here.ypos - With2->aat.ypos;
+			dx = envblock->here_.xpos - With2->aat.xpos;
+			dy = envblock->here_.ypos - With2->aat.ypos;
 			switch (envblock->direction) {
-			  case XLright: dx += With2->Upr.UBLOCK.blockwidth * 0.5; break;
-			  case XLleft: dx -= With2->Upr.UBLOCK.blockwidth * 0.5; break;
-			  case XLup: dy += With2->Upr.UBLOCK.blockheight * 0.5; break;
-			  case XLdown: dy -= With2->Upr.UBLOCK.blockheight * 0.5; break;
+			  case XLright: dx += With2->blockwidth_ * 0.5; break;
+			  case XLleft: dx -= With2->blockwidth_ * 0.5; break;
+			  case XLup: dy += With2->blockheight_ * 0.5; break;
+			  case XLdown: dy -= With2->blockheight_ * 0.5; break;
 			  }
 			With2->direction = envblock->direction;
 #ifdef DDEBUG
 			if ((debuglevel > 0) && ($1.prim->son != NULL)) {
 			  printobject($1.prim->son);
-			  if ($1.prim->son->next_ != NULL) {
-                printobject($1.prim->son->next_); }
+			  if ($1.prim->son->nextname != NULL) {
+                printobject($1.prim->son->nextname); }
 			  }
 #endif
 			shift($1.prim, dx, dy);
@@ -2547,18 +2509,18 @@ block	:	XLprimitiv optexp                                     /* block1 */
 			if (debuglevel > 0) {
 			  With2 = $1.prim;
 			  fprintf(log_, "Block3: (north,south),(west,east)");
-			  wpair(&log_,With2->aat.ypos + (With2->Upr.UBLOCK.blockheight*0.5),
-				  With2->aat.ypos - (With2->Upr.UBLOCK.blockheight * 0.5));
-			  wpair(&log_,With2->aat.xpos -(With2->Upr.UBLOCK.blockwidth*0.5),
-				  With2->aat.xpos + (With2->Upr.UBLOCK.blockwidth * 0.5));
+			  wpair(&log_,With2->aat.ypos + (With2->blockheight_*0.5),
+				  With2->aat.ypos - (With2->blockheight_ * 0.5));
+			  wpair(&log_,With2->aat.xpos -(With2->blockwidth_*0.5),
+				  With2->aat.xpos + (With2->blockwidth_ * 0.5));
 			  fprintf(log_, " here=");
 			  wpair(&log_,
-				  With2->Upr.UBLOCK.here.xpos, With2->Upr.UBLOCK.here.ypos);
+				  With2->here_.xpos, With2->here_.ypos);
 			  putc('\n', log_);
 			  if ($1.prim->son != NULL) {
 				printobject($1.prim->son);
-				if ($1.prim->son->next_ != NULL) {
-				  printobject($$.prim->son->next_); }
+				if ($1.prim->son->nextname != NULL) {
+				  printobject($$.prim->son->nextname); }
 			    }
 			  $$.prim = $1.prim;
 			  snaptree($$.prim, 0);
@@ -2570,8 +2532,8 @@ block	:	XLprimitiv optexp                                     /* block1 */
 
 		| XBLOCK                                                  /* block4 */
 		{ newprim(&$$.prim, XBLOCK, envblock);
-		  $$.prim->Upr.UBLOCK.here.xpos = 0.0;
-		  $$.prim->Upr.UBLOCK.here.ypos = 0.0;
+		  $$.prim->here_.xpos = 0.0;
+		  $$.prim->here_.ypos = 0.0;
 		  $$.lexval = 0;
 		  }
 		;
@@ -2583,7 +2545,7 @@ optexp	:                                                        /* optexp1 */
 		;
 
 closeblock	:	elementlist optnl                            /* closeblock1 */
-		{ if (envblockB.env != NULL) {
+		{ if (envblock->blockparms.env != NULL) {
 			eb = findenv(envblock->parent);
 			if (envblock->envinx(XLlinethick) != eb->envinx(XLlinethick)) {
 		      newprim(&prp, XLaTeX, envblock);
@@ -2718,8 +2680,8 @@ place	:	placename                                             /* place1 */
  		  $$ = $3; }
 
 		| XLHere                                                  /* place5 */
-		{ $$.xval = envblockB.here.xpos;
-		  $$.yval = envblockB.here.ypos;
+		{ $$.xval = envblock->here_.xpos;
+		  $$.yval = envblock->here_.ypos;
 		  }
 		;
 
@@ -2915,22 +2877,17 @@ primary	:	XLenvvar                                            /* primary1 */
 			    break;
 			  case XLradius:
 			    With2 = $$.prim;
-			    if (With2->ptype == XLcircle) {
-			      $$.xval = With2->Upr.Ucircle.radius; }
-			    else if (With2->ptype == XLarc) {
-			      $$.xval = With2->Upr.Uline.aradius; }
-			    else if (With2->ptype == XLbox) {
-			      $$.xval = With2->Upr.Ubox.boxradius; }
+			    if (With2->ptype == XLcircle) {$$.xval = With2->circleradius_; }
+			    else if (With2->ptype == XLarc) {$$.xval = With2->aradius_; }
+			    else if (With2->ptype == XLbox) {$$.xval = With2->boxradius_; }
 			    else {
 			      $$.xval = 0.0;
 			      markerror(858); }
 			    break;
 			case XLdiameter:
 			  With2 = $1.prim;
-			  if (With2->ptype == XLcircle) {
-			    $$.xval = With2->Upr.Ucircle.radius * 2; }
-			  else if (With2->ptype == XLarc) {
-			    $$.xval = With2->Upr.Uline.aradius * 2; }
+			  if (With2->ptype == XLcircle) {$$.xval = With2->circleradius_*2; }
+			  else if (With2->ptype == XLarc) {$$.xval = With2->aradius_*2; }
 			  else {
 			    $$.xval = 0.0;
 			    markerror(858); }
@@ -2950,8 +2907,8 @@ primary	:	XLenvvar                                            /* primary1 */
                 (j == XLline)) {
 			    primp = $1.prim;
 			    while (primp->son != NULL) { primp = primp->son; }
-			    r = fabs(primp->Upr.Uline.endpos.xpos - With2->aat.xpos);
-			    s = fabs(primp->Upr.Uline.endpos.ypos - With2->aat.ypos);
+			    r = fabs(primp->endpos_.xpos - With2->aat.xpos);
+			    s = fabs(primp->endpos_.ypos - With2->aat.ypos);
 			    if (r == 0.0) { $$.xval = s; }
 			    else if (s == 0.0) { $$.xval = r; }
 			    else { $$.xval = sqrt((r * r) + (s * s)); }
@@ -3095,13 +3052,11 @@ newbuf(fbuffer **buf)
 void
 deletefreeargs(arg **a)
 { arg *na;
-
   while ((*a) != NULL) {
-      na = (*a)->nexta;
-      disposebufs(&(*a)->argbody);
-      Free(*a);
-      *a = na;
-  }
+    na = (*a)->nexta;
+    disposebufs(&(*a)->argbody);
+    Free(*a);
+    *a = na; }
 }
 
 
@@ -3109,13 +3064,11 @@ deletefreeargs(arg **a)
 void
 deletefreeinbufs(fbuffer **p)
 { fbuffer *q;
-
   while ((*p) != NULL) {
-      q = (*p)->nextb;
-      Free((*p)->carray);
-      Free(*p);
-      *p = q;
-  }
+    q = (*p)->nextb;
+    Free((*p)->carray);
+    Free(*p);
+    *p = q; }
 }
 
 
@@ -3150,8 +3103,8 @@ preproduce(int p)
     inlogic = false;
     inbuf = NULL;
     break;
-	}
   }
+}
 
 							/* Compute integer power of x */
 double
@@ -3285,125 +3238,98 @@ markerror(int emi) {
       }
     fprintf(errout, " {...} contents\n");
     break;
-
   case 805:
     fprintf(errout, "Bad macro argument number\n");
     break;
-
   case 806:
     fprintf(errout, "End of file while evaluating macro argument\n");
     break;
-
 							/* context error messages */
   case 851:
     fprintf(errout, "Variable not found\n");
     break;
-
   case 852:
     fprintf(errout, "Zero divisor not allowed\n");
     break;
-
   case 853:
     fprintf(errout, "Only one copy file may be open at any time\n");
     break;
-
   case 854:
     fprintf(errout, "Place name not found\n");
     break;
-
   case 855:
     fprintf(errout, "Internal name not found\n");
     break;
-
   case 856:
     fprintf(errout, "Invalid non-positive value for object count\n");
     break;
-
   case 857:
     fprintf(errout, "Enumerated or previous object not found\n");
     break;
-
   case 858:
     fprintf(errout, "This usage is inapplicable in this context\n");
     break;
-
   case 859:
     fprintf(errout, "File not readable\n");
     break;
-
   case 860:
     fprintf(errout, "Infinite looping not allowed\n");
     break;
-
   case 861:
     fprintf(errout, "Missing or blank string\n");
     break;
-
   case 862:
     fprintf(errout, "For ... by *() limits must have the same sign\n");
     break;
-
   case 863:
     fprintf(errout, "Non-integer power of negative value\n");
     break;
-
   case 864:
     fprintf(errout, "Incorrect number of sprintf arguments\n");
     break;
-
   case 865:
     fprintf(errout, "Bad sprintf format; only e, f, g allowed\n");
     break;
-
   case 866:
     fprintf(errout, "String exceeds max length of 4095 characters\n");
     break;
-
   case 867:
     fprintf(errout, "Invalid log or sqrt argument\n");
     break;
-
   case 868:
     fprintf(errout, "Function argument out of range\n");
     break;
-
   case 869:
     fprintf(errout, "Improper use of logical operator\n");
     break;
-
   case 870:
     fprintf(errout, "Zero value of scale not allowed\n");
     break;
-
   case 871:
     fprintf(errout, "Zero second argument of pmod not allowed\n");
     break;
-
   case 872:
     fprintf(errout, "Buffer overflow while defining macro argument\n");
     break;
-
   case 873:
     fprintf(errout, "Format width too large\n");
     break;
-
   case 874:
     fprintf(errout, "System routine snprintf error: bad formatted value\n");
     break;
-
 							/* warning messages */
   case 901:
     fprintf(errout, "Safe mode: sh, copy, and print to file disallowed\n");
     break;
-
+  case 902:
+    fprintf(errout, "Output number out of range: 10e32 used\n");
+    break;
   case 903:
     fprintf(errout, "Picture size adjusted to maxpswid value\n");
     break;
-
   case 904:
     fprintf(errout, "Picture size adjusted to maxpsht value\n");
     break;
-
   default:
     fprintf(errout, "Unknown error\n");
     break;
@@ -3425,20 +3351,17 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
     if (chb != NULL) {
 	  fprintf(log_, " for \"");
 	  for (i = inx; i < (inx + len); i++) { putc(chb[i], log_); }
-	  putc('"', log_);
-      }
+	  putc('"', log_); }
     putc('\n', log_);
     }
 #endif
   markerror(eno);
   fprintf(errout, "\nSearch failure");
   if (chb != NULL) {
-      fprintf(errout, " for \"");
-      for (i = inx; i < (inx + len); i++) {
-	  putc(chb[i], errout);
-      }
-      putc('"', errout);
-  }
+    fprintf(errout, " for \"");
+    for (i = inx; i < (inx + len); i++) { putc(chb[i], errout); }
+    putc('"', errout);
+    }
   putc('\n', errout);
 }
 
@@ -3449,13 +3372,10 @@ varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
 { int idx;
 
   if (chb == NULL) {
-      idx = 0;
-      return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1)));
-  }
+    idx = 0;
+    return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1))); }
   idx = chb[chbufx];
-  if (toklen > 2) {
-      idx += chb[chbufx + toklen - 2];
-  }
+  if (toklen > 2) { idx += chb[chbufx + toklen - 2]; }
   return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1)));
 }
 
@@ -3476,7 +3396,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
     for (i = chbufx; i < (chbufx + toklen); i++) { putc(chb[i], log_); }
     fprintf(log_, "|:");
     if (eb == NULL) { fprintf(log_, " eb=nil"); }
-    else { fprintf(log_, " nvars[%d]=%d", idx, eb->Upr.UBLOCK.nvars[idx]); }
+    else { fprintf(log_, " nvars[%d]=%d", idx, eb->blockparms.nvars[idx]); }
     if (debuglevel > 1) { putc('\n', log_); }
     }
 #endif
@@ -3487,7 +3407,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #ifdef DDEBUG
     if (debuglevel > 0) { fprintf(log_, " eb!=NULL: k=%d idx=%d ", *k,idx); }
 #endif
-    leftptr = eb->Upr.UBLOCK.vars[idx];
+    leftptr = eb->blockparms.vars[idx];
     *last = leftptr; }
 #ifdef DDEBUG
     if (debuglevel > 0) {
@@ -3503,8 +3423,8 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #endif
     if ((*k) < 0) {
 	  left = 2;
-	  leftptr = leftptr->next_;
-	  right = eb->Upr.UBLOCK.nvars[idx] + 1; }
+	  leftptr = leftptr->nextname;
+	  right = eb->blockparms.nvars[idx] + 1; }
     else { rightptr = leftptr; }
     }
 #ifdef DDEBUG
@@ -3514,7 +3434,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
   while (leftptr != rightptr) {
     midpt = (left + right) >> 1;
     *last = leftptr;
-    for (i = left + 1; i <= midpt; i++) { *last = (*last)->next_; }
+    for (i = left + 1; i <= midpt; i++) { *last = (*last)->nextname; }
     With = *last;
     *k = eqstring(chb, chbufx, toklen, With->segmnt, With->seginx,With->len);
 #ifdef DDEBUG
@@ -3522,7 +3442,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #endif
     if ((*k) < 0) {
 	  left = midpt + 1;
-	  leftptr = (*last)->next_;
+	  leftptr = (*last)->nextname;
 	  continue; }
     if ((*k) == 0) {
 	  leftptr = *last;
@@ -3623,14 +3543,10 @@ wrbuf(fbuffer *p, int job, int r)
 	    else {
 		  m = i;
 		  k = With->savedlen + 1;
-		  while (i < k) {
-		    if (With->carray[i] == 0) { i++; }
-		    else { k = i; }
-		    }
+		  while (i < k) { if (With->carray[i] == 0) { i++; } else { k = i; } }
 		  fprintf(log_, "(%d)x", i - m);
 		  wchar(&log_, '\0');
-		  i--;
-	      }
+		  i--; }
 	    i++;
 	    }
       }
@@ -3708,7 +3624,7 @@ snaptree(primitive *pr, int indent)
       case XLabel: i = 12; break;
       default: i = 3; break;
       }
-    snaptree(pr->next_, indent + i + j);
+    snaptree(pr->nextname, indent + i + j);
     j = 0;
     if (pr->son != NULL) { fprintf(log_, "\n%*c", indent, ' '); }
     pr = pr->son;
@@ -3722,12 +3638,12 @@ printtext(nametype *namptr)
   while (namptr != NULL) {
       With = namptr;
       putc(' ', log_);
-      wpair(&log_, ordp(namptr), ordp(With->next_));
+      wpair(&log_, ordp(namptr), ordp(With->nextname));
       fprintf(log_, " val=");
       wfloat(&log_, With->val);
       fflush(log_);
       snapname(With->segmnt, With->seginx, With->len);
-      namptr = With->next_;
+      namptr = With->nextname;
       putc('\n', log_);
   }
 }
@@ -3737,7 +3653,6 @@ printobject(primitive *primp)
 { double xx, yy;
   int i;
   primitive *With;
-
   if (debuglevel != 0) {
     if (primp == NULL) { fprintf(log_, "Object is nil\n"); }
     else {
@@ -3750,7 +3665,7 @@ printobject(primitive *primp)
 	    if (With->parent != NULL) {
 		  fprintf(log_, ") Parent^.son(%d", ordp(With->parent->son)); }
 	    fprintf(log_, ") Son(%d) Next(%d)\n",
-		      ordp(With->son), ordp(With->next_));
+		      ordp(With->son), ordp(With->nextname));
 	    if (With->name != NULL) {
 		  fprintf(log_, " name: ");
 		  printtext(With->name); }
@@ -3777,73 +3692,68 @@ printobject(primitive *primp)
 	    switch (With->ptype) {
 	      case XLbox:
 	      case XLstring:
-		    wlogfl("boxfill", With->Upr.Ubox.boxfill, 0);
-		    wlogfl("boxheight", With->Upr.Ubox.boxheight, 0);
-		    wlogfl("boxwidth", With->Upr.Ubox.boxwidth, 0);
-		    wlogfl("boxrad", With->Upr.Ubox.boxradius, 0);
+		    wlogfl("boxfill", With->boxfill_, 0);
+		    wlogfl("boxheight", With->boxheight_, 0);
+		    wlogfl("boxwidth", With->boxwidth_, 0);
+		    wlogfl("boxrad", With->boxradius_, 0);
 		    break;
 	      case XBLOCK:
-		    wlogfl("blockheight", With->Upr.UBLOCK.blockheight, 0);
-		    wlogfl("blockwidth", With->Upr.UBLOCK.blockwidth, 0);
+		    wlogfl("blockheight", With->blockheight_, 0);
+		    wlogfl("blockwidth", With->blockwidth_, 0);
 		    fprintf(log_, " here=");
-		    wpair(&log_, With->Upr.UBLOCK.here.xpos,
-			  With->Upr.UBLOCK.here.ypos);
+		    wpair(&log_, With->here_.xpos, With->here_.ypos);
 		    fprintf(log_, " vars=");
 		    for (i = 0; i <= HASHLIM; i++) {
-		      if (With->Upr.UBLOCK.vars[i] == NULL) {
+		      if (With->blockparms.vars[i] == NULL) {
 				 fprintf(log_, " %d nil;", i);}
 		      else {
-				fprintf(log_, " %d %d;", i, ordp(With->Upr.UBLOCK.vars[i])); }
+				fprintf(log_, " %d %d;", i, ordp(With->blockparms.vars[i])); }
 		      }
 		    fprintf(log_, "\n env=");
-		    if (With->Upr.UBLOCK.env == NULL) { fprintf(log_, "nil"); }
-		    else { fprintf(log_, "%d", ordp(With->Upr.UBLOCK.env)); }
+		    if (With->blockparms.env == NULL) { fprintf(log_, "nil"); }
+		    else { fprintf(log_, "%d", ordp(With->blockparms.env)); }
 		    break;
 	      case XLcircle:
-		    wlogfl("cfill", With->Upr.Ucircle.cfill, 0);
-		    wlogfl("radius", With->Upr.Ucircle.radius, 0);
+		    wlogfl("cfill", With->circlefill_, 0);
+		    wlogfl("radius", With->circleradius_, 0);
 		    break;
 	      case XLellipse:
-		    wlogfl("efill", With->Upr.Uellipse.efill, 0);
-		    wlogfl("elheight", With->Upr.Uellipse.elheight, 0);
-		    wlogfl("elwidth", With->Upr.Uellipse.elwidth, 0);
+		    wlogfl("efill", With->ellipsefill_, 0);
+		    wlogfl("elheight", With->ellipseheight_, 0);
+		    wlogfl("elwidth", With->ellipsewidth_, 0);
 		    break;
 	      case XLline:
 	      case XLarrow:
 	      case XLmove:
 	      case XLspline:
 		    fprintf(log_, " endpos=");
-		    wpair(&log_, With->Upr.Uline.endpos.xpos,
-		      With->Upr.Uline.endpos.ypos);
-		    wlogfl("height", With->Upr.Uline.height, 0);
-		    wlogfl("width", With->Upr.Uline.width, 0);
-		    wlogfl("lfill", With->Upr.Uline.lfill, 0);
-		    wlogfl("aradius", With->Upr.Uline.aradius, 0);
-		    fprintf(log_, "\n ahlex(atype)=%d",
-			    ahlex(With->Upr.Uline.atype));
-		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->Upr.Uline.atype));
+		    wpair(&log_, With->endpos_.xpos, With->endpos_.ypos);
+		    wlogfl("height", With->lineheight_, 0);
+		    wlogfl("width", With->linewidth_, 0);
+		    wlogfl("lfill", With->linefill_, 0);
+		    wlogfl("aradius", With->aradius_, 0);
+		    fprintf(log_, "\n ahlex(atype)=%d", ahlex(With->lineatype_));
+		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->lineatype_));
 		    break;
 	      case XLarc:
 		    fprintf(log_, " lspec=%d", lspec(With->spec));
-		    wlogfl("lfill", With->Upr.Uline.lfill, 0);
-		    wlogfl("aradius", With->Upr.Uline.aradius, 0);
-		    fprintf(log_, " (|startangle|,|arcangle|)(deg)=");
-		    wpair(&log_, With->Upr.Uline.endpos.xpos * 180.0 / pi,
-		      With->Upr.Uline.endpos.ypos * 180.0 / pi);
+		    wlogfl("lfill", With->linefill_, 0);
+		    wlogfl("aradius", With->aradius_, 0);
+		    fprintf(log_, " (startangle_,arcangle_)(deg)=");
+		    wpair(&log_, With->startangle_ * 180.0 / pi,
+		      With->arcangle_ * 180.0 / pi);
 		    fprintf(log_, "\n (from)=");
-		    xx = With->aat.xpos +
-		     (With->Upr.Uline.aradius * cos(With->Upr.Uline.endpos.xpos));
-		    yy = With->aat.ypos +
-		     (With->Upr.Uline.aradius * sin(With->Upr.Uline.endpos.xpos));
+		    xx = With->aat.xpos + (With->aradius_ * cos(With->startangle_));
+		    yy = With->aat.ypos + (With->aradius_ * sin(With->startangle_));
 		    wpair(&log_, xx, yy);
 		    fprintf(log_, " (to)=");
-		    xx = With->aat.xpos + (With->Upr.Uline.aradius * cos(
-			 With->Upr.Uline.endpos.xpos + With->Upr.Uline.endpos.ypos));
-		    yy = With->aat.ypos + (With->Upr.Uline.aradius * sin(
-			 With->Upr.Uline.endpos.xpos + With->Upr.Uline.endpos.ypos));
+		    xx = With->aat.xpos + (With->aradius_ *
+              cos(With->startangle_ + With->arcangle_));
+		    yy = With->aat.ypos + (With->aradius_ *
+              sin(With->startangle_ + With->arcangle_));
 		    wpair(&log_, xx, yy);
-		    fprintf(log_, " ahlex(atype)=%d", ahlex(With->Upr.Uline.atype));
-		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->Upr.Uline.atype));
+		    fprintf(log_, " ahlex(atype)=%d", ahlex(With->lineatype_));
+		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->lineatype_));
 		    break;
 	      case XLaTeX:
 	      case XLabel:
@@ -3892,20 +3802,20 @@ prvars(primitive *eb)
 { nametype *lv;
   int i = 0, x = HASHLIM + 1;
   if (eb == NULL) { fprintf(log_, "vars=nil: nil envblock"); return; }
-  while (i < x) { if (eb->Upr.UBLOCK.vars[i] != NULL) { x = i; } else { i++; } }
+  while (i < x) { if (eb->blockparms.vars[i] != NULL) { x = i; } else { i++; } }
   fprintf(log_, "vars=\n");
   if (x > HASHLIM) { fprintf(log_, "  None set\n"); return; }
   for (i = 0; i <= HASHLIM; i++) {
     fprintf(log_, "%d", i);
-    lv = eb->Upr.UBLOCK.vars[i];
+    lv = eb->blockparms.vars[i];
     if (lv == NULL) { fprintf(log_, " nil\n"); }
     while (lv != NULL) {
-	  fprintf(log_, " (%d,%d)=", ordp(lv), ordp(lv->next_));
+	  fprintf(log_, " (%d,%d)=", ordp(lv), ordp(lv->nextname));
 	  snapname(lv->segmnt, lv->seginx, lv->len);
 	  putc('=', log_);
 	  wfloat(&log_, lv->val);
 	  putc('\n', log_);
-	  lv = lv->next_;
+	  lv = lv->nextname;
       }
     }
   putc('\n', log_);
@@ -3920,9 +3830,9 @@ deletetree(primitive **p)
   primitive *With;
   if ((*p) != NULL) { (*p)->parent = NULL; }
   while ((*p) != NULL) {
-    while (((*p)->next_ != NULL) || ((*p)->son != NULL)) {
+    while (((*p)->nextname != NULL) || ((*p)->son != NULL)) {
 	  r = *p;
-	  if ((*p)->next_ != NULL) { *p = (*p)->next_; r->next_ = NULL; }
+	  if ((*p)->nextname != NULL) { *p = (*p)->nextname; r->nextname = NULL; }
 	  else { *p = (*p)->son; r->son = NULL; }
 	  (*p)->parent = r;
       }
@@ -3933,8 +3843,8 @@ deletetree(primitive **p)
     deletename(&(*p)->name);
     With = *p;
     if ((With->ptype) == XBLOCK) {
-	  for (i = HASHLIM; i >= 0; i--) { deletename(&With->Upr.UBLOCK.vars[i]);}
-	  if (With->Upr.UBLOCK.env != NULL) { Free(With->Upr.UBLOCK.env); }
+	  for (i = HASHLIM; i >= 0; i--) { deletename(&With->blockparms.vars[i]);}
+	  if (With->blockparms.env != NULL) { Free(With->blockparms.env); }
       }
     else { Free(*p); }
     *p = r;
@@ -3947,15 +3857,10 @@ void
 setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 	  double xf, double yf)
 { double ra;                       /* set arc angles given centre, start, end */
-
   *strtang = datan(ys - ctr.ypos, xs - ctr.xpos);
   ra = principal(datan(yf - ctr.ypos, xf - ctr.xpos) - (*strtang), pi);
-  if ((ra < 0.0) && ((*arcang) > 0.0)) {
-      ra += 2.0 * pi;
-  }
-  else if ((ra > 0.0) && ((*arcang) < 0.0)) {
-      ra -= 2.0 * pi;
-  }
+  if ((ra < 0.0) && ((*arcang) > 0.0)) { ra += 2.0 * pi; }
+  else if ((ra > 0.0) && ((*arcang) < 0.0)) { ra -= 2.0 * pi; }
   *arcang = ra;
 }
 
@@ -3966,43 +3871,28 @@ eqop(double *x, int op, double y)
 { int i, j;
 
   switch (op) {
-
   case XEQ:
   case XLcoloneq:
     *x = y;
     break;
-
   case XLpluseq:
     *x += y;
     break;
-
   case XLminuseq:
     *x -= y;
     break;
-
   case XLmulteq:
     *x *= y;
     break;
-
   case XLdiveq:
-    if (y == 0) {
-	markerror(852);
-    }
-    else {
-	*x /= y;
-    }
+    if (y == 0) { markerror(852); }
+    else { *x /= y; }
     break;
-
   case XLremeq:
     i = Rnd((*x));
     j = Rnd(y);
-    if (j == 0) {
-	markerror(852);
-	*x = 0.0;
-    }
-    else {
-	*x = i - ((i / j) * j);
-    }
+    if (j == 0) { markerror(852); *x = 0.0; }
+    else { *x = i - ((i / j) * j); }
     break;
   }
 }
@@ -4023,39 +3913,30 @@ getstval(int st)
 void
 setstflag(int *st, int value)
 { switch (value) {
-
   case XEMPTY:
     *st = ((*st) >> 6) * 64;
     break;
-
   case XLto:
     *st = (((*st) >> 1) * 2) + 1;
     break;
-
   case XLfrom:
     *st = (((*st) >> 2) * 4) + ((*st) & 1) + 2;
     break;
-
   case XLat:
     *st = (((*st) >> 3) * 8) + ((*st) & 3) + 4;
     break;
-
   case XLradius:
     *st = (((*st) >> 4) * 16) + ((*st) & 7) + 8;
     break;
-
   case XLcw:
     *st = (((*st) >> 5) * 32) + ((*st) & 15) + 16;
     break;
-
   case XLccw:
     *st = (((*st) >> 6) * 64) + ((*st) & 31) + 32;
     break;
-
   case XLchop:
     *st = (((*st) >> 7) * 128) + ((*st) & 63) + 64;
     break;
-
   case XLdirecton:
     *st = (((*st) >> 8) * 256) + ((*st) & 127) + 128;
     break;
@@ -4069,35 +3950,27 @@ teststflag(int st, int value)
 { boolean b = false;
 
   switch (value) {
-
   case XLto:
     b = st & 1;
     break;
-
   case XLfrom:
     b = (st >> 1) & 1;
     break;
-
   case XLat:
     b = (st >> 2) & 1;
     break;
-
   case XLradius:
     b = (st >> 3) & 1;
     break;
-
   case XLcw:
     b = (st >> 4) & 1;
     break;
-
   case XLccw:
     b = (st >> 5) & 1;
     break;
-
   case XLchop:
     b = (st >> 6) & 1;
     break;
-
   case XLdirecton:
     b = (st >> 7) & 1;
     break;
@@ -4108,19 +3981,12 @@ teststflag(int st, int value)
 							/* String equality of primitives */
 int
 cmpstring(primitive *p1, primitive *p2)
-{ if ((p1 == NULL) || (p2 == NULL)) {
-      return maxint;
-  }
-  else if (p1->textp == NULL) {
-      return maxint;
-  }
-  else if (p2->textp == NULL) {
-      return (-maxint);
-  }
-  else {
-      return (eqstring(p1->textp->segmnt, p1->textp->seginx, p1->textp->len,
-		       p2->textp->segmnt, p2->textp->seginx, p2->textp->len));
-  }
+{ if ((p1 == NULL) || (p2 == NULL)) { return maxint; }
+  else if (p1->textp == NULL) { return maxint; }
+  else if (p2->textp == NULL) { return (-maxint); }
+  else { return (
+          eqstring(p1->textp->segmnt, p1->textp->seginx, p1->textp->len,
+		           p2->textp->segmnt, p2->textp->seginx, p2->textp->len)); }
 }
 
 
@@ -4131,20 +3997,14 @@ findplace(primitive *p, Char *chb, chbufinx inx, chbufinx toklen))
   nametype *With;
 
   while (p != pj) {
-      if (p->name == NULL) {
-	  p = p->next_;
-      }
-      else {
+    if (p->name == NULL) { p = p->nextname; }
+    else {
 	  With = p->name;
-	  if (eqstring(With->segmnt, With->seginx, With->len, chb, inx,
-		       toklen) == 0) {
-	      pj = p;
-	  }
-	  else {
-	      p = p->next_;
-	  }
+	  if (eqstring(With->segmnt,With->seginx,With->len, chb, inx,toklen) == 0) {
+	      pj = p; }
+	  else { p = p->nextname; }
       }
-  }
+    }
   return p;
 }
 
@@ -4154,19 +4014,11 @@ findvar(Char *s, int ln)
 { int i, k;
   nametype *last, *np;
 
-  if (tmpfmt == NULL) {
-      tmpfmt = malloc(sizeof(chbufarray));
-  }
-  for (i = 1; i <= ln; i++) {
-      tmpfmt[i] = s[i-1];
-  }
+  if (tmpfmt == NULL) { tmpfmt = malloc(sizeof(chbufarray)); }
+  for (i = 1; i <= ln; i++) { tmpfmt[i] = s[i-1]; }
   np = findname(globalenv, tmpfmt, 1, ln, &last, &k);
-  if (np == NULL) {
-      return 0.0;
-  }
-  else {
-      return (np->val);
-  }
+  if (np == NULL) { return 0.0; }
+  else { return (np->val); }
 }
 
 							/* Search for variable in this and higer scope*/
@@ -4193,10 +4045,7 @@ appendsuff(Char *buf, chbufinx inx, int *len, double x)
   i = Rnd(x);
   if (i < 0) { buf[inx + (*len)] = '-'; (*len)++; i = -i; }
   k = i;
-  do {
-    (*len)++;
-    k /= 10;
-    } while (k != 0);
+  do { (*len)++; k /= 10; } while (k != 0);
   if (inx + (*len) - 1 > CHBUFSIZ) { fatal(4); }
   j = (*len) - 1;
   do {
@@ -4204,7 +4053,7 @@ appendsuff(Char *buf, chbufinx inx, int *len, double x)
     buf[inx + j] = i - (k * 10) + '0';
     i = k;
     j--;
-    } while (i != 0);
+  } while (i != 0);
 }
 
 							/* Append the suffix string to the name string
@@ -4241,7 +4090,7 @@ appendthen(primitive **pr)
   copyprim(prq, &prp);
   prp->parent = prq;
   prp->son = NULL;
-  prp->next_ = NULL;
+  prp->nextname = NULL;
   prp->name = NULL;
   prp->textp = NULL;
   prp->shadedp = NULL;
@@ -4257,19 +4106,19 @@ appendthen(primitive **pr)
 void
 lineardir(primitive *pr, double dy, double dx, int *state)
 { if (!(teststflag(*state, XLto) | teststflag(*state, XLdirecton))) {
-      pr->Upr.Uline.endpos = pr->aat; }
+      pr->endpos_ = pr->aat; }
   switch (pr->direction) {
   case XLup:
-    pr->Upr.Uline.endpos.ypos += dy;
+    pr->endpos_.ypos += dy;
     break;
   case XLdown:
-    pr->Upr.Uline.endpos.ypos -= dy;
+    pr->endpos_.ypos -= dy;
     break;
   case XLleft:
-    pr->Upr.Uline.endpos.xpos -= dx;
+    pr->endpos_.xpos -= dx;
     break;
   case XLright:
-    pr->Upr.Uline.endpos.xpos += dx;
+    pr->endpos_.xpos += dx;
     break;
   }
   setstflag(state, XLdirecton);
@@ -4293,10 +4142,8 @@ boolean
 hasshade(int lx, boolean warn)
 { boolean hs;
   if ((lx == XLellipse) || (lx == XLcircle) || (lx == XLbox)) { hs = true; }
-  else if ((drawmode >= 0) && (drawmode < 32) &&
-	   (((1L << drawmode) & ((1L << Pict2e) | (1L << TeX) | (1L << tTeX) |
-				 (1L << xfig))) != 0)) {
-      hs = false; }
+  else if ((drawmode == Pict2e) || (drawmode == TeX) || (drawmode == tTeX) ||
+           (drawmode == xfig)) { hs = false; }
   else { hs = ((lx == XLspline) || (lx == XLarrow) || (lx == XLline) ||
 	    (lx == XLarc)); }
   if (drawmode == SVG) { hs = (hs || (lx == XLstring)); }
@@ -4316,7 +4163,7 @@ newstr(nametype **sp)
   With->segmnt = NULL;
   With->seginx = 0;
   With->len = 0;
-  With->next_ = NULL;
+  With->nextname = NULL;
 #ifdef DDEBUG
   if (debuglevel > 0) { fprintf(log_, "newstr[%d]\n", ordp(*sp)); }
 #endif
@@ -4360,13 +4207,11 @@ storestring(nametype *outstr,Char *srcbuf,chbufinx psrc,chbufinx lsrc,int job)
 							/* Duplicate a strptr and copy the body */
 void
 copystr(nametype **sp, nametype *ip)
-{ if (ip == NULL) {
-      *sp = NULL;
-  }
+{ if (ip == NULL) { *sp = NULL; }
   else {
-      newstr(sp);
-      storestring(*sp, ip->segmnt, ip->seginx, ip->len, 0);
-  }
+    newstr(sp);
+    storestring(*sp, ip->segmnt, ip->seginx, ip->len, 0);
+    }
 }
 
 
@@ -4423,12 +4268,8 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 							/* Store or append string */
 int
 putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
-{ if (ix <= 0) {
-      storestring(sp, buf, px, ll, 0);
-  }
-  else {
-      appendstring(sp, buf, px, ll);
-  }
+{ if (ix <= 0) { storestring(sp, buf, px, ll, 0); }
+  else { appendstring(sp, buf, px, ll); }
   return (ix + 1);
 }
 
@@ -4437,40 +4278,29 @@ putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 double
 pheight(primitive *pr)
 { double ph;
-
-  if (pr == NULL) {
-      ph = 0.0;
-      return ph;
-  }
+  if (pr == NULL) { ph = 0.0; return ph; }
   switch (pr->ptype) {
-
   case XLbox:
-    ph = pr->Upr.Ubox.boxheight;
+    ph = pr->boxheight_;
     break;
-
   case XLstring:
-    ph = pr->Upr.Ubox.boxheight;
+    ph = pr->boxheight_;
     break;
-
   case XBLOCK:
-    ph = pr->Upr.UBLOCK.blockheight;
+    ph = pr->blockheight_;
     break;
-
   case XLellipse:
-    ph = pr->Upr.Uellipse.elheight;
+    ph = pr->ellipseheight_;
     break;
-
   case XLcircle:
-    ph = 2.0 * pr->Upr.Ucircle.radius;
+    ph = 2.0 * pr->circleradius_;
     break;
-
   case XLline:
   case XLarrow:
   case XLmove:
   case XLspline:
-    ph = pr->Upr.Uline.height;
+    ph = pr->lineheight_;
     break;
-
   default:
     ph = 0.0;
     break;
@@ -4492,26 +4322,26 @@ pwidth(primitive *pr)
 
   case XLbox:
   case XLstring:
-    pw = pr->Upr.Ubox.boxwidth;
+    pw = pr->boxwidth_;
     break;
 
   case XBLOCK:
-    pw = pr->Upr.UBLOCK.blockwidth;
+    pw = pr->blockwidth_;
     break;
 
   case XLellipse:
-    pw = pr->Upr.Uellipse.elwidth;
+    pw = pr->ellipsewidth_;
     break;
 
   case XLcircle:
-    pw = 2.0 * pr->Upr.Ucircle.radius;
+    pw = 2.0 * pr->circleradius_;
     break;
 
   case XLline:
   case XLarrow:
   case XLmove:
   case XLspline:
-    pw = pr->Upr.Uline.width;
+    pw = pr->linewidth_;
     break;
 
   default:
@@ -4528,7 +4358,7 @@ neswrec(primitive *ptm)
 { while (ptm != NULL) {
     nesw(ptm);
     if (ptm->ptype != XBLOCK) { neswrec(ptm->son); }
-    ptm = ptm->next_;
+    ptm = ptm->nextname;
     }
   }
 
@@ -4586,16 +4416,10 @@ findenv(primitive *p))
 { primitive *q = NULL;
 
   while (p != q) {
-      if (p->ptype != XBLOCK) {
-	  p = p->parent;
-      }
-      else if (p->Upr.UBLOCK.env == NULL) {
-	  p = p->parent;
-      }
-      else {
-	  q = p;
-      }
-  }
+    if (p->ptype != XBLOCK) { p = p->parent; }
+    else if (p->blockparms.env == NULL) { p = p->parent; }
+    else { q = p; }
+    }
   return p;
 }
 
@@ -4606,7 +4430,7 @@ venv(primitive *p, int ind)
 { double v = 0.0;
   if ((ind <= XXenvvar) || (ind > XLlastenv)) { return v; }
   p = findenv(p);
-  if (p != NULL) { v = p->Upr.UBLOCK.env[ind - XXenvvar - 1]; }
+  if (p != NULL) { v = p->blockparms.env[ind - XXenvvar - 1]; }
   return v;
 }
 
@@ -4617,11 +4441,11 @@ double
 qenv(primitive *p, int ind, double localval)
 { double noval;
   switch (ind) {
-    case XLfillval: noval = -1.0; break;
-    case XLlinethick: noval = mdistmax; break;
-    case XLdashwid: noval = mdistmax; break;
-    default: noval = 0.0; break;
-    }
+  case XLfillval: noval = -1.0; break;
+  case XLlinethick: noval = mdistmax; break;
+  case XLdashwid: noval = mdistmax; break;
+  default: noval = 0.0; break;
+  }
   if (localval != noval) { return localval; }
   else { return (venv(p, ind)); }
 }
@@ -4648,13 +4472,11 @@ affang(postype point, postype shaft)
 
   lgth = linlen(shaft.xpos - point.xpos, shaft.ypos - point.ypos);
   if (lgth == 0.0) {
-      tpos.xpos = 1.0;
-      tpos.ypos = 0.0;
-  }
+    tpos.xpos = 1.0;
+    tpos.ypos = 0.0; }
   else {
-      tpos.xpos = (point.xpos - shaft.xpos) / lgth;
-      tpos.ypos = (point.ypos - shaft.ypos) / lgth;
-  }
+    tpos.xpos = (point.xpos - shaft.xpos) / lgth;
+    tpos.ypos = (point.ypos - shaft.ypos) / lgth; }
   return tpos;
 }
 
@@ -4710,35 +4532,30 @@ neswline(primitive *pmp)
 { double aht, awd;
   postype cs, cc, cd;
   int TEMP;
-
-  if (pmp == NULL) {
-      return;
-  }
-  west = Min(west, Min(pmp->aat.xpos, pmp->Upr.Uline.endpos.xpos));
-  east = Max(east, Max(pmp->aat.xpos, pmp->Upr.Uline.endpos.xpos));
-  south = Min(south, Min(pmp->aat.ypos, pmp->Upr.Uline.endpos.ypos));
-  north = Max(north, Max(pmp->aat.ypos, pmp->Upr.Uline.endpos.ypos));
-  TEMP = ahlex(pmp->Upr.Uline.atype);
+  if (pmp == NULL) { return; }
+  west = Min(west, Min(pmp->aat.xpos, pmp->endpos_.xpos));
+  east = Max(east, Max(pmp->aat.xpos, pmp->endpos_.xpos));
+  south = Min(south, Min(pmp->aat.ypos, pmp->endpos_.ypos));
+  north = Max(north, Max(pmp->aat.ypos, pmp->endpos_.ypos));
+  TEMP = ahlex(pmp->lineatype_);
   if ((TEMP == XLEFTHEAD) || (TEMP == XDOUBLEHEAD)) {
-      cs = affang(pmp->Upr.Uline.endpos, pmp->aat);
-      awd = qenv(pmp, XLarrowht, pmp->Upr.Uline.width);
-      aht = qenv(pmp, XLarrowwid, pmp->Upr.Uline.height);
-      cc = affine(aht, awd / 2, pmp->aat, cs);
-      cd = affine(aht, awd / (-2), pmp->aat, cs);
-      west = Min(west, Min(cc.xpos, cd.xpos));
-      east = Max(east, Max(cc.xpos, cd.xpos));
-      south = Min(south, Min(cc.ypos, cd.ypos));
-      north = Max(north, Max(cc.ypos, cd.ypos));
-  }
-  TEMP = ahlex(pmp->Upr.Uline.atype);
-  if (!((TEMP == XRIGHTHEAD) || (TEMP == XDOUBLEHEAD))) {
-      return;
-  }
-  cs = affang(pmp->aat, pmp->Upr.Uline.endpos);
-  awd = qenv(pmp, XLarrowht, pmp->Upr.Uline.width);
-  aht = qenv(pmp, XLarrowwid, pmp->Upr.Uline.height);
-  cc = affine(aht, awd / 2, pmp->Upr.Uline.endpos, cs);
-  cd = affine(aht, awd / (-2), pmp->Upr.Uline.endpos, cs);
+    cs = affang(pmp->endpos_, pmp->aat);
+    awd = qenv(pmp, XLarrowht, pmp->linewidth_);
+    aht = qenv(pmp, XLarrowwid, pmp->lineheight_);
+    cc = affine(aht, awd / 2, pmp->aat, cs);
+    cd = affine(aht, awd / (-2), pmp->aat, cs);
+    west = Min(west, Min(cc.xpos, cd.xpos));
+    east = Max(east, Max(cc.xpos, cd.xpos));
+    south = Min(south, Min(cc.ypos, cd.ypos));
+    north = Max(north, Max(cc.ypos, cd.ypos));
+    }
+  TEMP = ahlex(pmp->lineatype_);
+  if (!((TEMP == XRIGHTHEAD) || (TEMP == XDOUBLEHEAD))) { return; }
+  cs = affang(pmp->aat, pmp->endpos_);
+  awd = qenv(pmp, XLarrowht, pmp->linewidth_);
+  aht = qenv(pmp, XLarrowwid, pmp->lineheight_);
+  cc = affine(aht, awd / 2, pmp->endpos_, cs);
+  cd = affine(aht, awd / (-2), pmp->endpos_, cs);
   west = Min(west, Min(cc.xpos, cd.xpos));
   east = Max(east, Max(cc.xpos, cd.xpos));
   south = Min(south, Min(cc.ypos, cd.ypos));
@@ -4752,32 +4569,17 @@ inarc(double strt, double fin, double ang, double arcang)
 { boolean inarctmp;
 
   if (arcang >= 0.0) {
-      while (fin < strt) {
-	  fin += 2.0 * pi;
-      }
-      while (ang < strt) {
-	  ang += 2.0 * pi;
-      }
-      if (ang <= fin) {
-	  inarctmp = true;
-      }
-      else {
-	  inarctmp = false;
-      }
-      return inarctmp;
-  }
-  while (fin > strt) {
-      fin -= 2.0 * pi;
-  }
-  while (ang > strt) {
-      ang -= 2.0 * pi;
-  }
-  if (ang >= fin) {
-      inarctmp = true;
-  }
+    while (fin < strt) { fin += 2.0 * pi; }
+    while (ang < strt) { ang += 2.0 * pi; }
+    if (ang <= fin) { inarctmp = true; }
+    else { inarctmp = false; }
+    }
   else {
-      inarctmp = false;
-  }
+    while (fin > strt) { fin -= 2.0 * pi; }
+    while (ang > strt) { ang -= 2.0 * pi; }
+    if (ang >= fin) { inarctmp = true; }
+    else { inarctmp = false; }
+    }
   return inarctmp;
 }
 
@@ -4789,24 +4591,24 @@ nesw(primitive *ptmp)
   if (ptmp == NULL) { return; }
   switch (ptmp->ptype) {
     case XLstring:
-      hight = ptmp->Upr.Ubox.boxheight;
-      wdth = ptmp->Upr.Ubox.boxwidth;
+      hight = ptmp->boxheight_;
+      wdth = ptmp->boxwidth_;
       break;
     case XLbox:
-      hight = ptmp->Upr.Ubox.boxheight;
-      wdth = ptmp->Upr.Ubox.boxwidth;
+      hight = ptmp->boxheight_;
+      wdth = ptmp->boxwidth_;
       break;
     case XBLOCK:
-      hight = ptmp->Upr.UBLOCK.blockheight;
-      wdth = ptmp->Upr.UBLOCK.blockwidth;
+      hight = ptmp->blockheight_;
+      wdth = ptmp->blockwidth_;
       break;
     case XLcircle:
-      hight = 2.0 * ptmp->Upr.Ucircle.radius;
+      hight = 2.0 * ptmp->circleradius_;
       wdth = hight;
       break;
     case XLellipse:
-      hight = ptmp->Upr.Uellipse.elheight;
-      wdth = ptmp->Upr.Uellipse.elwidth;
+      hight = ptmp->ellipseheight_;
+      wdth = ptmp->ellipsewidth_;
       break;
     default:
       hight = 0.0;
@@ -4845,24 +4647,24 @@ nesw(primitive *ptmp)
 	/* blank case */
     break;
   case XLarc:
-    sang = principal(ptmp->Upr.Uline.endpos.xpos, pi);
-    eang = ptmp->Upr.Uline.endpos.xpos + ptmp->Upr.Uline.endpos.ypos;
-    if (inarc(sang, eang, 0.5 * pi, ptmp->Upr.Uline.endpos.ypos)) {
-	  north = Max(north, ptmp->aat.ypos + ptmp->Upr.Uline.aradius); }
+    sang = principal(ptmp->startangle_, pi);
+    eang = ptmp->startangle_ + ptmp->arcangle_;
+    if (inarc(sang, eang, 0.5 * pi, ptmp->arcangle_)) {
+	  north = Max(north, ptmp->aat.ypos + ptmp->aradius_); }
     else { north = Max(north,
-	  ptmp->aat.ypos + (ptmp->Upr.Uline.aradius * Max(sin(sang), sin(eang)))); }
-    if (inarc(sang, eang, (-0.5) * pi, ptmp->Upr.Uline.endpos.ypos)) {
-	  south = Min(south, ptmp->aat.ypos - ptmp->Upr.Uline.aradius); }
+	  ptmp->aat.ypos + (ptmp->aradius_ * Max(sin(sang), sin(eang)))); }
+    if (inarc(sang, eang, (-0.5) * pi, ptmp->arcangle_)) {
+	  south = Min(south, ptmp->aat.ypos - ptmp->aradius_); }
     else { south = Min(south,
-	  ptmp->aat.ypos + (ptmp->Upr.Uline.aradius * Min(sin(sang), sin(eang)))); }
-    if (inarc(sang, eang, pi, ptmp->Upr.Uline.endpos.ypos)) {
-	  west = Min(west, ptmp->aat.xpos - ptmp->Upr.Uline.aradius); }
+	  ptmp->aat.ypos + (ptmp->aradius_ * Min(sin(sang), sin(eang)))); }
+    if (inarc(sang, eang, pi, ptmp->arcangle_)) {
+	  west = Min(west, ptmp->aat.xpos - ptmp->aradius_); }
     else { west = Min(west,
-	  ptmp->aat.xpos + (ptmp->Upr.Uline.aradius * Min(cos(sang),cos(eang)))); }
-    if (inarc(sang, eang, 0.0, ptmp->Upr.Uline.endpos.ypos)) {
-	  east = Max(east, ptmp->aat.xpos + ptmp->Upr.Uline.aradius); }
+	  ptmp->aat.xpos + (ptmp->aradius_ * Min(cos(sang),cos(eang)))); }
+    if (inarc(sang, eang, 0.0, ptmp->arcangle_)) {
+	  east = Max(east, ptmp->aat.xpos + ptmp->aradius_); }
     else { east = Max(east,
-	  ptmp->aat.xpos + (ptmp->Upr.Uline.aradius * Max(cos(sang),cos(eang)))); }
+	  ptmp->aat.xpos + (ptmp->aradius_ * Max(cos(sang),cos(eang)))); }
     break;
   }
 #ifdef DDEBUG
@@ -4887,108 +4689,87 @@ FindExitPoint(primitive *pr, postype *pe)
   }
   *pe = pr->aat;
   switch (pr->ptype) {
-
   case XLbox:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->boxheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->boxheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->boxwidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->boxwidth_ * 0.5);
       break;
     }
     break;
 
   case XLstring:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->boxheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->boxheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->boxwidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->boxwidth_ * 0.5);
       break;
     }
     break;
 
   case XBLOCK:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.UBLOCK.blockheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->blockheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.UBLOCK.blockheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->blockheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.UBLOCK.blockwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->blockwidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.UBLOCK.blockwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->blockwidth_ * 0.5);
       break;
     }
     break;
 
   case XLcircle:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + pr->Upr.Ucircle.radius;
+      pe->ypos = pr->aat.ypos + pr->circleradius_;
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - pr->Upr.Ucircle.radius;
+      pe->ypos = pr->aat.ypos - pr->circleradius_;
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - pr->Upr.Ucircle.radius;
+      pe->xpos = pr->aat.xpos - pr->circleradius_;
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + pr->Upr.Ucircle.radius;
+      pe->xpos = pr->aat.xpos + pr->circleradius_;
       break;
     }
     break;
 
   case XLellipse:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.Uellipse.elheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->ellipseheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.Uellipse.elheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->ellipseheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.Uellipse.elwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->ellipsewidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.Uellipse.elwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->ellipsewidth_ * 0.5);
       break;
     }
     break;
@@ -5001,7 +4782,7 @@ FindExitPoint(primitive *pr, postype *pe)
   case XLarrow:
   case XLmove:
   case XLspline:
-    *pe = pr->Upr.Uline.endpos;
+    *pe = pr->endpos_;
     break;
 
   case XLabel:
@@ -5033,8 +4814,8 @@ deletename(nametype **head)
   while ((*head) != NULL) {
     pn = *head;
     r = pn;
-    while (pn->next_ != NULL) { r = pn; pn = pn->next_; }
-    r->next_ = NULL;
+    while (pn->nextname != NULL) { r = pn; pn = pn->nextname; }
+    r->nextname = NULL;
     if (pn == (*head)) { *head = NULL; }
     if (pn->segmnt != NULL) {
 	  if (bval(pn->segmnt) > 1) {
@@ -5133,7 +4914,7 @@ newprim(primitive **pr, int primtype, primitive *envblk)
   With->outlinep = NULL;
   With->shadedp = NULL;
   With->son = NULL;
-  With->next_ = NULL;
+  With->nextname = NULL;
   if (envblk == NULL) {
     With->parent = NULL;
     With->aat.xpos = 0.0;
@@ -5142,7 +4923,7 @@ newprim(primitive **pr, int primtype, primitive *envblk)
     }
   else {
     With->parent = envblk;
-    With->aat = envblk->Upr.UBLOCK.here;
+    With->aat = envblk->here_;
     With->direction = envblk->direction;
     }
   With->lparam = mdistmax;
@@ -5156,41 +4937,41 @@ newprim(primitive **pr, int primtype, primitive *envblk)
   switch (primtype) {
     case XLbox:
     case XLstring:
-      With->Upr.Ubox.boxfill = -1.0;
-      With->Upr.Ubox.boxheight = 0.0;
-      With->Upr.Ubox.boxwidth = 0.0;
-      With->Upr.Ubox.boxradius = 0.0;
+      With->boxfill_ = -1.0;
+      With->boxheight_ = 0.0;
+      With->boxwidth_ = 0.0;
+      With->boxradius_ = 0.0;
       break;
     case XBLOCK:
-      With->Upr.UBLOCK.blockheight = 0.0;
-      With->Upr.UBLOCK.blockwidth = 0.0;
-      With->Upr.UBLOCK.here = With->aat;
+      With->blockheight_ = 0.0;
+      With->blockwidth_ = 0.0;
+      With->here_ = With->aat;
       for (i = 0; i <= HASHLIM; i++) {
-	    With->Upr.UBLOCK.vars[i]   = NULL;
-	    With->Upr.UBLOCK.nvars[i]   = 0; }
-      With->Upr.UBLOCK.env = NULL;
+	    With->blockparms.vars[i]   = NULL;
+	    With->blockparms.nvars[i]   = 0; }
+      With->blockparms.env = NULL;
       break;
     case XLcircle:
-      With->Upr.Ucircle.cfill = -1.0;
-      With->Upr.Ucircle.radius = 0.0;
+      With->circlefill_ = -1.0;
+      With->circleradius_ = 0.0;
       break;
     case XLellipse:
-      With->Upr.Uellipse.efill = -1.0;
-      With->Upr.Uellipse.elheight = 0.0;
-      With->Upr.Uellipse.elwidth = 0.0;
+      With->ellipsefill_ = -1.0;
+      With->ellipseheight_ = 0.0;
+      With->ellipsewidth_ = 0.0;
       break;
     case XLline:
     case XLarrow:
     case XLmove:
     case XLarc:
     case XLspline:
-      With->Upr.Uline.endpos.xpos = 0.0;
-      With->Upr.Uline.endpos.ypos = 0.0;
-      With->Upr.Uline.height = 0.0;
-      With->Upr.Uline.width = 0.0;
-      With->Upr.Uline.lfill = -1.0;
-      With->Upr.Uline.aradius = mdistmax;
-      With->Upr.Uline.atype = pahlex(0, XEMPTY);
+      With->endpos_.xpos = 0.0;
+      With->endpos_.ypos = 0.0;
+      With->lineheight_ = 0.0;
+      With->linewidth_ = 0.0;
+      With->linefill_ = -1.0;
+      With->aradius_ = mdistmax;
+      With->lineatype_ = pahlex(0, XEMPTY);
       break;
     case XLabel:
     case XLaTeX:
@@ -5202,49 +4983,37 @@ newprim(primitive **pr, int primtype, primitive *envblk)
 							/* Determine drawing direction at arc end */
 void
 arcenddir(primitive *pr)
-{ if (pr->Upr.Uline.endpos.ypos > 0.0) {
-      switch (pr->direction) {
-
-      case 0:
-	/* blank case */
-	break;
-
-      case XLup:
-	envblock->direction = XLleft;
-	break;
-
-      case XLdown:
-	envblock->direction = XLright;
-	break;
-
-      case XLleft:
-	envblock->direction = XLdown;
-	break;
-
-      case XLright:
-	envblock->direction = XLup;
-	break;
-      }
-      return;
+{ if (pr->arcangle_ > 0.0) {
+    switch (pr->direction) {
+    case 0: /* blank case */
+	  break;
+    case XLup:
+	  envblock->direction = XLleft;
+	  break;
+    case XLdown:
+	  envblock->direction = XLright;
+	  break;
+    case XLleft:
+	  envblock->direction = XLdown;
+	  break;
+    case XLright:
+	  envblock->direction = XLup;
+	  break;
+    }
+    return;
   }
   switch (pr->direction) {
-
-  case 0:
-	/* blank case */
+  case 0: /* blank case */
     break;
-
   case XLup:
     envblock->direction = XLright;
     break;
-
   case XLdown:
     envblock->direction = XLleft;
     break;
-
   case XLleft:
     envblock->direction = XLup;
     break;
-
   case XLright:
     envblock->direction = XLdown;
     break;
@@ -5266,7 +5035,7 @@ int j,k;
     while (j < k) { if (r==node[j]) { k = j; } else { j++; } }
     if ( j < k ) { return 0; }
     else {
-      if ( scantree(p, r->next_) == 0) { return 0; }
+      if ( scantree(p, r->nextname) == 0) { return 0; }
       if (ijx > 10000) { return 0; }
       r = r->son;
       ijx++;
@@ -5303,10 +5072,10 @@ shift(primitive *pr, double x, double y)
     pr->aat.ypos += y;
     if ((pr->ptype == XLspline) || (pr->ptype == XLmove) ||
 	    (pr->ptype == XLarrow) || (pr->ptype == XLline)) {
-	  pr->Upr.Uline.endpos.xpos += x;
-	  pr->Upr.Uline.endpos.ypos += y; }
+	  pr->endpos_.xpos += x;
+	  pr->endpos_.ypos += y; }
     if (pr->son != NULL) { shift(pr->son, x, y); }
-    pr = pr->next_;
+    pr = pr->nextname;
     }
 }
 
@@ -5317,40 +5086,39 @@ scaleobj(primitive *pr, double s)
 { primitive *With;
 
   while (pr != NULL) {
-      With = pr;
-      With->aat.xpos *= s;
-      With->aat.ypos *= s;
-      if (With->ptype == XLbox) {
-	  With->Upr.Ubox.boxheight *= s;
-	  With->Upr.Ubox.boxwidth *= s;
-	  With->Upr.Ubox.boxradius *= s;
+    With = pr;
+    With->aat.xpos *= s;
+    With->aat.ypos *= s;
+    if (With->ptype == XLbox) {
+	  With->boxheight_ *= s;
+	  With->boxwidth_ *= s;
+	  With->boxradius_ *= s;
       }
-      else if (With->ptype == XBLOCK) {
-	  With->Upr.UBLOCK.blockheight *= s;
-	  With->Upr.UBLOCK.blockwidth *= s;
+    else if (With->ptype == XBLOCK) {
+	  With->blockheight_ *= s;
+	  With->blockwidth_ *= s;
       }
-      else if (With->ptype == XLcircle) {
-	  With->Upr.Ucircle.radius *= s;
+    else if (With->ptype == XLcircle) {
+	  With->circleradius_ *= s;
       }
-      else if (With->ptype == XLellipse) {
-	  With->Upr.Uellipse.elheight *= s;
-	  With->Upr.Uellipse.elwidth *= s;
+    else if (With->ptype == XLellipse) {
+	  With->ellipseheight_ *= s;
+	  With->ellipsewidth_ *= s;
       }
-      else if (With->ptype == XLarc) {
-	  With->Upr.Uline.aradius *= s;
+    else if (With->ptype == XLarc) {
+	  With->aradius_ *= s;
       }
-      else if ((With->ptype == XLspline) || (With->ptype == XLmove) ||
+    else if ((With->ptype == XLspline) || (With->ptype == XLmove) ||
 	       (With->ptype == XLarrow) || (With->ptype == XLline)) {
-	  With->Upr.Uline.endpos.xpos *= s;
-	  With->Upr.Uline.endpos.ypos *= s;
+	  With->endpos_.xpos *= s;
+	  With->endpos_.ypos *= s;
       }
-      if (With->son != NULL) {
+    if (With->son != NULL) {
 	  scaleobj(With->son, s);
       }
-      pr = With->next_;
-  }
+    pr = With->nextname;
+    }
 }
-
 
 							/* corner(prim,<corner>,xval,yval); Put the
 							   named-corner coordinates into xval,yval   */
@@ -5366,8 +5134,8 @@ corner(primitive *pr, int lexv, double *x, double *y)
       ((pr->ptype == XLspline) || (pr->ptype == XLmove) ||
        (pr->ptype == XLarrow) || (pr->ptype == XLline))) {
     while (pe->son != NULL) { pe = pe->son; }
-    *x = 0.5 * (pr->aat.xpos + pe->Upr.Uline.endpos.xpos);
-    *y = 0.5 * (pr->aat.ypos + pe->Upr.Uline.endpos.ypos);
+    *x = 0.5 * (pr->aat.xpos + pe->endpos_.xpos);
+    *y = 0.5 * (pr->aat.ypos + pe->endpos_.ypos);
     return;
     }
   if ((lexv == XEMPTY) && (pr->ptype != XLstring) && (pr->ptype != XLaTeX)) {
@@ -5395,271 +5163,141 @@ corner(primitive *pr, int lexv, double *x, double *y)
          end; */
       if ((pr->ptype == XLstring) && (drawmode == SVG)) {
 	    switch (lexv) {
-
-	case XDn:
-	  *y = north;
-	  break;
-
-	case XDs:
-	  *y = south;
-	  break;
-
-	case XDe:
-	  *x = east;
-	  break;
-
-	case XDw:
-	  *x = west;
-	  break;
-
-	case XDne:
-	  *y = north;
-	  *x = east;
-	  break;
-
-	case XDse:
-	  *y = south;
-	  *x = east;
-	  break;
-
-	case XDsw:
-	  *y = south;
-	  *x = west;
-	  break;
-
-	case XDnw:
-	  *y = north;
-	  *x = west;
-	  break;
-
-	case XDc:
-	  *y = pr->aat.ypos;
-	  *x = pr->aat.xpos;
-	  break;
-
-	case XDstart:
-	case XDend:
-	  markerror(858);
-	  break;
-	}
-	checkjust(pr->textp, &A, &B, &L, &R);
-	if (L) { pr->Upr.Ubox.boxradius = (west - east) / 2; }
-	else if (R) { pr->Upr.Ubox.boxradius = (east - west) / 2; }
-    }
-    else if (((pr->ptype == XLarc) || (pr->ptype == XLcircle) ||
+	      case XDn: *y = north; break;
+	      case XDs: *y = south; break;
+	      case XDe: *x = east; break;
+	      case XDw: *x = west; break;
+	      case XDne: *y = north; *x = east; break;
+	      case XDse: *y = south; *x = east; break;
+	      case XDsw: *y = south; *x = west; break;
+	      case XDnw: *y = north; *x = west; break;
+	      case XDc: *y = pr->aat.ypos; *x = pr->aat.xpos; break;
+	      case XDstart:
+	      case XDend: markerror(858); break;
+	      }
+	    checkjust(pr->textp, &A, &B, &L, &R);
+	    if (L) { pr->boxradius_ = (west - east) / 2; }
+	    else if (R) { pr->boxradius_ = (east - west) / 2; }
+        }
+      else if (((pr->ptype == XLarc) || (pr->ptype == XLcircle) ||
 	      (pr->ptype == XLellipse) || (pr->ptype == XLbox)) &&
 	     ((lexv == XDnw) || (lexv == XDsw) || (lexv == XDse) ||
 	      (lexv == XDne))) {
-	switch (pr->ptype) {
+	    switch (pr->ptype) {
+	    case XLbox:
+	      *y = Min(pr->boxradius_, Min(fabs(pr->boxheight_),
+		       fabs(pr->boxwidth_)) / 2) * (1 - (1 / sqrt(2.0)));
+	      *x = (pr->boxwidth_ / 2) - (*y);
+	      *y = (pr->boxheight_ / 2) - (*y);
+	      break;
+	    case XLellipse:
+	      *x = pr->ellipsewidth_ * (0.5 / sqrt(2.0));
+	      *y = pr->ellipseheight_ * (0.5 / sqrt(2.0));
+	      break;
+	    case XLarc:
+	      *x = pr->aradius_ / sqrt(2.0);
+	      *y = *x;
+	      break;
+	    case XLcircle:
+	      *x = pr->circleradius_ / sqrt(2.0);
+	      *y = *x;
+	      break;
+	    }
+	    switch (lexv) {
+	    case XDne: /* blank case */ break;
+	    case XDse: *y = -*y; break;
+	    case XDnw: *x = -*x; break;
+	    case XDsw: *x = -*x; *y = -*y; break;
+	    }
+	    *x = pr->aat.xpos + (*x);
+	    *y = pr->aat.ypos + (*y);
+        }
+      else if (pr->ptype == XLarc) {
+	    switch (lexv) {
+	    case XDn: *y = pr->aat.ypos + pr->aradius_; break;
+	    case XDs: *y = pr->aat.ypos - pr->aradius_; break;
+	    case XDe: *x = pr->aat.xpos + pr->aradius_; break;
+	    case XDw: *x = pr->aat.xpos - pr->aradius_; break;
+	    case XDc: /* blank case */ break;
+	    case XDstart:
+	      *x = pr->aat.xpos + (pr->aradius_ * cos(pr->startangle_));
+	      *y = pr->aat.ypos + (pr->aradius_ * sin(pr->startangle_));
+	      break;
+	    case XDend:
+	      *x = pr->aat.xpos +
+                 (pr->aradius_ * cos(pr->startangle_+pr->arcangle_));
+	      *y = pr->aat.ypos +
+                 (pr->aradius_ * sin(pr->startangle_+pr->arcangle_));
+	      break;
+	    } }
+      else {
+	    switch (lexv) {
+	    case XDn: *y = north; break;
+	    case XDs: *y = south; break;
+	    case XDe: *x = east; break;
+	    case XDw: *x = west; break;
+	    case XDne: *y = north; *x = east; break;
+	    case XDse: *y = south; *x = east; break;
+	    case XDsw: *y = south; *x = west; break;
+	    case XDnw: *y = north; *x = west; break;
+	    case XDc: *y = pr->aat.ypos; *x = pr->aat.xpos; break;
+	    case XDstart:
+	    case XDend: markerror(858); break;
+	    } }
+      break;
 
-	case XLbox:
-	  *y = Min(pr->Upr.Ubox.boxradius,
-		   Min(fabs(pr->Upr.Ubox.boxheight),
-		       fabs(pr->Upr.Ubox.boxwidth)) / 2) * (1 - (1 / sqrt(2.0)));
-	  *x = (pr->Upr.Ubox.boxwidth / 2) - (*y);
-	  *y = (pr->Upr.Ubox.boxheight / 2) - (*y);
-	  break;
-
-	case XLellipse:
-	  *x = pr->Upr.Uellipse.elwidth * (0.5 / sqrt(2.0));
-	  *y = pr->Upr.Uellipse.elheight * (0.5 / sqrt(2.0));
-	  break;
-
-	case XLarc:
-	  *x = pr->Upr.Uline.aradius / sqrt(2.0);
-	  *y = *x;
-	  break;
-
-	case XLcircle:
-	  *x = pr->Upr.Ucircle.radius / sqrt(2.0);
-	  *y = *x;
-	  break;
-	}
-	switch (lexv) {
-
-	case XDne:
-	/* blank case */
-	  break;
-
-	case XDse:
-	  *y = -*y;
-	  break;
-
-	case XDnw:
-	  *x = -*x;
-	  break;
-
-	case XDsw:
-	  *x = -*x;
-	  *y = -*y;
-	  break;
-	}
-	*x = pr->aat.xpos + (*x);
-	*y = pr->aat.ypos + (*y);
-    }
-    else if (pr->ptype == XLarc) {
-	switch (lexv) {
-
-	case XDn:
-	  *y = pr->aat.ypos + pr->Upr.Uline.aradius;
-	  break;
-
-	case XDs:
-	  *y = pr->aat.ypos - pr->Upr.Uline.aradius;
-	  break;
-
-	case XDe:
-	  *x = pr->aat.xpos + pr->Upr.Uline.aradius;
-	  break;
-
-	case XDw:
-	  *x = pr->aat.xpos - pr->Upr.Uline.aradius;
-	  break;
-
-	case XDc:
-	/* blank case */
-	  break;
-
-	case XDstart:
-	  *x = pr->aat.xpos + (pr->Upr.Uline.aradius * cos(pr->Upr.Uline.endpos.xpos));
-	  *y = pr->aat.ypos + (pr->Upr.Uline.aradius * sin(pr->Upr.Uline.endpos.xpos));
-	  break;
-
-	case XDend:
-	  *x = pr->aat.xpos + (pr->Upr.Uline.aradius *
-		 cos(pr->Upr.Uline.endpos.xpos + pr->Upr.Uline.endpos.ypos));
-	  *y = pr->aat.ypos + (pr->Upr.Uline.aradius *
-		 sin(pr->Upr.Uline.endpos.xpos + pr->Upr.Uline.endpos.ypos));
-	  break;
-	}
-    }
-    else {
-	switch (lexv) {
-
-	case XDn:
-	  *y = north;
-	  break;
-
-	case XDs:
-	  *y = south;
-	  break;
-
-	case XDe:
-	  *x = east;
-	  break;
-
-	case XDw:
-	  *x = west;
-	  break;
-
-	case XDne:
-	  *y = north;
-	  *x = east;
-	  break;
-
-	case XDse:
-	  *y = south;
-	  *x = east;
-	  break;
-
-	case XDsw:
-	  *y = south;
-	  *x = west;
-	  break;
-
-	case XDnw:
-	  *y = north;
-	  *x = west;
-	  break;
-
-	case XDc:
-	  *y = pr->aat.ypos;
-	  *x = pr->aat.xpos;
-	  break;
-
-	case XDstart:
-	case XDend:
-	  markerror(858);
-	  break;
-	}
-    }
-    break;
-
-  case XLline:
-  case XLarrow:
-  case XLmove:
-  case XLspline:
-    if (lexv != XDstart) {
+    case XLline:
+    case XLarrow:
+    case XLmove:
+    case XLspline:
+      if (lexv != XDstart) {
 	if (lexv == XDend) {
-	    while (pe->son != NULL) {
-		pe = pe->son;
-	    }
-	    *x = pe->Upr.Uline.endpos.xpos;
-	    *y = pe->Upr.Uline.endpos.ypos;
-	}
+	    while (pe->son != NULL) { pe = pe->son; }
+	    *x = pe->endpos_.xpos;
+	    *y = pe->endpos_.ypos; }
 	else if (lexv == XDc) {
-	    while (pe->son != NULL) {
-		pe = pe->son;
-	    }
-	    *x = 0.5 * ((*x) + pe->Upr.Uline.endpos.xpos);
-	    *y = 0.5 * ((*y) + pe->Upr.Uline.endpos.ypos);
-	}
+	    while (pe->son != NULL) { pe = pe->son; }
+	    *x = 0.5 * ((*x) + pe->endpos_.xpos);
+	    *y = 0.5 * ((*y) + pe->endpos_.ypos); }
 	else {
 	    do {
-		sb = false;
-		switch (lexv) {
-
-		case XDn:
-		  sb = (pe->Upr.Uline.endpos.ypos > (*y));
-		  break;
-
-		case XDs:
-		  sb = (pe->Upr.Uline.endpos.ypos < (*y));
-		  break;
-
-		case XDe:
-		  sb = (pe->Upr.Uline.endpos.xpos > (*x));
-		  break;
-
-		case XDw:
-		  sb = (pe->Upr.Uline.endpos.xpos < (*x));
-		  break;
-
-		case XDne:
-		  sb = (((pe->Upr.Uline.endpos.ypos > (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos >= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos >= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos > (*x))));
-		  break;
-
-		case XDse:
-		  sb = (((pe->Upr.Uline.endpos.ypos < (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos >= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos <= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos > (*x))));
-		  break;
-
-		case XDsw:
-		  sb = (((pe->Upr.Uline.endpos.ypos < (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos <= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos <= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos < (*x))));
-		  break;
-
-		case XDnw:
-		  sb = (((pe->Upr.Uline.endpos.ypos > (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos <= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos >= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos < (*x))));
-		  break;
-		}
-		if (sb) {
-		    *x = pe->Upr.Uline.endpos.xpos;
-		    *y = pe->Upr.Uline.endpos.ypos;
-		}
-		pe = pe->son;
+		  sb = false;
+		  switch (lexv) {
+		  case XDn:
+		    sb = (pe->endpos_.ypos > (*y));
+		    break;
+		  case XDs:
+		    sb = (pe->endpos_.ypos < (*y));
+		    break;
+		  case XDe:
+		    sb = (pe->endpos_.xpos > (*x));
+		    break;
+		  case XDw:
+		    sb = (pe->endpos_.xpos < (*x));
+		    break;
+		  case XDne:
+		    sb = (((pe->endpos_.ypos > (*y)) && (pe->endpos_.xpos >= (*x))) ||
+			  ((pe->endpos_.ypos >= (*y)) && (pe->endpos_.xpos > (*x))));
+		    break;
+		  case XDse:
+		    sb = (((pe->endpos_.ypos < (*y)) && (pe->endpos_.xpos >= (*x))) ||
+			  ((pe->endpos_.ypos <= (*y)) && (pe->endpos_.xpos > (*x))));
+		    break;
+		  case XDsw:
+		    sb = (((pe->endpos_.ypos < (*y)) && (pe->endpos_.xpos <= (*x))) ||
+			  ((pe->endpos_.ypos <= (*y)) && (pe->endpos_.xpos < (*x))));
+		    break;
+		  case XDnw:
+		    sb = (((pe->endpos_.ypos > (*y)) && (pe->endpos_.xpos <= (*x))) ||
+			  ((pe->endpos_.ypos >= (*y)) && (pe->endpos_.xpos < (*x))));
+		    break;
+		  }
+		  if (sb) {
+		    *x = pe->endpos_.xpos;
+		    *y = pe->endpos_.ypos; }
+		  pe = pe->son;
 	    } while (pe != NULL);
-	}
+	  }
     }
     break;
 
@@ -5688,14 +5326,14 @@ nthprimobj(primitive *primp, int nth, int objtype))
   if (nth == 0) { pp = primp;
     while (pp != NULL) {
 	  if ((pp->ptype) == objtype) { prp = pp; }
-	  pp = pp->next_;
+	  pp = pp->nextname;
       }
     }
   else { pp = primp; i = 0;
     if (nth < 0) {
       while (pp != NULL) {
 	    if (pp->ptype == objtype) { i++; }
-	    pp = pp->next_; }
+	    pp = pp->nextname; }
       nth += i + 1;
       }
 #ifdef DDEBUG
@@ -5704,7 +5342,7 @@ nthprimobj(primitive *primp, int nth, int objtype))
     pp = primp; i = 0; prp = NULL;
     while (pp != prp) {
       if (pp->ptype == objtype) { i++; }
-      if (i == nth) { prp = pp; } else { pp = pp->next_; }
+      if (i == nth) { prp = pp; } else { pp = pp->nextname; }
       }
     }
   return prp;
@@ -5729,72 +5367,72 @@ resetenv(int envval, primitive *envbl)
     last = XLlastsc;
     }
   else { last = envval; }
-  if (envbl->Upr.UBLOCK.env == NULL) {
-    envbl->Upr.UBLOCK.env = malloc(sizeof(envarray));
+  if (envbl->blockparms.env == NULL) {
+    envbl->blockparms.env = malloc(sizeof(envarray));
 #ifdef DDEBUG
     if (debuglevel > 0) {
-	  fprintf(log_, "resetenv envarray[%d]\n", ordp(envbl->Upr.UBLOCK.env)); }
+	  fprintf(log_, "resetenv envarray[%d]\n", ordp(envbl->blockparms.env)); }
 #endif
     }
   for (i = envval - 1; i <= (last - 1); i++) {
     switch (i + 1) {
 							/* scaled environment vars (in) */
-      case XLarcrad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.25;
+      case XLarcrad: envbl->blockparms.env[i - XXenvvar] = 0.25;
 	    break;
-      case XLarrowht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.1;
+      case XLarrowht: envbl->blockparms.env[i - XXenvvar] = 0.1;
 	    break;
-      case XLarrowwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.05;
+      case XLarrowwid: envbl->blockparms.env[i - XXenvvar] = 0.05;
 	    break;
-      case XLboxht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLboxht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLboxrad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
+      case XLboxrad: envbl->blockparms.env[i - XXenvvar] = 0.0;
 	    break;
-      case XLboxwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.75;
+      case XLboxwid: envbl->blockparms.env[i - XXenvvar] = 0.75;
 	    break;
-      case XLcirclerad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.25;
+      case XLcirclerad: envbl->blockparms.env[i - XXenvvar] = 0.25;
 	    break;
-      case XLdashwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.05;
+      case XLdashwid: envbl->blockparms.env[i - XXenvvar] = 0.05;
 	    break;
-      case XLellipseht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLellipseht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLellipsewid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.75;
+      case XLellipsewid: envbl->blockparms.env[i - XXenvvar] = 0.75;
 	    break;
-      case XLlineht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLlineht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLlinewid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLlinewid: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLmoveht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLmoveht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLmovewid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLmovewid: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
       case XLtextht:
 	    switch (drawmode) {
-	      case PDF: envbl->Upr.UBLOCK.env[i - XXenvvar] = DFONT / 72.0;
+	      case PDF: envbl->blockparms.env[i - XXenvvar] = DFONT / 72.0;
 	        break;
 	      case SVG:
-	        envbl->Upr.UBLOCK.env[i - XXenvvar] = (DFONT / 72.0) * 0.66;
+	        envbl->blockparms.env[i - XXenvvar] = (DFONT / 72.0) * 0.66;
 	        break;
 	      default:
-	        envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
+	        envbl->blockparms.env[i - XXenvvar] = 0.0;
 	        break;
 	      }
 	    break;
-      case XLtextoffset: envbl->Upr.UBLOCK.env[i - XXenvvar] = 2.0 / 72;
+      case XLtextoffset: envbl->blockparms.env[i - XXenvvar] = 2.0 / 72;
 	    break;
-      case XLtextwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
+      case XLtextwid: envbl->blockparms.env[i - XXenvvar] = 0.0;
 	    break;
 							/* The following are unscaled */
-      case XLarrowhead: envbl->Upr.UBLOCK.env[i - XXenvvar] = 1.0;
+      case XLarrowhead: envbl->blockparms.env[i - XXenvvar] = 1.0;
 	    break;
-      case XLfillval: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLfillval: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLlinethick: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.8;
+      case XLlinethick: envbl->blockparms.env[i - XXenvvar] = 0.8;
 	    break;
-      case XLmaxpsht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 11.0;
+      case XLmaxpsht: envbl->blockparms.env[i - XXenvvar] = 11.0;
 	    break;
-      case XLmaxpswid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 8.5;
+      case XLmaxpswid: envbl->blockparms.env[i - XXenvvar] = 8.5;
 	    break;
-      case XLscale: envbl->Upr.UBLOCK.env[i - XXenvvar] = 1.0;
+      case XLscale: envbl->blockparms.env[i - XXenvvar] = 1.0;
 	    break;
       }
     }
@@ -5809,9 +5447,9 @@ inheritenv(primitive *envbl)
 
   pr = findenv(envbl);
   if (pr == NULL) { resetenv(0, envbl); return; }
-  envbl->Upr.UBLOCK.env = malloc(sizeof(envarray));
+  envbl->blockparms.env = malloc(sizeof(envarray));
   for (i = XXenvvar; i <= (XLlastenv - 1); i++) {
-      envbl->Upr.UBLOCK.env[i - XXenvvar] = pr->Upr.UBLOCK.env[i - XXenvvar];
+      envbl->blockparms.env[i - XXenvvar] = pr->blockparms.env[i - XXenvvar];
   }
 }
 
@@ -5823,11 +5461,11 @@ resetscale(double x, int opr, primitive *envbl)
   int i;
 
   resetenv(-1, envbl);
-  r = envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
-  eqop(&envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1], opr, x);
-  s = envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
+  r = envbl->blockparms.env[XLscale - XXenvvar - 1];
+  eqop(&envbl->blockparms.env[XLscale - XXenvvar - 1], opr, x);
+  s = envbl->blockparms.env[XLscale - XXenvvar - 1];
   if (s == 0.0) {
-      envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1] = r;
+      envbl->blockparms.env[XLscale - XXenvvar - 1] = r;
       s = 1.0;
       markerror(870);
   }
@@ -5838,7 +5476,7 @@ resetscale(double x, int opr, primitive *envbl)
       s /= r;
   }
   for (i = XXenvvar; i < XLlastsc; i++) {
-      eqop(&envbl->Upr.UBLOCK.env[i - XXenvvar], XLmulteq, s);
+      eqop(&envbl->blockparms.env[i - XXenvvar], XLmulteq, s);
   }
 }
 
@@ -5858,23 +5496,23 @@ getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
   if (lp != NULL) {
       if (lp->ptype == XBLOCK) {
 	  qp = findenv(lp);
-	  if (qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1] > 0.0) {
-	      *sfact = qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
+	  if (qp->blockparms.env[XLscale - XXenvvar - 1] > 0.0) {
+	      *sfact = qp->blockparms.env[XLscale - XXenvvar - 1];
 	  }
 	  if ((east > west) &&
 	      ((east - west) / (*sfact) >
-	       qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1]) &&
-	      (qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1] > 0.0)) {
+	       qp->blockparms.env[XLmaxpswid - XXenvvar - 1]) &&
+	      (qp->blockparms.env[XLmaxpswid - XXenvvar - 1] > 0.0)) {
 	      erno = 903;
-	      gs = (east - west) / qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1];
+	      gs = (east - west) / qp->blockparms.env[XLmaxpswid - XXenvvar - 1];
 	  }
 	  if ((north > south) &&
 	      ((north - south) / (*sfact) >
-	       qp->Upr.UBLOCK.env[XLmaxpsht - XXenvvar - 1]) &&
-	      (qp->Upr.UBLOCK.env[XLmaxpsht - XXenvvar - 1] > 0.0)) {
+	       qp->blockparms.env[XLmaxpsht - XXenvvar - 1]) &&
+	      (qp->blockparms.env[XLmaxpsht - XXenvvar - 1] > 0.0)) {
 	      erno = 904;
 	      gs = Max(gs,
-		  (north - south) / qp->Upr.UBLOCK.env[XLmaxpsht - XXenvvar - 1]);
+		  (north - south) / qp->blockparms.env[XLmaxpsht - XXenvvar - 1]);
 	  }
       }
   }
@@ -5906,7 +5544,7 @@ copyprim(primitive *prin, primitive **prout)
   (*prout)->shadedp = prin->shadedp;
   (*prout)->parent = prin->parent;
   (*prout)->son = prin->son;
-  (*prout)->next_ = prin->next_;
+  (*prout)->nextname = prin->nextname;
   (*prout)->aat = prin->aat;
   (*prout)->lparam = prin->lparam;
   (*prout)->lthick = prin->lthick;
@@ -5916,46 +5554,46 @@ copyprim(primitive *prin, primitive **prout)
   switch (prin->ptype) {
   case XLbox:
   case XLstring:
-    (*prout)->Upr.Ubox.boxfill = prin->Upr.Ubox.boxfill;
-    (*prout)->Upr.Ubox.boxheight = prin->Upr.Ubox.boxheight;
-    (*prout)->Upr.Ubox.boxwidth = prin->Upr.Ubox.boxwidth;
-    (*prout)->Upr.Ubox.boxradius = prin->Upr.Ubox.boxradius;
+    (*prout)->boxfill_ = prin->boxfill_;
+    (*prout)->boxheight_ = prin->boxheight_;
+    (*prout)->boxwidth_ = prin->boxwidth_;
+    (*prout)->boxradius_ = prin->boxradius_;
     break;
   case XBLOCK:
-    (*prout)->Upr.UBLOCK.blockheight = prin->Upr.UBLOCK.blockheight;
-    (*prout)->Upr.UBLOCK.blockwidth = prin->Upr.UBLOCK.blockwidth;
-    (*prout)->Upr.UBLOCK.here = prin->Upr.UBLOCK.here;
+    (*prout)->blockheight_ = prin->blockheight_;
+    (*prout)->blockwidth_ = prin->blockwidth_;
+    (*prout)->here_ = prin->here_;
     for (i = 0; i <= HASHLIM; i++) {
-	  (*prout)->Upr.UBLOCK.vars[i] = prin->Upr.UBLOCK.vars[i];
-	  (*prout)->Upr.UBLOCK.nvars[i] = prin->Upr.UBLOCK.nvars[i]; }
-    if (prin->Upr.UBLOCK.env != NULL) {
-	  (*prout)->Upr.UBLOCK.env = malloc(sizeof(envarray));
+	  (*prout)->blockparms.vars[i] = prin->blockparms.vars[i];
+	  (*prout)->blockparms.nvars[i] = prin->blockparms.nvars[i]; }
+    if (prin->blockparms.env != NULL) {
+	  (*prout)->blockparms.env = malloc(sizeof(envarray));
 	  for (i = XXenvvar; i < XLlastenv; i++) {
-	    (*prout)->Upr.UBLOCK.env[i - XXenvvar] =
-          prin->Upr.UBLOCK.env[i - XXenvvar];
+	    (*prout)->blockparms.env[i - XXenvvar] =
+          prin->blockparms.env[i - XXenvvar];
 	    }
       }
     break;
   case XLcircle:
-    (*prout)->Upr.Ucircle.cfill = prin->Upr.Ucircle.cfill;
-    (*prout)->Upr.Ucircle.radius = prin->Upr.Ucircle.radius;
+    (*prout)->circlefill_ = prin->circlefill_;
+    (*prout)->circleradius_ = prin->circleradius_;
     break;
   case XLellipse:
-    (*prout)->Upr.Uellipse.efill = prin->Upr.Uellipse.efill;
-    (*prout)->Upr.Uellipse.elheight = prin->Upr.Uellipse.elheight;
-    (*prout)->Upr.Uellipse.elwidth = prin->Upr.Uellipse.elwidth;
+    (*prout)->ellipsefill_ = prin->ellipsefill_;
+    (*prout)->ellipseheight_ = prin->ellipseheight_;
+    (*prout)->ellipsewidth_ = prin->ellipsewidth_;
     break;
   case XLline:
   case XLarrow:
   case XLmove:
   case XLarc:
   case XLspline:
-    (*prout)->Upr.Uline.endpos = prin->Upr.Uline.endpos;
-    (*prout)->Upr.Uline.height = prin->Upr.Uline.height;
-    (*prout)->Upr.Uline.width = prin->Upr.Uline.width;
-    (*prout)->Upr.Uline.lfill = prin->Upr.Uline.lfill;
-    (*prout)->Upr.Uline.aradius = prin->Upr.Uline.aradius;
-    (*prout)->Upr.Uline.atype = prin->Upr.Uline.atype;
+    (*prout)->endpos_ = prin->endpos_;
+    (*prout)->lineheight_ = prin->lineheight_;
+    (*prout)->linewidth_ = prin->linewidth_;
+    (*prout)->linefill_ = prin->linefill_;
+    (*prout)->aradius_ = prin->aradius_;
+    (*prout)->lineatype_ = prin->lineatype_;
     break;
   case XLabel:
   case XLaTeX:
@@ -5976,8 +5614,8 @@ deletestringbox(primitive **pr)
 	if ((*pr)->parent->son == (*pr)) { (*pr)->parent->son = NULL; }
 	else {
 	  prx = (*pr)->parent->son;
-	  while ((prx->next_ != NULL) && (prx->next_ != (*pr))) { prx = prx->next_;}
-	  prx->next_ = NULL; }
+	  while ((prx->nextname != NULL) && (prx->nextname != (*pr))) { prx = prx->nextname;}
+	  prx->nextname = NULL; }
     }
   deletetree(pr);
 }
@@ -6003,6 +5641,10 @@ dostart(void)
     if ((drawmode == SVG) || (drawmode == PDF) || (drawmode == PS)) {
 	  makevar("dptextratio", 11, 0.66);
 	  makevar("dpPPI", 5, 96.0);
+      }
+    else if (drawmode == xfig) {
+	  makevar("xfigres", 7, 1200);
+	  makevar("xdispres", 8, 80);
       }
 }
 
@@ -6030,25 +5672,25 @@ makevar(Char *s, int ln, double varval)
 #ifdef DDEBUG
   if (debuglevel > 1) { fprintf(log_, " vn=%d\n", ordp(vn)); }
 #endif
-  if (lastvar == NULL) { With->Upr.UBLOCK.vars[j] = vn; }
+  if (lastvar == NULL) { With->blockparms.vars[j] = vn; }
   else if (k < 0) {
-    if (With->Upr.UBLOCK.vars[j]->next_ == NULL) {
-	  With->Upr.UBLOCK.vars[j]->next_ = vn; }
+    if (With->blockparms.vars[j]->nextname == NULL) {
+	  With->blockparms.vars[j]->nextname = vn; }
     else {
-	  vn->next_ = lastvar->next_;
-	  lastvar->next_ = vn; }
+	  vn->nextname = lastvar->nextname;
+	  lastvar->nextname = vn; }
     }
-  else if (lastvar == With->Upr.UBLOCK.vars[j]) {
-    vn->next_ = With->Upr.UBLOCK.vars[j];
-    With->Upr.UBLOCK.vars[j] = vn;
+  else if (lastvar == With->blockparms.vars[j]) {
+    vn->nextname = With->blockparms.vars[j];
+    With->blockparms.vars[j] = vn;
     }
   else {
-    namptr = With->Upr.UBLOCK.vars[j];
-    while (namptr->next_ != lastvar) { namptr = namptr->next_; }
-    namptr->next_ = vn;
-    vn->next_ = lastvar;
+    namptr = With->blockparms.vars[j];
+    while (namptr->nextname != lastvar) { namptr = namptr->nextname; }
+    namptr->nextname = vn;
+    vn->nextname = lastvar;
     }
-  With->Upr.UBLOCK.nvars[j]++;
+  With->blockparms.nvars[j]++;
   vn->val = varval;
 }
 
@@ -6101,37 +5743,33 @@ donamedobj(attribute *a1)
 		  shift(a1->prim, a1->xval - dx, a1->yval - dy); }
 	    else {
 		  x1 = With2->aat.xpos +
-		     (With2->Upr.Uline.aradius * cos(With2->Upr.Uline.endpos.xpos));
+		     (With2->aradius_ * cos(With2->startangle_));
 							/* from */
 		  z1 = With2->aat.ypos +
-		     (With2->Upr.Uline.aradius * sin(With2->Upr.Uline.endpos.xpos));
+		     (With2->aradius_ * sin(With2->startangle_));
 		  if (teststflag(a1->state, XLto)) {
 							/* to X from Here|Y implied */
 		    if ((i != XEMPTY) && (i != XDc)) { markerror(858); }
-		    r = With2->aat.xpos + (With2->Upr.Uline.aradius * cos(
-			    With2->Upr.Uline.endpos.xpos + With2->Upr.Uline.endpos.ypos));
-		    s = With2->aat.ypos + (With2->Upr.Uline.aradius * sin(
-			    With2->Upr.Uline.endpos.xpos + With2->Upr.Uline.endpos.ypos));
+		    r = With2->aat.xpos + (With2->aradius_ *
+                  cos(With2->startangle_ + With2->arcangle_));
+		    s = With2->aat.ypos + (With2->aradius_ *
+                  sin(With2->startangle_ + With2->arcangle_));
 		    With2->aat.xpos = a1->xval;
 		    With2->aat.ypos = a1->yval;
-		    With2->Upr.Uline.aradius = linlen(r - With2->aat.xpos,
-						    s - With2->aat.ypos);
-		    setangles(&With2->Upr.Uline.endpos.xpos,
-			      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1, r, s);
+		    With2->aradius_ = linlen(r - With2->aat.xpos, s - With2->aat.ypos);
+		    setangles(&With2->startangle_,
+			      &With2->arcangle_, With2->aat, x1, z1, r, s);
 		    }
 		  else if (teststflag(a1->state, XLfrom)) {
 		    if ((i != XEMPTY) && (i != XDc)) { markerror(858); }
 		    With2->aat.xpos = a1->xval;
 		    With2->aat.ypos = a1->yval;
 		    t = datan(z1 - With2->aat.ypos, x1 - With2->aat.xpos);
-		    r = With2->aat.xpos + (With2->Upr.Uline.aradius * cos(
-					     t + With2->Upr.Uline.endpos.ypos));
-		    s = With2->aat.ypos + (With2->Upr.Uline.aradius * sin(
-					     t + With2->Upr.Uline.endpos.ypos));
-		    With2->Upr.Uline.aradius = linlen(x1 - With2->aat.xpos,
-						    z1 - With2->aat.ypos);
-		    setangles(&With2->Upr.Uline.endpos.xpos,
-			      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1, r, s);
+		    r = With2->aat.xpos + (With2->aradius_ * cos(t + With2->arcangle_));
+		    s = With2->aat.ypos + (With2->aradius_ * sin(t + With2->arcangle_));
+		    With2->aradius_ = linlen(x1 - With2->aat.xpos,z1 - With2->aat.ypos);
+		    setangles(&With2->startangle_, &With2->arcangle_, With2->aat,
+               x1, z1, r, s);
 			}
 		  else { shift(a1->prim, With->xval - dx, With->yval - dy); }
 	    }
@@ -6176,12 +5814,12 @@ readfor(fbuffer *p0, int attx, fbuffer **p2, Char endch, boolean isfor)
     if ((*p2) == NULL) { fprintf(log_, "=nil"); }
     else { fprintf(log_, "<>nil"); }
     fprintf(log_, " endch=\"%c\" ch=\"%c\"\n", endch, ch);
-  }
+    }
 #endif
   if (!isfor) { inchar(); }
   while (moreinput) {
     if (p0 == NULL) { newbuf(&p); } else { p = p0; p0 = NULL; }
-    p->attrib = attx;                   /* attstack index or -(name length) */
+    p->attrib = attx;                   /* -(name length) */
     if (p1 != NULL) { p1->nextb = p; p->prevb = p1; }
     p->higherb = inbuf;
     p1 = p;
@@ -6245,11 +5883,11 @@ void
 queueprim(primitive *pr, primitive *envblk)
 { primitive *pp;
   if (envblk->son == NULL) { envblk->son = pr; }
-  else if (tail != NULL ) { tail->next_ = pr; }
+  else if (tail != NULL ) { tail->nextname = pr; }
   else {
     pp = envblk->son;
-    while (pp->next_ != NULL) { pp = pp->next_; }
-    pp->next_ = pr;
+    while (pp->nextname != NULL) { pp = pp->nextname; }
+    pp->nextname = pr;
     }
   tail = pr;
   }
@@ -6310,12 +5948,12 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
 	fprintf(log_,"sprintf nexprs=%d\n",nexprs);
 	printobject(a3->prim);
 	if (eb == NULL) { fprintf(log_, " ! sprintf_i: eb=nil\n"); }
-	else if (eb->Upr.UBLOCK.env == NULL) {
+	else if (eb->blockparms.env == NULL) {
 	    fprintf(log_, " ! sprintf_i: env=nil\n"); } }
 #endif
-  With2->Upr.Ubox.boxheight = eb->envinx(XLtextht);
-  With2->Upr.Ubox.boxwidth = eb->envinx(XLtextwid);
-  With2->Upr.Ubox.boxradius = 0.0;
+  With2->boxheight_ = eb->envinx(XLtextht);
+  With2->boxwidth_ = eb->envinx(XLtextwid);
+  With2->boxradius_ = 0.0;
   newstr(&With2->textp);
   if (tmpbuf == NULL) { tmpbuf = malloc(sizeof(chbufarray)); }
   if (tmpfmt == NULL) { tmpfmt = malloc(sizeof(chbufarray)); }
@@ -6407,17 +6045,17 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
   if (nexprs > i) { markerror(864); }               /* Too many exprs */
   if (drawmode == xfig) {
 	With2 = a0->prim;
-	if (With2->Upr.Ubox.boxwidth == 0.0) {
-	  if (With2->Upr.Ubox.boxheight == 0.0) {
-		With2->Upr.Ubox.boxheight =
+	if (With2->boxwidth_ == 0.0) {
+	  if (With2->boxheight_ == 0.0) {
+		With2->boxheight_ =
 		  0.1 * eb->envinx(XLscale); }
 	  if (With2->textp != NULL) {
-		With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+		With2->boxwidth_ = With2->boxheight_ *
 					  With2->textp->len * 0.75; }
 	  }
     }
   else if ((drawmode == PDF) && (With2->textp != NULL)) {
-	  With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+	  With2->boxwidth_ = With2->boxheight_ *
 				      With2->textp->len * 0.6; }
   if (envblock->son == a3->prim) { envblock->son = a0->prim; }
   deletestringbox(&(a3->prim));

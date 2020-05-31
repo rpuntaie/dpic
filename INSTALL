@@ -1,11 +1,11 @@
 Installing dpic:
 
    On a Unix-lide system, type `make' to compile the sources, which are
-   C99 compatible and should compile and load on most systems. With MinGW,
-   you may have to type `./configure' and then `make' to add a library
-   to the linking step in order to load the random routines.  On older
-   machines you may have to check the settings at the top of the Makefile.
-   Type
+   C99 and gcc-10 compatible and should compile and load on most systems.
+   With MinGW, you may have to type `./configure' and then `make' to add
+   a library to the linking step in order to load the random() routines.
+   On older machines you may have to check the settings at the top of
+   the Makefile. Type
     `make install' or `sudo make install'
    as necessary, to install the executable in /usr/bin, a man page
    in /usr/share/man/man1,

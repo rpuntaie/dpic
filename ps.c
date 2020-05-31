@@ -52,16 +52,14 @@ psprelude (double n, double s, double e, double w, double lth) {
   printf ("/ostroke { stroke setlineparms } def\n");
   printf ("/endstroke { ostroke } def /npath { newpath } def\n");
   printf (" setlineparms\n");
-  if ((printstate & 1) != 1) {
-    return;
-  }
+  if ((printstate & 1) != 1) { return; }
   if (drawmode == PS) {
     printf ("/strsiz\n");
     printf (" {newpath 0 0 moveto true charpath flattenpath");
     printf (" pathbbox 4 1 roll pop pop pop}def\n");
     printf ("/setcapht {gsave (I) strsiz /capht exch def grestore} def\n");
-    printf
-      ("/postext {1 add baselineskip mul 1 sub 2 div capht mul add moveto} def\n");
+    printf (
+   "/postext {1 add baselineskip mul 1 sub 2 div capht mul add moveto} def\n");
     printf ("/strwidth { dup stringwidth pop } def\n");
     printf ("/ljust { labelsep } def\n");
     printf ("/rjust { strwidth labelsep add neg } def\n");
@@ -69,12 +67,12 @@ psprelude (double n, double s, double e, double w, double lth) {
     printf ("/above { capht 2 div labelsep add } def\n");
     printf ("/below { capht 2 div neg labelsep sub } def\n");
     printf ("/vjust {0 capht baselineskip mul neg rmoveto\n");
-    printf (" currentpoint /y exch def /x exch def} def\n");
-  } else {
+    printf (" currentpoint /y exch def /x exch def} def\n"); }
+  else {
     printf ("/ljust { labelsep } def /rjust { labelsep neg } def ");
     printf ("/cjust { 0 } def\n");
     printf ("/above { labelsep } def /below { labelsep neg } def ");
-  }
+    }
   printf ("/vcenter { 0 } def\n");
   printf ("/basefont {/Times-Roman findfont} def\n");
   printf (" basefont 11 scalefont setfont\n");
@@ -112,24 +110,18 @@ pswstring (nametype * p) {
   boolean iswhite;
   int FORLIM;
 
-  if (p == NULL) {
-    return;
-  }
-  if (p->segmnt == NULL) {
-    return;
-  }
+  if (p == NULL) { return; }
+  if (p->segmnt == NULL) { return; }
   FORLIM = p->len;
   for (i = 0; i < FORLIM; i++) {
     c = p->segmnt[p->seginx + i];
     iswhite = ((c == etxch) || (c == nlch) || (c == tabch) || (c == ' '));
     if ((!iswhite) || (!waswhite)) {
-      if ((c == bslch) || (c == ')') || (c == '(')) {
-	putchar (bslch);
-      }
+      if ((c == bslch) || (c == ')') || (c == '(')) { putchar (bslch); }
       putchar (c);
-    }
+      }
     waswhite = iswhite;
-  }
+    }
 }
 
 void
@@ -144,7 +136,7 @@ pswtext (primitive * np, nametype * tp, double x, double y) {
     i = 0;
     do {
       i++;
-      tx = tx->next_;
+      tx = tx->nextname;
     } while (tx != NULL);
     printf (" setcapht");
     pswcoord (&output, x, y);
@@ -161,7 +153,7 @@ pswtext (primitive * np, nametype * tp, double x, double y) {
       else if (B) { printf (" below"); }
       else { printf (" vcenter"); }
       printf (" rmoveto show x y moveto\n");
-      tp = tp->next_;
+      tp = tp->nextname;
     } while (tp != NULL);
     return;
     }
@@ -183,7 +175,7 @@ pswtext (primitive * np, nametype * tp, double x, double y) {
     putchar (']');
     }
   putchar ('{');
-  if (tp->next_ != NULL) { printf ("\\\\shortstack{"); }
+  if (tp->nextname != NULL) { printf ("\\\\shortstack{"); }
   tx = tp;
   do {
     if (L) {
@@ -199,13 +191,13 @@ pswtext (primitive * np, nametype * tp, double x, double y) {
       printf ("bp{}");
       }
     if (L || R) { putchar ('}'); }
-    tx = tx->next_;
+    tx = tx->nextname;
     if (tx != NULL) {
       printf ("\\\\\\\\ ");
       checkjust (tx, &A, &B, &L, &R);
       }
     } while (tx != NULL);
-  if (tp->next_ != NULL) { printf ("}})\n"); }
+  if (tp->nextname != NULL) { printf ("}})\n"); }
   else { printf ("})\n"); }
   pswcoord (&output, x, y);
   printf (" moveto");
@@ -227,9 +219,7 @@ pswprop (postype p1, postype p2, double a, double b, double c) {
 
 void
 pssetthick (double lthk) {
-  if ((lthk < 0.0) || (lthk == gslinethick)) {
-    return;
-  }
+  if ((lthk < 0.0) || (lthk == gslinethick)) { return; }
   pswfloat (&output, lthk);
   printf (" setlinewidth\n");
   gslinethick = lthk;
@@ -242,10 +232,8 @@ pslinearfill (double f, nametype * ss) {
     pswfloat (&output, f);
     printf (" setgray fill setrgbcolor\n");
     return;
-  }
-  if (ss == NULL) {
-    return;
-  }
+    }
+  if (ss == NULL) { return; }
   printf (" currentrgbcolor");
   putchar (' ');
   wstring (&output, ss);
@@ -254,9 +242,7 @@ pslinearfill (double f, nametype * ss) {
 
 void
 pssetcolor (nametype * op) {
-  if (op == NULL) {
-    return;
-  }
+  if (op == NULL) { return; }
   printf (" currentrgbcolor ");
   wstring (&output, op);
   printf (" setrgbcolor\n");
@@ -265,21 +251,15 @@ pssetcolor (nametype * op) {
 void
 psdashdot (int lspec, double param) {
   if (lspec == XLdashed) {
-    if (ismdistmax (param)) {
-      param = 3 * fsc;
-    }
+    if (ismdistmax (param)) { param = 3 * fsc; }
     printf (" [");
     pswfloat (&output, param / fsc);
     pswfloat (&output, param / fsc);
     printf (" ] 0 setdash\n");
     return;
-  }
-  if (lspec != XLdotted) {
-    return;
-  }
-  if (ismdistmax (param)) {
-    param = 5 * fsc;
-  }
+    }
+  if (lspec != XLdotted) { return; }
+  if (ismdistmax (param)) { param = 5 * fsc; }
   printf (" [ 0");
   pswfloat (&output, param / fsc);
   printf (" ] 0 setdash 1 setlinecap\n");
@@ -288,11 +268,8 @@ psdashdot (int lspec, double param) {
 void
 psendline (nametype * op) {
   printf (" endstroke");
-  if (op != NULL) {
-    printf (" setrgbcolor\n");
-  } else {
-    putchar ('\n');
-  }
+  if (op != NULL) { printf (" setrgbcolor\n"); }
+  else { putchar ('\n'); }
 }
 
 void
@@ -305,11 +282,8 @@ pswarc (postype C, postype S, postype E, double r, double ccw) {
   pswfloat (&output, (180.0 / pi) * y);
   y = datan (E.ypos - C.ypos, E.xpos - C.xpos);
   pswfloat (&output, (180.0 / pi) * y);
-  if (ccw >= 0.0) {
-    printf (" arc\n");
-  } else {
-    printf (" arcn\n");
-  }
+  if (ccw >= 0.0) { printf (" arc\n"); }
+  else { printf (" arcn\n"); }
 }
 
 void
@@ -335,14 +309,14 @@ psarcahead (postype C, int atyp, postype * point, double ht, double wid,
     Q = Ci;
     pprop (Ai, &Q, radius + lwi, -lwi, radius);
     pswarc (Ci, P, Q, radius + lwi, ccw);
-  }
+    }
   if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
     pswarc (Cox, Ao, Px, radius, -ccw);
-    pswarc (Cix, Px, Ai, radius, ccw);
-  } else {
+    pswarc (Cix, Px, Ai, radius, ccw); }
+  else {
     pswpos (Ai);
     printf (" lineto\n");
-  }
+    }
   printf (" fill\n");
   *point = P;
 }
@@ -363,8 +337,8 @@ psahead (int atyp, postype * point, postype shaft, double ht, double wid,
     printf (" lineto\n");
     pswprop (P, L, x - y, y, x);
     printf (" lineto");
-    psendline (NULL);
-  } else {
+    psendline (NULL); }
+  else {
     pswpos (Rx);
     printf (" moveto\n");
     pswpos (*point);
@@ -373,10 +347,9 @@ psahead (int atyp, postype * point, postype shaft, double ht, double wid,
     printf (" lineto\n");
     if (atyp == 3) {
       pswpos (Px);
-      printf (" lineto\n");
-    }
+      printf (" lineto\n"); }
     printf (" closepath fill\n");
-  }
+    }
   *point = P;
 }
 
@@ -401,18 +374,17 @@ psbox (postype aat, double halfwid, double halfht, double rad) {
     for (i = 0; i <= 3; i++) {
       pswpos (corner[i]);
       printf (" lineto");
-      if ((i == 1) || (i == 3)) {
-	putchar ('\n');
+      if ((i == 1) || (i == 3)) { putchar ('\n'); }
       }
     }
-  } else {
+  else {
     for (i = 0; i <= 3; i++) {
       pswpos (corner[i]);
       pswpos (corner[(i + 1) & 3]);
       pswfloat (&output, rad / fsc);
       printf (" arcto 4 {pop} repeat\n");
+      }
     }
-  }
   printf (" closepath");
 }
 
@@ -451,36 +423,34 @@ psellipse (double x, double y) {
 
 void
 pssplinesegment (primitive * tv, int splc, int splt) {
-  if (tv == NULL) {
-    return;
-  }
+  if (tv == NULL) { return; }
   if (splt == 1) {
     pswpos (tv->aat);
     printf (" moveto");
-    pswpos (tv->Upr.Uline.endpos);
+    pswpos (tv->endpos_);
     printf (" lineto\n");
     return;
   }
-  if (ismdistmax (tv->Upr.Uline.aradius)) {
+  if (ismdistmax (tv->aradius_)) {
     if ((splc == splt) && (splc > 1)) {	/* 1st seg */
       pswpos (tv->aat);
       printf (" moveto\n");
-      pswprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+      pswprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
       printf (" lineto\n");
-      pswprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 5.0, 6.0);
+      pswprop (tv->aat, tv->endpos_, 1.0, 5.0, 6.0);
       return;
     }
     if (splc > 1) {		/* interior segment */
-      pswprop (tv->aat, tv->Upr.Uline.endpos, 5.0, 1.0, 6.0);
-      pswprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+      pswprop (tv->aat, tv->endpos_, 5.0, 1.0, 6.0);
+      pswprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
       printf (" curveto\n");
-      pswprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 5.0, 6.0);
+      pswprop (tv->aat, tv->endpos_, 1.0, 5.0, 6.0);
       return;
     }
-    pswprop (tv->aat, tv->Upr.Uline.endpos, 5.0, 1.0, 6.0);
-    pswprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+    pswprop (tv->aat, tv->endpos_, 5.0, 1.0, 6.0);
+    pswprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
     printf (" curveto\n");
-    pswpos (tv->Upr.Uline.endpos);
+    pswpos (tv->endpos_);
     printf (" lineto\n");
     /* last segment */
     return;
@@ -488,22 +458,19 @@ pssplinesegment (primitive * tv, int splc, int splt) {
   if ((splc == splt) && (splc > 1)) {
     pswpos (tv->aat);
     printf (" moveto\n");
-    pswprop (tv->aat, tv->Upr.Uline.endpos, 1 - tv->Upr.Uline.aradius,
-	     tv->Upr.Uline.aradius, 1.0);
+    pswprop (tv->aat, tv->endpos_, 1 - tv->aradius_,
+	     tv->aradius_, 1.0);
     return;
   }
   if (splc > 1) {
-    pswprop (tv->aat, tv->Upr.Uline.endpos, 1 + tv->Upr.Uline.aradius,
-	     1 - tv->Upr.Uline.aradius, 2.0);
-    pswprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+    pswprop (tv->aat, tv->endpos_, 1 + tv->aradius_, 1-tv->aradius_,2.0);
+    pswprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
     printf (" curveto\n");
-    pswprop (tv->aat, tv->Upr.Uline.endpos, 1 - tv->Upr.Uline.aradius,
-	     1 + tv->Upr.Uline.aradius, 2.0);
+    pswprop (tv->aat, tv->endpos_, 1 - tv->aradius_, 1+tv->aradius_,2.0);
     return;
   }
-  pswprop (tv->aat, tv->Upr.Uline.endpos, tv->Upr.Uline.aradius,
-	   1 - tv->Upr.Uline.aradius, 1.0);
-  pswpos (tv->Upr.Uline.endpos);
+  pswprop (tv->aat, tv->endpos_, tv->aradius_, 1-tv->aradius_, 1.0);
+  pswpos (tv->endpos_);
   printf (" curveto\n");
 }
 
@@ -515,22 +482,21 @@ psdraw (primitive * node) {
   primitive *tn, *tx;
   double h, w, lth, fill;
   int TEMP;
-  primitive *With1;
 
   getlinespec (node, &lsp, &tn);
   lth = qenv (node, XLlinethick, node->lthick);	/* printobject(node); */
   switch (node->ptype) {
 
   case XLbox:
-    if (((node->Upr.Ubox.boxfill >= 0.0) && (node->Upr.Ubox.boxfill <= 1.0))
-	|| (node->shadedp != NULL)) {
-      psbox (node->aat, node->Upr.Ubox.boxwidth / 2,
-	     node->Upr.Ubox.boxheight / 2, node->Upr.Ubox.boxradius);
+    if (((node->boxfill_ >= 0.0) && (node->boxfill_ <= 1.0))
+	  || (node->shadedp != NULL)) {
+      psbox (node->aat, node->boxwidth_ / 2,
+	     node->boxheight_ / 2, node->boxradius_);
       pssetthick (lth);
       if (lsp != XLinvis) { printf (" gsave\n"); }
       if (node->shadedp == NULL) {
 	    printf (" currentrgbcolor");
-	    pswfloat (&output, node->Upr.Ubox.boxfill);
+	    pswfloat (&output, node->boxfill_);
 	    printf (" setgray");
         }
       else { pssetcolor (node->shadedp); }
@@ -543,8 +509,8 @@ psdraw (primitive * node) {
       printf (" setlineparms\n");
       }
     else if (lsp != XLinvis) {
-      psbox (node->aat, node->Upr.Ubox.boxwidth / 2,
-	     node->Upr.Ubox.boxheight / 2, node->Upr.Ubox.boxradius);
+      psbox (node->aat, node->boxwidth_ / 2,
+	     node->boxheight_ / 2, node->boxradius_);
       pssetthick (lth);
       psdashdot (lsp, node->lparam);
       pssetcolor (node->outlinep);
@@ -560,16 +526,16 @@ psdraw (primitive * node) {
 
   case XLellipse:
   case XLcircle:
-    if (node->ptype == XLellipse) { fill = node->Upr.Uellipse.efill; }
-    else { fill = node->Upr.Ucircle.cfill; }
+    if (node->ptype == XLellipse) { fill = node->ellipsefill_; }
+    else { fill = node->circlefill_; }
     if (((fill >= 0.0) && (fill <= 1.0)) || (node->shadedp != NULL)) {
       pssetthick (lth);
       printf (" gsave ");
       pswpos (node->aat);
       printf (" translate\n");
       if (node->ptype == XLellipse) {
-	    psellipse (node->Upr.Uellipse.elwidth, node->Upr.Uellipse.elheight); }
-      else { pscircle (node->Upr.Ucircle.radius); }
+	    psellipse (node->ellipsewidth_, node->ellipseheight_); }
+      else { pscircle (node->circleradius_); }
       printf (" gsave ");
       if (node->shadedp == NULL) {
 	    pswfloat (&output, fill);
@@ -593,8 +559,8 @@ psdraw (primitive * node) {
       pswpos (node->aat);
       printf (" translate\n");
       if (node->ptype == XLellipse) {
-	    psellipse (node->Upr.Uellipse.elwidth, node->Upr.Uellipse.elheight); }
-      else { pscircle (node->Upr.Ucircle.radius); }
+	    psellipse (node->ellipsewidth_, node->ellipseheight_); }
+      else { pscircle (node->circleradius_); }
       psdashdot (lsp, node->lparam);
       pssetcolor (node->outlinep);
       psendline (node->outlinep);
@@ -624,7 +590,7 @@ psdraw (primitive * node) {
 	        pssplinesegment (tx, splcount, spltot);
 	        splcount--; }
           else {
-	        pswpos (tx->Upr.Uline.endpos);
+	        pswpos (tx->endpos_);
 	        printf (" lineto\n");
 	        }
 	      tx = tx->son;
@@ -639,21 +605,20 @@ psdraw (primitive * node) {
 	    spltot = primdepth (node);
 	    splcount = spltot;
 	    pssetthick (lth);
-	    TEMP = ahlex (tn->Upr.Uline.atype);
+	    TEMP = ahlex (tn->lineatype_);
 	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
 	      pssetcolor (soutline);
-	      psahead (ahnum (tn->Upr.Uline.atype), &node->aat,
-		    node->Upr.Uline.endpos,
-		    qenv (tn, XLarrowht, tn->Upr.Uline.height),
-		    qenv (tn, XLarrowwid, tn->Upr.Uline.width), lth);
+	      psahead (ahnum (tn->lineatype_), &node->aat, node->endpos_,
+		    qenv (tn, XLarrowht, tn->lineheight_),
+		    qenv (tn, XLarrowwid, tn->linewidth_), lth);
 	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
 	      }
-	    TEMP = ahlex (tn->Upr.Uline.atype);
+	    TEMP = ahlex (tn->lineatype_);
 	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
 	      pssetcolor (soutline);
-	      psahead (ahnum (tn->Upr.Uline.atype), &tn->Upr.Uline.endpos,
-		    tn->aat, qenv (tn, XLarrowht, tn->Upr.Uline.height),
-		    qenv (tn, XLarrowwid, tn->Upr.Uline.width), lth);
+	      psahead (ahnum (tn->lineatype_), &tn->endpos_,
+		    tn->aat, qenv (tn, XLarrowht, tn->lineheight_),
+		    qenv (tn, XLarrowwid, tn->linewidth_), lth);
 	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    if (node->ptype != XLspline) {
@@ -666,7 +631,7 @@ psdraw (primitive * node) {
     if (lsp != XLinvis) {
       if (node->ptype == XLspline) { pssplinesegment (node, splcount, spltot);}
       else {
-	    pswpos (node->Upr.Uline.endpos);
+	    pswpos (node->endpos_);
 	    printf (" lineto\n");
         }
       if (node->son == NULL) {
@@ -678,11 +643,10 @@ psdraw (primitive * node) {
     splcount--;
     if (node->son == NULL) {
       while (snode != NULL) {
-	    With1 = snode;
-	    if (With1->textp != NULL) {
-	      pswtext (node, With1->textp,
-		    0.5 * (With1->Upr.Uline.endpos.xpos + With1->aat.xpos),
-		    0.5 * (With1->aat.ypos + With1->Upr.Uline.endpos.ypos));
+	    if (snode->textp != NULL) {
+	      pswtext (node, snode->textp,
+		    0.5 * (snode->endpos_.xpos + snode->aat.xpos),
+		    0.5 * (snode->endpos_.ypos + snode->aat.ypos));
 	      }
 	    snode = snode->son;
         }
@@ -693,11 +657,10 @@ psdraw (primitive * node) {
     if (firstsegment (node)) { snode = node; }
     if (node->son == NULL) {
       while (snode != NULL) {
-	    With1 = snode;
-	    if (With1->textp != NULL) {
-	      pswtext (node, With1->textp,
-		    0.5 * (With1->Upr.Uline.endpos.xpos + With1->aat.xpos),
-		    0.5 * (With1->aat.ypos + With1->Upr.Uline.endpos.ypos));
+	    if (snode->textp != NULL) {
+	      pswtext (node, snode->textp,
+		    0.5 * (snode->endpos_.xpos + snode->aat.xpos),
+		    0.5 * (snode->endpos_.ypos + snode->aat.ypos));
 	      }
 	    snode = snode->son;
         }
@@ -705,7 +668,7 @@ psdraw (primitive * node) {
     break;
 
   case XLarc:
-    if (drawn (node, lsp, node->Upr.Uline.lfill)) {
+    if (drawn (node, lsp, node->linefill_)) {
       pssetthick (lth);
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       X1 = arcstart (node);
@@ -713,8 +676,7 @@ psdraw (primitive * node) {
       if (bfill) {
 	    printf (" currentrgbcolor\n");
 	    psnewpath ();
-	    pswarc (node->aat, X1, X2, node->Upr.Uline.aradius,
-		    node->Upr.Uline.endpos.ypos);
+	    pswarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
 	    pssetthick (0.0);
 	    pslinearfill (vfill, sshade);
 	    vfill = -1.0;
@@ -723,27 +685,24 @@ psdraw (primitive * node) {
         }
       if (lsp != XLinvis) {
 	    pssetthick (lth);
-	    TEMP = ahlex (node->Upr.Uline.atype);
+	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
 	      pssetcolor (soutline);
 	      startarc (node, X1, lth, &h, &w);
-	      psarcahead (node->aat, ahnum (node->Upr.Uline.atype), &X1, h, w,
-		      lth, fabs (node->Upr.Uline.aradius),
-		      node->Upr.Uline.endpos.ypos);
+	      psarcahead (node->aat, ahnum (node->lineatype_), &X1, h, w,
+		      lth, fabs(node->aradius_), node->arcangle_);
 	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
 	      }
-	    TEMP = ahlex (node->Upr.Uline.atype);
+	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
 	      pssetcolor (soutline);
 	      endarc (node, X2, lth, &h, &w);
-	      psarcahead (node->aat, ahnum (node->Upr.Uline.atype), &X2, h, w,
-		      lth, -fabs (node->Upr.Uline.aradius),
-		      node->Upr.Uline.endpos.ypos);
+	      psarcahead (node->aat, ahnum (node->lineatype_), &X2, h, w,
+		      lth, -fabs (node->aradius_), node->arcangle_);
 	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    psnewpath ();
-	    pswarc (node->aat, X1, X2, node->Upr.Uline.aradius,
-		    node->Upr.Uline.endpos.ypos);
+	    pswarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
 	    psdashdot (lsp, node->lparam);
 	    pssetcolor (soutline);
 	    psendline (soutline);

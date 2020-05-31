@@ -63,9 +63,7 @@ quote (void) {
 
 void
 svgsetstroke (double lth) {
-  if (lth == gslinethick) {
-    return;
-  }
+  if (lth == gslinethick) { return; }
   printf (" stroke-width=\"");
   wfloat (&output, (lth / 72) * dpPPI);
   printf ("\"\n");
@@ -81,17 +79,12 @@ svgsoutline (nametype * so) {
 void
 fillgray (double fll) {
   printf (" fill=\"");
-  if (fll == 0.0) {
-    printf ("black");
-  } else if (fll == 0.25) {
-    printf ("darkgray");
-  } else if (fll == 0.5) {
-    printf ("gray");
-  } else if (fll == 0.75) {
-    printf ("lightgray");
-  } else if (fll == 1.0) {
-    printf ("white");
-  } else {
+  if (fll == 0.0) { printf ("black"); }
+  else if (fll == 0.25) { printf ("darkgray"); }
+  else if (fll == 0.5) { printf ("gray"); }
+  else if (fll == 0.75) { printf ("lightgray"); }
+  else if (fll == 1.0) { printf ("white"); }
+  else {
     printf ("rgb(");
     fprintf (output, "%ld", (long) floor ((fll * 255) + 0.5));
     putchar (',');
@@ -148,33 +141,24 @@ svgfilloptions (primitive * node, double fill, nametype * sh, int lnspec,
 		boolean poly) {
   fill = ((long) floor ((fill * 1000000L) + 0.5)) / 1000000.0;
   switch (node->ptype) {
-
   case XLbox:
   case XBLOCK:
     printf ("<rect");
     break;
-
   case XLellipse:
     printf ("<ellipse");
     break;
-
   case XLcircle:
     printf ("<circle");
     break;
-
   case XLspline:
     printf ("<path");
     break;
-
   case XLline:
   case XLarrow:
-    if (poly) {
-      printf ("<polyline");
-    } else {
-      printf ("<line");
-    }
+    if (poly) { printf ("<polyline"); }
+    else { printf ("<line"); }
     break;
-
   case XLarc:
     printf ("<path");
     break;
@@ -182,12 +166,9 @@ svgfilloptions (primitive * node, double fill, nametype * sh, int lnspec,
   if (sh != NULL) {
     printf (" fill=\"");
     wstring (&output, sh);
-    putchar ('"');
-  } else if ((fill >= 0.0) && (fill <= 1.0)) {
-    fillgray (fill);
-  } else if (node->ptype == XLstring) {
-    fillgray (0.0);
-  }
+    putchar ('"'); }
+  else if ((fill >= 0.0) && (fill <= 1.0)) { fillgray (fill); }
+  else if (node->ptype == XLstring) { fillgray (0.0); }
   svglineoptions (node, lnspec);
 }
 
@@ -230,19 +211,13 @@ svgwstring (nametype * p) {
   boolean iswhite;
   int FORLIM;
 
-  if (p == NULL) {
-    return;
-  }
-  if (p->segmnt == NULL) {
-    return;
-  }
+  if (p == NULL) { return; }
+  if (p->segmnt == NULL) { return; }
   FORLIM = p->len;
   for (i = 0; i < FORLIM; i++) {
     c = p->segmnt[p->seginx + i];
     iswhite = ((c == etxch) || (c == nlch) || (c == tabch) || (c == ' '));
-    if ((!iswhite) || (!waswhite)) {
-      putchar (c);
-    }
+    if ((!iswhite) || (!waswhite)) { putchar (c); }
     waswhite = iswhite;
   }
 }
@@ -254,20 +229,16 @@ svgwtext (primitive * node, nametype * tp, double x, double y) {
   boolean L, R, A, B;
   double v, lineskip, xheight, dx, dy;
 
-  if ((tp == NULL) || (node == NULL)) {
-    return;
-  }
+  if ((tp == NULL) || (node == NULL)) { return; }
   tx = tp;
   while (tx != NULL) {
     nstr++;
-    tx = tx->next_;
+    tx = tx->nextname;
   }
   v = nstr - 1 + dptextratio;
   if ((node->ptype == XLstring) && (nstr > 0) && (v != 0)) {
-    lineskip = node->Upr.Ubox.boxheight / v;
-  } else {
-    lineskip = venv (node, XLtextht) / dptextratio;
-  }
+    lineskip = node->boxheight_ / v; }
+  else { lineskip = venv (node, XLtextht) / dptextratio; }
   xheight = lineskip * dptextratio;
   y += (v * lineskip / 2) - xheight;	/* string bottom */
   do {
@@ -275,45 +246,36 @@ svgwtext (primitive * node, nametype * tp, double x, double y) {
     wfloat (&output, (lineskip / scale) * 72);
     printf ("pt\"");
     if (node->ptype != XLstring) {
-      printf (" stroke-width=\"0.2pt\" fill=\"black\"");
-    } else {
-      if (node->lthick < 0) {
-	svgsetstroke (0.2);
-      }
-      svgfilloptions (node, node->Upr.Ubox.boxfill, node->shadedp,
+      printf (" stroke-width=\"0.2pt\" fill=\"black\""); }
+    else {
+      if (node->lthick < 0) { svgsetstroke (0.2); }
+      svgfilloptions (node, node->boxfill_, node->shadedp,
 		      lspec (node->spec), false);
-    }
+      }
     v = venv (node, XLtextoffset);
-    if (node->ptype == XLstring) {
-      dx = node->Upr.Ubox.boxradius;
-    } else {
-      dx = 0.0;
-    }
     checkjust (tp, &A, &B, &L, &R);
+    if (node->ptype == XLstring) { dx = node->boxradius_; }
+    else { dx = 0.0; }
     if (L) {
-      printf (" text-anchor=\"start\"\n");
-      dx += v;
-    } else if (R) {
-      printf (" text-anchor=\"end\"\n");
-      dx -= v;
-    }
+	  printf(" text-anchor=\"start\"\n");
+	  if (node->ptype != XLstring) { dx = v; }
+      }
+    else if (R) {
+	  printf(" text-anchor=\"end\"\n");
+	  if (node->ptype != XLstring) { dx = -v; }
+      }
     dy = 0.0;
     if (node->ptype != XLstring) {
-      if (A) {
-	dy = (xheight / 2) + v;
-      } else if (B) {
-	dy = (xheight / (-2)) - v;
+      if (A) { dy = (xheight / 2) + v; }
+      else if (B) { dy = (xheight / (-2)) - v; }
       }
-    }
     svgcoord ("x", "y", Max (0.0, x + dx), Max (0.0, y + dy));
-    if (tp->len > 40) {
-      putchar ('\n');
-    }
+    if (tp->len > 40) { putchar ('\n'); }
     putchar ('>');
     svgwstring (tp);
     printf ("</text>\n");
     y -= lineskip;
-    tp = tp->next_;
+    tp = tp->nextname;
   } while (tp != NULL);
 }
 
@@ -324,20 +286,12 @@ svgwarc (postype E, double r, double angle, double ccw) {
   space ();
   wfloat (&output, fabs (r) / fsc);
   printf (" 0 ");
-  if (fabs (angle) > pi) {
-    putchar ('1');
-  } else {
-    putchar ('0');
-  }
-  if (ccw > 0) {
-    printf (" 0 ");
-  } else {
-    printf (" 1 ");
-  }
+  if (fabs (angle) > pi) { putchar ('1'); }
+  else { putchar ('0'); }
+  if (ccw > 0) { printf (" 0 "); }
+  else { printf (" 1 "); }
   svgwpos (E);
-  if (angle == 0) {
-    putchar ('\n');
-  }
+  if (angle == 0) { putchar ('\n'); }
 }
 
 void
@@ -356,10 +310,8 @@ svgarcahead (postype C, int atyp, postype * point, nametype * sou, double ht,
     svgsoutline (sou);
     printf (" fill=\"");
     wstring (&output, sou);
-    printf ("\"\n");
-  } else {
-    printf (" fill=\"black\"\n");
-  }
+    printf ("\"\n"); }
+  else { printf (" fill=\"black\"\n"); }
   if ((atyp == 0) && (lwi < ((wid - lwi) / 2))) {
     printf (" d=\"M ");
     svgwpos (P);
@@ -375,16 +327,16 @@ svgarcahead (postype C, int atyp, postype * point, nametype * sou, double ht,
     printf (" L ");
     svgwprop (Ao, Co, radius - lwi, lwi, radius);
     putchar ('\n');
-    svgwarc (P, radius - lwi, 1.0, -ccw);
-  } else if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
+    svgwarc (P, radius - lwi, 1.0, -ccw); }
+  else if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
     printf (" d=\"M ");
     svgwpos (Px);
     putchar ('\n');
     svgwarc (Ai, radius, 0.0, ccw);
     svgwarc (*point, radius, 0.0, -ccw);
     svgwarc (Ao, radius, 0.0, ccw);
-    svgwarc (Px, radius, 1.0, -ccw);
-  } else {
+    svgwarc (Px, radius, 1.0, -ccw); }
+  else {
     Q.xpos = (Ao.xpos + Ai.xpos) / 2;
     Q.ypos = (Ao.ypos + Ai.ypos) / 2;
     printf (" d=\"M ");
@@ -396,7 +348,7 @@ svgarcahead (postype C, int atyp, postype * point, nametype * sou, double ht,
     svgwarc (Ao, radius, 0.0, ccw);
     printf (" L ");
     svgwpos (Q);
-  }
+    }
   quote ();
   svgendpath ();
   *point = P;
@@ -412,30 +364,23 @@ svgahead (int atyp, postype * point, postype shaft, nametype * sou, double ht,
 	  &Rx, &Q, &x, &y);
   if (atyp == 0) {
     printf ("<polyline");
-    if (lth > 0.0) {
-      svgsetstroke (lth);
-    }
-    if (sou != NULL) {
-      svgsoutline (sou);
-    }
+    if (lth > 0.0) { svgsetstroke (lth); }
+    if (sou != NULL) { svgsoutline (sou); }
     printf (" points=\"");
     svgwprop (P, L, x - y, y, x);
     space ();
     svgwpos (P);
     putchar ('\n');
-    svgwprop (P, R, x - y, y, x);
-  } else if (atyp == 3) {
+    svgwprop (P, R, x - y, y, x); }
+  else if (atyp == 3) {
     printf ("<polygon stroke-width=\"0\"");
     if (sou != NULL) {
       svgsoutline (sou);
       printf (" fill=\"");
       wstring (&output, sou);
-      printf ("\"\n");
-    } else if ((fill >= 0.0) && (fill <= 1.0)) {
-      fillgray (fill);
-    } else {
-      printf (" fill=\"black\"\n");
-    }
+      printf ("\"\n"); }
+    else if ((fill >= 0.0) && (fill <= 1.0)) { fillgray (fill); }
+    else { printf (" fill=\"black\"\n"); }
     printf (" points=\"");
     svgwpos (Px);
     space ();
@@ -443,26 +388,23 @@ svgahead (int atyp, postype * point, postype shaft, nametype * sou, double ht,
     putchar ('\n');
     svgwpos (*point);
     space ();
-    svgwpos (Rx);
-  } else {
+    svgwpos (Rx); }
+  else {
     printf ("<polygon stroke-width=\"0\"");
     if (sou != NULL) {
       svgsoutline (sou);
       printf (" fill=\"");
       wstring (&output, sou);
-      printf ("\"\n");
-    } else if ((fill >= 0.0) && (fill <= 1.0)) {
-      fillgray (fill);
-    } else {
-      printf (" fill=\"black\"\n");
-    }
+      printf ("\"\n"); }
+    else if ((fill >= 0.0) && (fill <= 1.0)) { fillgray (fill); }
+    else { printf (" fill=\"black\"\n"); }
     printf (" points=\"");
     svgwpos (Lx);
     space ();
     svgwpos (*point);
     putchar ('\n');
     svgwpos (Rx);
-  }
+    }
   quote ();
   svgendpath ();
   *point = P;
@@ -479,45 +421,45 @@ svgsplinesegment (primitive * tv, int splc, int splt) {
     printf ("\" y1=\"");
     wfloat (&output, tv->aat.ypos / fsc);
     printf ("\" x2=\"");
-    wfloat (&output, tv->Upr.Uline.endpos.xpos / fsc);
+    wfloat (&output, tv->endpos_.xpos / fsc);
     printf ("\" y2=\"");
-    wfloat (&output, tv->Upr.Uline.endpos.ypos / fsc);
+    wfloat (&output, tv->endpos_.ypos / fsc);
     svgendpath ();
     return;
   }
-  if (ismdistmax (tv->Upr.Uline.aradius)) {
+  if (ismdistmax (tv->aradius_)) {
     if (splc == splt) {		/* 1st seg */
       printf (" d=\"M ");
       svgwpos (tv->aat);
       printf ("\n C ");
-      svgwprop (tv->aat, tv->Upr.Uline.endpos, 5.0, 1.0, 6.0);
+      svgwprop (tv->aat, tv->endpos_, 5.0, 1.0, 6.0);
       space ();
-      svgwprop (tv->aat, tv->Upr.Uline.endpos, 2.0, 1.0, 3.0);
+      svgwprop (tv->aat, tv->endpos_, 2.0, 1.0, 3.0);
       space ();
-      svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+      svgwprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
       space ();
-      svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 5.0, 6.0);
+      svgwprop (tv->aat, tv->endpos_, 1.0, 5.0, 6.0);
       putchar ('\n');
       return;
-    }
+      }
     if (splc > 1) {		/* interior segment */
-      svgwprop (tv->aat, tv->Upr.Uline.endpos, 5.0, 1.0, 6.0);
+      svgwprop (tv->aat, tv->endpos_, 5.0, 1.0, 6.0);
       space ();
-      svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+      svgwprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
       space ();
-      svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 5.0, 6.0);
+      svgwprop (tv->aat, tv->endpos_, 1.0, 5.0, 6.0);
       putchar ('\n');
       return;
-    }
-    svgwprop (tv->aat, tv->Upr.Uline.endpos, 5.0, 1.0, 6.0);
+      }
+    svgwprop (tv->aat, tv->endpos_, 5.0, 1.0, 6.0);
     space ();
-    svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+    svgwprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
     space ();
-    svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 2.0, 3.0);
+    svgwprop (tv->aat, tv->endpos_, 1.0, 2.0, 3.0);
     space ();
-    svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 5.0, 6.0);
+    svgwprop (tv->aat, tv->endpos_, 1.0, 5.0, 6.0);
     putchar ('\n');
-    svgwpos (tv->Upr.Uline.endpos);
+    svgwpos (tv->endpos_);
     quote ();
     svgendpath ();
     /* last segment */
@@ -527,28 +469,24 @@ svgsplinesegment (primitive * tv, int splc, int splt) {
     printf (" d=\"M ");
     svgwpos (tv->aat);
     printf ("\n C ");
-    svgwprop (tv->aat, tv->Upr.Uline.endpos, 1 - tv->Upr.Uline.aradius,
-	      tv->Upr.Uline.aradius, 1.0);
+    svgwprop (tv->aat, tv->endpos_, 1 - tv->aradius_, tv->aradius_, 1.0);
     space ();
     return;
-  }
+    }
   if (splc > 1) {
-    svgwprop (tv->aat, tv->Upr.Uline.endpos,
-	      0.5 + (tv->Upr.Uline.aradius / 2),
-	      0.5 - (tv->Upr.Uline.aradius / 2), 1.0);
+    svgwprop (tv->aat, tv->endpos_, 0.5 + (tv->aradius_ / 2),
+	      0.5 - (tv->aradius_ / 2), 1.0);
     space ();
-    svgwprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+    svgwprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
     space ();
-    svgwprop (tv->aat, tv->Upr.Uline.endpos,
-	      0.5 - (tv->Upr.Uline.aradius / 2),
-	      0.5 + (tv->Upr.Uline.aradius / 2), 1.0);
+    svgwprop (tv->aat, tv->endpos_, 0.5 - (tv->aradius_ / 2),
+	      0.5 + (tv->aradius_ / 2), 1.0);
     space ();
     return;
-  }
-  svgwprop (tv->aat, tv->Upr.Uline.endpos, tv->Upr.Uline.aradius,
-	    1 - tv->Upr.Uline.aradius, 1.0);
+    }
+  svgwprop (tv->aat, tv->endpos_, tv->aradius_, 1 - tv->aradius_, 1.0);
   space ();
-  svgwpos (tv->Upr.Uline.endpos);
+  svgwpos (tv->endpos_);
   quote ();
   svgendpath ();
 }
@@ -572,20 +510,20 @@ svgdraw (primitive * node) {
   case XLbox:
     initnesw ();
     nesw (node);
-    if (drawn (node, lsp, node->Upr.Ubox.boxfill)) {
-      svgfilloptions (node, node->Upr.Ubox.boxfill, node->shadedp, lsp,
+    if (drawn (node, lsp, node->boxfill_)) {
+      svgfilloptions (node, node->boxfill_, node->shadedp, lsp,
 		      false);
       svgcoord ("x", "y",
-		node->aat.xpos - (fabs (node->Upr.Ubox.boxwidth) / 2),
-		node->aat.ypos + (fabs (node->Upr.Ubox.boxheight) / 2));
-      if (node->Upr.Ubox.boxradius > 0.0) {
-	svgparam ("rx", node->Upr.Ubox.boxradius);
-	svgparam ("ry", node->Upr.Ubox.boxradius);
+		node->aat.xpos - (fabs (node->boxwidth_) / 2),
+		node->aat.ypos + (fabs (node->boxheight_) / 2));
+      if (node->boxradius_ > 0.0) {
+	svgparam ("rx", node->boxradius_);
+	svgparam ("ry", node->boxradius_);
       }
-      svgparam ("width", fabs (node->Upr.Ubox.boxwidth));
-      svgparam ("height", fabs (node->Upr.Ubox.boxheight));
+      svgparam ("width", fabs (node->boxwidth_));
+      svgparam ("height", fabs (node->boxheight_));
       svgendpath ();
-    }
+      }
     svgwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
@@ -594,25 +532,25 @@ svgdraw (primitive * node) {
     break;
 
   case XLellipse:
-    if (drawn (node, lsp, node->Upr.Uellipse.efill)) {
-      svgfilloptions (node, node->Upr.Uellipse.efill, node->shadedp, lsp,
+    if (drawn (node, lsp, node->ellipsefill_)) {
+      svgfilloptions (node, node->ellipsefill_, node->shadedp, lsp,
 		      false);
       svgcoord ("cx", "cy", node->aat.xpos, node->aat.ypos);
-      svgparam ("rx", 0.5 * fabs (node->Upr.Uellipse.elwidth));
-      svgparam ("ry", 0.5 * fabs (node->Upr.Uellipse.elheight));
+      svgparam ("rx", 0.5 * fabs (node->ellipsewidth_));
+      svgparam ("ry", 0.5 * fabs (node->ellipseheight_));
       svgendpath ();
-    }
+      }
     svgwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
   case XLcircle:
-    if (drawn (node, lsp, node->Upr.Ucircle.cfill)) {
-      svgfilloptions (node, node->Upr.Ucircle.cfill, node->shadedp, lsp,
+    if (drawn (node, lsp, node->circlefill_)) {
+      svgfilloptions (node, node->circlefill_, node->shadedp, lsp,
 		      false);
       svgcoord ("cx", "cy", node->aat.xpos, node->aat.ypos);
-      svgparam ("r", fabs (node->Upr.Ucircle.radius));
+      svgparam ("r", fabs (node->circleradius_));
       svgendpath ();
-    }
+      }
     svgwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
@@ -623,78 +561,74 @@ svgdraw (primitive * node) {
       snode = node;
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       if (bfill) {
-	printf ("<polyline stroke-width=\"0\"");
-	if (soutline != NULL) {
-	  svgsoutline (soutline);
-	}
-	if ((vfill >= 0) && (vfill <= 1)) {
-	  fillgray (vfill);
-	} else {
-	  printf (" fill=\"");
-	  wstring (&output, sshade);
-	  printf ("\"\n");
-	}
-	printf (" points=\"");
-	svgwpos (node->aat);
-	tx = node;
-	while (tx != NULL) {
-	  putchar ('\n');
-	  svgwpos (tx->Upr.Uline.endpos);
-	  tx = tx->son;
-	}
-	printf ("\" />\n");
-	vfill = -1.0;
-	sshade = NULL;
-      }
+    	printf ("<polyline stroke-width=\"0\"");
+    	if (soutline != NULL) { svgsoutline (soutline); }
+    	if ((vfill >= 0) && (vfill <= 1)) { fillgray (vfill); }
+        else {
+    	  printf (" fill=\"");
+    	  wstring (&output, sshade);
+    	  printf ("\"\n");
+    	  }
+    	printf (" points=\"");
+    	svgwpos (node->aat);
+    	tx = node;
+    	while (tx != NULL) {
+    	  putchar ('\n');
+    	  svgwpos (tx->endpos_);
+    	  tx = tx->son;
+    	  }
+    	printf ("\" />\n");
+    	vfill = -1.0;
+    	sshade = NULL;
+        }
       if (lsp != XLinvis) {
-	lth = qenv (tn, XLlinethick, tn->lthick);
-	TEMP = ahlex (tn->Upr.Uline.atype);
-	if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
-	  svgahead (ahnum (tn->Upr.Uline.atype), &node->aat,
-		    node->Upr.Uline.endpos, soutline,
-		    qenv (tn, XLarrowht, tn->Upr.Uline.height),
-		    qenv (tn, XLarrowwid, tn->Upr.Uline.width), lth, vfill);
-	}
-	TEMP = ahlex (tn->Upr.Uline.atype);
-	if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
-	  svgahead (ahnum (tn->Upr.Uline.atype), &tn->Upr.Uline.endpos,
-		    tn->aat, soutline,
-		    qenv (tn, XLarrowht, tn->Upr.Uline.height),
-		    qenv (tn, XLarrowwid, tn->Upr.Uline.width), lth, vfill);
-	}
-	if (node->son == NULL) {
-	  svgfilloptions (tn, vfill, sshade, lsp, false);
-	  svgcoord ("x1", "y1", node->aat.xpos, node->aat.ypos);
-	  svgcoord ("x2", "y2", node->Upr.Uline.endpos.xpos,
-		    node->Upr.Uline.endpos.ypos);
-	  svgendpath ();
-	} else {
-	  svgfilloptions (tn, vfill, sshade, lsp, true);
-	  printf (" points=\"");
-	  svgwpos (node->aat);
-	  space ();
-	}
-      }
-    } else if (lsp != XLinvis) {
-      svgwpos (node->aat);
-      putchar ('\n');
-      if (node->son == NULL) {
-	svgwpos (node->Upr.Uline.endpos);
-	quote ();
-	svgendpath ();
-      }
-    }
+    	lth = qenv (tn, XLlinethick, tn->lthick);
+    	TEMP = ahlex (tn->lineatype_);
+    	if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+    	  svgahead (ahnum (tn->lineatype_), &node->aat,
+    		    node->endpos_, soutline,
+    		    qenv (tn, XLarrowht, tn->lineheight_),
+    		    qenv (tn, XLarrowwid, tn->linewidth_), lth, vfill);
+    	  }
+    	TEMP = ahlex (tn->lineatype_);
+    	if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+    	  svgahead (ahnum (tn->lineatype_), &tn->endpos_,
+    		    tn->aat, soutline,
+    		    qenv (tn, XLarrowht, tn->lineheight_),
+    		    qenv (tn, XLarrowwid, tn->linewidth_), lth, vfill);
+    	  }
+    	if (node->son == NULL) {
+    	  svgfilloptions (tn, vfill, sshade, lsp, false);
+    	  svgcoord ("x1", "y1", node->aat.xpos, node->aat.ypos);
+    	  svgcoord ("x2", "y2", node->endpos_.xpos,
+    		    node->endpos_.ypos);
+    	  svgendpath (); }
+        else {
+    	  svgfilloptions (tn, vfill, sshade, lsp, true);
+    	  printf (" points=\"");
+    	  svgwpos (node->aat);
+    	  space (); }
+        } }
+      else if (lsp != XLinvis) {
+        svgwpos (node->aat);
+        putchar ('\n');
+        if (node->son == NULL) {
+	      svgwpos (node->endpos_);
+	      quote ();
+	      svgendpath ();
+          }
+        }
     if (node->son == NULL) {
       while (snode != NULL) {
-	With1 = snode;
-	if (With1->textp != NULL) {
-	  svgwtext (node, With1->textp,
-		    0.5 * (With1->Upr.Uline.endpos.xpos + With1->aat.xpos),
-		    0.5 * (With1->aat.ypos + With1->Upr.Uline.endpos.ypos));
-	}
-	snode = snode->son;
+	    With1 = snode;
+	    if (With1->textp != NULL) {
+	      svgwtext (node, With1->textp,
+		    0.5 * (With1->endpos_.xpos + With1->aat.xpos),
+		    0.5 * (With1->aat.ypos + With1->endpos_.ypos));
+	        }
+	    snode = snode->son;
+        }
       }
-    }
     break;
 
   case XLspline:
@@ -704,54 +638,46 @@ svgdraw (primitive * node) {
       node->lthick = tn->lthick;
       node->lparam = tn->lparam;
       if (bfill) {
-	printf ("<path stroke-width=\"0\"");
-	if (soutline != NULL) {
-	  svgsoutline (soutline);
-	}
-	if ((vfill >= 0) && (vfill <= 1)) {
-	  fillgray (vfill);
-	} else {
-	  printf (" fill=\"");
-	  wstring (&output, sshade);
-	  printf ("\"\n");
-	}
-	spltot = primdepth (node);
-	splcount = spltot;
-	tx = node;
-	while (tx != NULL) {
-	  svgsplinesegment (tx, splcount, spltot);
-	  splcount--;
-	  tx = tx->son;
-	}
-	vfill = -1.0;
-	sshade = NULL;
-      }
+	    printf ("<path stroke-width=\"0\"");
+	    if (soutline != NULL) { svgsoutline (soutline); }
+	    if ((vfill >= 0) && (vfill <= 1)) { fillgray (vfill); }
+        else {
+	      printf (" fill=\"");
+	      wstring (&output, sshade);
+	      printf ("\"\n");
+	      }
+	    spltot = primdepth (node);
+	    splcount = spltot;
+	    tx = node;
+	    while (tx != NULL) {
+	      svgsplinesegment (tx, splcount, spltot);
+	      splcount--;
+	      tx = tx->son;
+	      }
+	    vfill = -1.0;
+	    sshade = NULL; }
       if (lsp != XLinvis) {
-	lth = qenv (tn, XLlinethick, tn->lthick);
-	TEMP = ahlex (tn->Upr.Uline.atype);
-	if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
-	  svgahead (ahnum (tn->Upr.Uline.atype), &node->aat,
-		    node->Upr.Uline.endpos, soutline,
-		    qenv (tn, XLarrowht, tn->Upr.Uline.height),
-		    qenv (tn, XLarrowwid, tn->Upr.Uline.width), lth,
-		    node->Upr.Uline.lfill);
-	}
-	TEMP = ahlex (tn->Upr.Uline.atype);
-	if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
-	  svgahead (ahnum (tn->Upr.Uline.atype), &tn->Upr.Uline.endpos,
+	    lth = qenv (tn, XLlinethick, tn->lthick);
+	    TEMP = ahlex (tn->lineatype_);
+	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	      svgahead (ahnum (tn->lineatype_), &node->aat,
+		    node->endpos_, soutline,
+		    qenv (tn, XLarrowht, tn->lineheight_),
+		    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+		    node->linefill_); }
+	    TEMP = ahlex (tn->lineatype_);
+	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	      svgahead (ahnum (tn->lineatype_), &tn->endpos_,
 		    tn->aat, soutline,
-		    qenv (tn, XLarrowht, tn->Upr.Uline.height),
-		    qenv (tn, XLarrowwid, tn->Upr.Uline.width), lth,
-		    node->Upr.Uline.lfill);
-	}
-	spltot = primdepth (node);
-	splcount = spltot;
-	svgfilloptions (node, vfill, sshade, lsp, false);
+		    qenv (tn, XLarrowht, tn->lineheight_),
+		    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+		    node->linefill_); }
+	    spltot = primdepth (node);
+	    splcount = spltot;
+	    svgfilloptions (node, vfill, sshade, lsp, false);
+        }
       }
-    }
-    if (lsp != XLinvis) {
-      svgsplinesegment (node, splcount, spltot);
-    }
+    if (lsp != XLinvis) { svgsplinesegment (node, splcount, spltot); }
     splcount--;
     break;
 
@@ -761,49 +687,41 @@ svgdraw (primitive * node) {
     getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
     if (bfill) {
       printf ("<path stroke-width=\"0\"");
-      if ((vfill >= 0) && (vfill <= 1)) {
-	fillgray (vfill);
-      } else {
-	printf (" fill=\"");
-	wstring (&output, sshade);
-	printf ("\"\n");
-      }
+      if ((vfill >= 0) && (vfill <= 1)) { fillgray (vfill); }
+      else {
+	    printf (" fill=\"");
+	    wstring (&output, sshade);
+	    printf ("\"\n"); }
       printf (" d=\"M ");
       svgwpos (X1);
       putchar ('\n');
-      svgwarc (X2, node->Upr.Uline.aradius, node->Upr.Uline.endpos.ypos,
-	       node->Upr.Uline.endpos.ypos);
+      svgwarc (X2, node->aradius_, node->arcangle_, node->arcangle_);
       quote ();
       svgendpath ();
       vfill = -1.0;
       sshade = NULL;
-    }
+      }
     if (lsp != XLinvis) {
       lth = qenv (tn, XLlinethick, tn->lthick);
-      TEMP = ahlex (node->Upr.Uline.atype);
+      TEMP = ahlex (node->lineatype_);
       if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
 	startarc (node, X1, lth, &h, &w);
-	svgarcahead (node->aat, ahnum (node->Upr.Uline.atype), &X1, soutline,
-		     h, w, lth, fabs (node->Upr.Uline.aradius),
-		     node->Upr.Uline.endpos.ypos);
-      }
-      TEMP = ahlex (node->Upr.Uline.atype);
+	svgarcahead (node->aat, ahnum (node->lineatype_), &X1, soutline,
+		     h, w, lth, fabs (node->aradius_), node->arcangle_); }
+      TEMP = ahlex (node->lineatype_);
       if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
-	endarc (node, X2, lth, &h, &w);
-	svgarcahead (node->aat, ahnum (node->Upr.Uline.atype), &X2, soutline,
-		     h, w, lth, -fabs (node->Upr.Uline.aradius),
-		     node->Upr.Uline.endpos.ypos);
-      }
+	    endarc (node, X2, lth, &h, &w);
+	    svgarcahead (node->aat, ahnum (node->lineatype_), &X2, soutline,
+		     h, w, lth, -fabs (node->aradius_), node->arcangle_); }
       printf ("<path");
       svglineoptions (node, lsp);
       printf (" d=\"M ");
       svgwpos (X1);
       putchar ('\n');
-      svgwarc (X2, node->Upr.Uline.aradius, node->Upr.Uline.endpos.ypos,
-	       node->Upr.Uline.endpos.ypos);
+      svgwarc (X2, node->aradius_, node->arcangle_, node->arcangle_);
       quote ();
       svgendpath ();
-    }
+      }
     svgwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
@@ -814,8 +732,7 @@ svgdraw (primitive * node) {
   case XLaTeX:
     if (node->textp != NULL) {
       wstring (&output, node->textp);
-      putchar ('\n');
-    }
+      putchar ('\n'); }
     break;
   }
 }				/* svgdraw */

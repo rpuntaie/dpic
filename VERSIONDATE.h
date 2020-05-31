@@ -1,1 +1,1 @@
-#define	VERSIONDATE "2020.03.01"
+#define	VERSIONDATE "2020.06.01"

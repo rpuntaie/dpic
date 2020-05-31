@@ -23,11 +23,9 @@
 #include	"lxvars.h"
 #include	"VERSIONDATE.h"
 
-/* #define Free(p)     (free((void)(p)), (p)=NULL) */
 #define Free(p)	free(p)
-
-/* Machine constants                  */
-/* Assume simple ASCII; forget EBCDIC */
+                                /* Machine constants                  */
+                                /* Assume simple ASCII; forget EBCDIC */
 #define ordMINCH        0
 #define ordMAXCH        127
 #define ordNL           10
@@ -44,13 +42,13 @@
 
 #define CHBUFSIZ        4095	/* upper limit of chbuf buffers       */
 
-/* Lexical parameters                 */
+                                /* Lexical parameters                 */
 #define FILENAMELEN     1024	/* max length of file names */
 
-/* Lalr machine parameters            */
-#define MAXERRCOUNT     3	/* max no of errors before giving up  */
+                                /* Lalr machine parameters            */
+#define MAXERRCOUNT     3	    /* max no of errors before giving up  */
 
-                            /* Draw types                         */
+                                /* Draw types                         */
 #define MFpic           1
 #define MPost           2
 #define PDF             3
@@ -64,20 +62,16 @@
 #define tTeX            11
 #define xfig            12
 
-#define SPLT            0.551784	/* optimum spline tension for arcs    */
+#define SPLT            0.551784 /* optimum spline tension for arcs   */
 
 #define pointd          72
-                            /* postprocessor constants (vars?)    */
-#define xfigres         1200
-#define xdispres        80
-                            /* Text parameters (vars?)            */
-#define DFONT           11	/* default svg font size, pt          */
+#define DFONT           11      /* default svg font size, pt          */
 
 #define Char char
 typedef unsigned char uchar;
 typedef unsigned char boolean;
 
-                            /* Lexical types                      */
+                                /* Lexical types                      */
 typedef short chbufinx;
 
 typedef int symbol;
@@ -89,46 +83,46 @@ typedef uchar production;
 typedef Char chbufarray[CHBUFSIZ + 1];
 typedef Char mstring[FILENAMELEN];
 
-                            /* Environment variable index         */
+                                /* Environment variable index         */
 typedef uchar environx;
 
-                            /* For storing names                  */
+                                /* For storing names                  */
 typedef struct nametype {
   double val;
   Char *segmnt;
   chbufinx seginx;
   int len;
-  struct nametype *next_;
+  struct nametype *nextname;
 } nametype;
 
-                            /* Lexical input for loops and macros */
+                                /* Lexical input for loops and macros */
 typedef struct fbuffer {
   Char *carray;
   int savedlen, readx, attrib;
   struct fbuffer *higherb, *prevb, *nextb;
 } fbuffer;
 
-                            /* Macro argument list pointer        */
+                                /* Macro argument list pointer        */
 typedef struct arg {
   fbuffer *argbody;
   struct arg *highera, *nexta;
 } arg;
 
-                            /* Pic position                       */
+                                /* Pic position                       */
 typedef struct postype {
   double xpos, ypos;
 } postype;
 
-                            /* Data structures for drawn primitives */
+                                /* Data structures for drawn primitives*/
 #define PRIMbase \
   nametype *name, *textp, *outlinep, *shadedp; \
-  struct primitive *parent, *son, *next_; \
+  struct primitive *parent, *son, *nextname; \
   postype aat; \
   double lparam, lthick; \
   int direction, spec, ptype
 
 #define PRIMbox \
-    struct { double boxheight, boxwidth, boxfill, boxradius; } Ubox
+    struct { double boxheight, boxwidth, boxfill, boxradius; } boxstr
 
 #define PRIMblock \
     struct { \
@@ -137,22 +131,22 @@ typedef struct postype {
       nametype *(vars[HASHLIM + 1]); \
       int nvars[HASHLIM + 1]; \
       double *env; \
-    } UBLOCK
+    } blockstr
 
 #define PRIMcircle \
-    struct { double cfill, radius; } Ucircle
+    struct { double cfill, cradius; } circlestr
 
 #define PRIMellipse \
-    struct { double elheight, elwidth, efill; } Uellipse
+    struct { double elheight, elwidth, efill; } ellipsestr
 
 #define PRIMline \
     struct { \
       postype endpos; \
       double height, width, lfill, aradius; \
       int atype; \
-    } Uline
+    } linestr
 
-                            /* General and block primitives */
+                                /* General and block primitives       */
 typedef struct primitive {
   PRIMbase;
   union {
@@ -161,42 +155,77 @@ typedef struct primitive {
     PRIMcircle;
     PRIMellipse;
     PRIMline;
-  } Upr;
+  } parms;
 } primitive;
 
 typedef struct XLboxprimitive {
   PRIMbase;
   union {
     PRIMbox;
-  } Upr;
+  } parms;
 } XLboxprimitive;
 
 typedef struct XLcircleprimitive {
   PRIMbase;
   union {
     PRIMcircle;
-  } Upr;
+  } parms;
 } XLcircleprimitive;
 
 typedef struct XLellipseprimitive {
   PRIMbase;
   union {
     PRIMellipse;
-  } Upr;
+  } parms;
 } XLellipseprimitive;
 
 typedef struct XLlineprimitive {
   PRIMbase;
   union {
     PRIMline;
-  } Upr;
+  } parms;
 } XLlineprimitive;
 
 typedef struct XLabelprimitive {
   PRIMbase;
 } XLabelprimitive;
 
-                            /* Parse stack production attributes */
+                                /* Abbreviations for readability.  These
+                                   help somewhat but the code still retains
+                                   p2c idioms (FORLIM, With, etc)      */
+#define blockparms	parms.blockstr
+#define boxparms	parms.boxstr
+#define lineparms	parms.linestr
+#define circleparms	parms.circlestr
+#define ellipseparms	parms.ellipsestr
+
+#define boxheight_	boxparms.boxheight
+#define boxwidth_	boxparms.boxwidth
+#define boxfill_	boxparms.boxfill
+#define boxradius_	boxparms.boxradius
+
+#define blockheight_ blockparms.blockheight
+#define blockwidth_	blockparms.blockwidth
+#define here_		blockparms.here
+
+#define circlefill_	circleparms.cfill
+#define circleradius_ circleparms.cradius
+
+#define ellipseheight_ ellipseparms.elheight
+#define ellipsewidth_  ellipseparms.elwidth
+#define ellipsefill_   ellipseparms.efill
+
+#define lineheight_	lineparms.height
+#define endpos_		lineparms.endpos
+#define linewidth_	lineparms.width
+#define linefill_	lineparms.lfill
+#define aradius_	lineparms.aradius
+#define lineatype_	lineparms.atype
+                                /* arcs use the line structure        */
+#define startangle_	lineparms.endpos.xpos
+#define arcangle_	lineparms.endpos.ypos
+
+                                /* Parse stack production attributes  */
 typedef struct attribute {
   chbufinx chbufx;
   int toklen;
@@ -206,76 +235,77 @@ typedef struct attribute {
   int lexval, state;
 } attribute;
 
-                            /* External files                 */
-FILE *input, *output, *errout, *copyin, *redirect;
+                         /* EXTRN is null in main.c, extern elsewhere*/
+EXTRN FILE *input, *output, *errout, *copyin, *redirect;
 
 #ifdef DDEBUG
-FILE *log_;
-int oflag, debuglevel;	/* debug level and open logfile flag  */
-arg *currentmacro;		/* last-found macro                   */
+EXTRN FILE *log_;
+EXTRN int oflag, debuglevel;   /* debug level and open logfile flag  */
+EXTRN arg *currentmacro;       /* last-found macro                   */
 #endif
 
-mstring infname;		/* name of current input file    */
-mstring outfnam;		/* name of current output file   */
+EXTRN mstring infname;         /* name of current input file         */
+EXTRN mstring outfnam;         /* name of current output file        */
 
-boolean inputeof;		/* end-of-input flag                  */
-boolean forbufend;		/* end of for buffer                  */
-int argct;			    /* argument counter for options   */
-int drawmode;			/* output conversion                  */
-boolean safemode;		/* disable sh and copy                */
+EXTRN boolean inputeof;        /* end-of-input flag                  */
+EXTRN boolean forbufend;       /* end of for buffer                  */
+EXTRN int argct;               /* argument counter for options       */
+EXTRN int drawmode;            /* output conversion                  */
+EXTRN boolean safemode;        /* disable sh and copy                */
 
-                        /* Lexical analyzer character buffer  */
-Char *chbuf;
-chbufinx chbufi, oldbufi;	/* character buffer indices       */
+                               /* Lexical analyzer character buffer  */
+EXTRN Char *chbuf;
+EXTRN chbufinx chbufi, oldbufi; /* character buffer indices          */
 
-                        /* Lexical variables                  */
-Char ch;			    /* current character                  */
-short newsymb;			/* current lexical symbol             */
-int lexsymb;			/* lexical value                      */
-int lexstate;			/* 0..4: <.PS; .PS; in pic; .PE; >.PE */
-boolean inlogic;		/* set < to <compare> in context      */
-boolean instr;			/* set while reading a string         */
-double floatvalue;		/* numerical value of float read      */
-fbuffer *inbuf, *savebuf, *freeinbuf, *topbuf;
+                               /* Lexical variables                  */
+EXTRN Char ch;                 /* current character                  */
+EXTRN short newsymb;           /* current lexical symbol             */
+EXTRN int lexsymb;             /* lexical value                      */
+EXTRN int lexstate;            /* 0..4: <.PS; .PS; in pic; .PE; >.PE */
+EXTRN boolean inlogic;         /* set < to <compare> in context      */
+EXTRN boolean instr;           /* set while reading a string         */
+EXTRN double floatvalue;       /* numerical value of float read      */
+EXTRN fbuffer *inbuf, *savebuf, *freeinbuf, *topbuf;
 
-int oldsymb;			/* last lexical symbol                */
-arg *macros, *args, *freearg;	/* lists of macros and args   */
+EXTRN int oldsymb;             /* last lexical symbol                */
+EXTRN arg *macros, *args, *freearg; /* lists of macros and args      */
 
-                        /* Error handling                     */
-int errcount;			/* becomes nonzero when errors found  */
-int lineno;			    /* current input line number          */
-int currprod;			/* current production for error msgs  */
+                               /* Error handling                     */
+EXTRN int errcount;            /* becomes nonzero when errors found  */
+EXTRN int lineno;              /* current input line number          */
+EXTRN int currprod;            /* current production for error msgs  */
 
-						/* Production variables               */
-attribute forattr;      /* to set up for loop                 */
-primitive *envblock;	/* block containing the current scope */
-primitive *tail;		/* for tree branches                  */
-primitive *globalenv;	/* the global environment block       */
-double dptextratio;		/* text parameters for SVG,PDF,PS     */
-double dpPPI;			/* pixels per inch                    */
+                               /* Production variables               */
+EXTRN attribute forattr;       /* to set up for loop                 */
+EXTRN primitive *envblock;     /* block containing the current scope */
+EXTRN primitive *tail;         /* for tree branches                  */
+EXTRN primitive *globalenv;    /* the global environment block       */
+EXTRN double dptextratio;      /* text parameters for SVG,PDF,PS     */
+EXTRN double dpPPI;            /* pixels per inch                    */
+EXTRN double xfigres, xdispres;/* xfig resolution and display res    */
 
-double north, south, east, west;
-double xfheight;		/* for calculating xfig and svg coords*/
-Char *freeseg;			/* segment open to store strings      */
-short freex;			/* next free location                 */
-Char *tmpbuf;			/* buffer for snprintf or sprintf     */
-Char *tmpfmt;			/* snprintf, findvar buffer           */
-double scale, fsc;		/* scale factor and final scale factor*/
-int splcount, spltot;	/* spline depth counter               */
-int pdfobjcount;		/* pdf objects                        */
-primitive *snode;		/* temporary node storage             */
-boolean bfill;			/* fill flag for linear objects       */
-double vfill;			/* fill value */
-nametype *sshade, *soutline;	/* temp values for linear objects     */
-double lastfillval;		/* last-used fill density             */
-int printstate;			/* for passing output state info      */
-/* graphics state parameters          */
-boolean gsocolor, gsfcolor, gsgcolor;
-    /* stroke, fill, gray fill flags      */
-double gslinethick;		/* last-used line thickness           */
-int gslinecap, gslinejoin;	/* 0 = butt                        */
-double gsdashw, gsdashs;	/* line dash and space lengths        */
-nametype *stream, *cx;		/* pdf stream storage and current seg */
-int pdfoffs[8];			/* pdf output byte counts       */
+EXTRN double north, south, east, west;
+EXTRN double xfheight;         /* for calculating xfig and svg coords*/
+EXTRN Char *freeseg;           /* segment open to store strings      */
+EXTRN short freex;             /* next free location                 */
+EXTRN Char *tmpbuf;            /* buffer for snprintf                */
+EXTRN Char *tmpfmt;            /* snprintf, findvar buffer           */
+EXTRN double scale, fsc;       /* scale factor and final scale factor*/
+EXTRN int splcount, spltot;    /* spline depth counter               */
+EXTRN int pdfobjcount;         /* pdf objects                        */
+EXTRN primitive *snode;        /* temporary node storage             */
+EXTRN boolean bfill;           /* fill flag for linear objects       */
+EXTRN double vfill;            /* fill value */
+EXTRN nametype *sshade, *soutline; /* temp values for linear objects */
+EXTRN double lastfillval;      /* last-used fill density             */
+EXTRN int printstate;          /* for passing output state info      */
+                               /* graphics state parameters          */
+EXTRN boolean gsocolor, gsfcolor, gsgcolor;
+                               /* stroke, fill, gray fill flags      */
+EXTRN double gslinethick;      /* last-used line thickness           */
+EXTRN int gslinecap, gslinejoin; /* 0 = butt                         */
+EXTRN double gsdashw, gsdashs; /* line dash and space lengths        */
+EXTRN nametype *stream, *cx;   /* pdf stream storage and current seg */
+EXTRN int pdfoffs[8];          /* pdf output byte counts             */
 
-attribute *pyylval;
+EXTRN attribute *pyylval;      /* production stack element           */

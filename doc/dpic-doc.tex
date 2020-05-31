@@ -141,7 +141,9 @@ tool is often subjective or a matter of prior knowledge. The advantages of
 arbitrary formatted diagram text can be included using \LaTeX.
 \Dpic\ will also produce
 SVG output for web files but the advantage of employing a word processor
-for text is not then directly available. 
+for text is not then directly available. A route to sophisticated text
+in SVG is to use \LaTeX\ to produce a pdf file, followed by a pdf-to-svg
+converter.
 
 \Dpic accepts gpic input for the most part but
 there are minor differences.  The outputs of gpic and dpic are quite
@@ -1218,7 +1220,6 @@ of dpic produce output that is not intended to be processed directly by
     \ntt{dptextratio = 0.66}\\
   in the outermost scope of the diagram.  These are ordinary variables
   that can be referenced as usual.
-
   The variable {\tt dpPPI} is given the inital value 96 which is
   pixels per inch
   on a 20-inch wide computer monitor of 1920 pixels width.
@@ -1226,7 +1227,10 @@ of dpic produce output that is not intended to be processed directly by
   This parameter can be changed using the assignmnent
     \ntt{dpPPI := {\sl value}}\\
   for different screen resolution, and {\tt dptextratio} can
-  be similarly changed. 
+  be similarly changed.
+  (For \xfig\ output, the following are defined under the {\tt -x} option:
+  {\tt xfdispres = 80; xfigres = 1200}.)
+
 
   When \dpic sees the {\tt ht {\it y}} attribute attached to SVG text,
   it sets the nominal text size
@@ -1234,6 +1238,11 @@ of dpic produce output that is not intended to be processed directly by
   Otherwise, \dpic uses the current value of the environment
   variable {\tt textht}, which has default value $11/72 \times 0.66,$
   to set the default size to 11\,bp.
+
+  The Circuit\_macros configuration file {\tt svg.m4} contains a macro
+  {\tt svg\_font} that can simplify font specification, and a macro
+  {\tt svgfontratio} that can be used to set {\tt dptextratio} and
+  {\tt textht} automatically for common HTML fonts.
 
   \Dpic sets the width of text
   to the current value of {\tt textwid} by default but,
@@ -1352,7 +1361,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   Dpic does not generate tpic specials.
   See the option list in \SR{Usage:} for output formats.
 
-\subsection{``{.}''~lines}% and program-generated pic}
+\subsection{``{.}'' and ``\textbackslash''\ lines}
   Gpic passes lines beginning with {\tt.}\ through to the output,
   thereby allowing
   arbitrary Troff macros to be interspersed with pic drawing commands.  Some
@@ -1365,7 +1374,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   {\tt.PS}, {\tt.PE} delimiters.  These
   lines must be dealt with separately.
 
-\subsection{``\textbackslash''\ lines}
+%\subsection{``\textbackslash''\ lines}
   Both gpic and dpic pass lines beginning with \tBS\ to the output but
   dpic does not automatically append a {\tt\%} at the end as gpic does.
 
@@ -1495,7 +1504,9 @@ is equivalent to
 
 Similarly,
 \ntt{command sprintf("\tBS{}pscircle(\%g,\%g)\tLB\%g\tRB",0,0,0.5)}\\
-places the formatted string into the output.  The numerical {\tt sprintf}
+places a line containing the formatted string without the quotes into
+the output.
+The numerical {\tt sprintf}
 arguments can be arbitrary expressions rather than the constants shown.
 
   Dpic allows strings to be concatenated by the {\tt+} operator; thus,
@@ -1599,7 +1610,8 @@ The lines of the {\sl filename} file are changed to calls of the {\tt
 macro\_name} macro and written into a temporary file, which is then
 read by \dpic.  Such usage is not as simple as a built-in function but
 allows greater flexibility of data because the {\tt copythru}
-macro can be replaced by one customized to suit.
+macro can be replaced by one customized to suit. For example, the {\tt sh}
+command might invoke another program to generate the data.
 
 \subsection{{\tt plot}}
   The {\tt plot} command is deprecated in gpic and not allowed in dpic.
@@ -1746,7 +1758,7 @@ to 0 sets the gap added by \dpic to zero.
 % but it has been retained for historical compatibility.
 
 \subsection{Subscripted variables and labels}
-  Dpic allows subscripted variables and positions, as described in
+  Dpic allows subscripted variables and capitalized labels, as described in
   \SR{Subscripts:}.
 \iffalse
   as an aid in
@@ -1770,7 +1782,7 @@ to 0 sets the gap added by \dpic to zero.
   curvature.  If $x$ is not present as in the normal pic grammar, the
   curve starts with a straight line halfway along the first segment and
   ends with a straight line along the second half of the last segment.
-  However when $x$ is present, dpic draws the spline from the start of the
+  When $x$ is present however, dpic draws the spline from the start of the
   first segment to the end of the last segment.
 
 \subsection{Arithmetic}
@@ -1790,7 +1802,7 @@ to 0 sets the gap added by \dpic to zero.
   defined positions.  Gpic requires
   \ntt{X: Y + (Z.x,Z.y)}\\
   Dpic also allows
-  scalar multiplication:
+  scalar postmultiplication:
   \ntt{X: Y*2/3}\ (but not {\tt X: 2/3*Y})
 
 \iffalse
@@ -1922,9 +1934,10 @@ command "\makeatletter\@ifundefined{ifPst@noCurrentPoint}%
   with\verb|\usepackage[97]{pstricks}| or\verb|\input{pstricks97.tex}|.
   However, this method precludes using the newer \PSTricks facilities.
 
-\pagebreak
+%\pagebreak
 \pdfbookmark[section]{\refname}{refs}
 \bibliographystyle{plain}
+%\addcontentsline{toc}{section}{\protect{\hspace*{1em}$\;$}References}
 \bibliography{dpic-doc}
 
 %===============================================================================

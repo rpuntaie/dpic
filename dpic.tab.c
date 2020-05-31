@@ -64,10 +64,11 @@
 /* Copy the first part of user declarations.  */
 #line 34 "dpic.y" /* yacc.c:339  */
 
+#define EXTRN extern
 #include "dpic.h"
 #define Rnd(x)	((long)floor(x + 0.5))
-#define envinx(x)	Upr.UBLOCK.env[(int)(Rnd(x)-XLenvvar-1)]
-#define envblockB	envblock->Upr.UBLOCK
+
+#define envinx(x)	blockparms.env[(int)(Rnd(x)-XLenvvar-1)]
 
 int yyerror(char*);
 
@@ -145,7 +146,6 @@ void wrbuf(fbuffer *, int, int);
 #ifdef DDEBUG
 int lspec(int);
 void logaddr(fbuffer *);
-void prattstack(attribute *);
 void prattribute(char *, attribute *);
 void printobject(primitive *);
 void prvars(primitive *);
@@ -751,25 +751,25 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   390,   390,   392,   408,   480,   482,   486,   489,   492,
-     496,   498,   506,   515,   517,   520,   525,   533,   580,   604,
-     606,   609,   616,   618,   629,   631,   633,   635,   645,   669,
-     675,   678,   698,   700,   703,   711,   714,   719,   726,   739,
-     741,   745,   757,   770,   786,   789,   791,   793,   804,   810,
-     817,   821,   826,   828,   831,   834,   838,   845,   849,   859,
-     881,   914,   918,   972,   999,  1001,  1004,  1006,  1009,  1012,
+       0,   390,   390,   392,   408,   483,   485,   489,   492,   495,
+     499,   501,   509,   518,   520,   523,   528,   536,   583,   607,
+     609,   612,   619,   621,   632,   634,   636,   638,   648,   672,
+     678,   681,   701,   703,   706,   714,   717,   722,   729,   742,
+     744,   748,   760,   773,   789,   792,   794,   796,   807,   813,
+     820,   824,   829,   831,   834,   837,   841,   848,   852,   862,
+     883,   914,   918,   972,   999,  1001,  1004,  1006,  1009,  1012,
     1015,  1019,  1029,  1033,  1035,  1041,  1090,  1132,  1135,  1139,
     1141,  1146,  1148,  1166,  1186,  1189,  1193,  1217,  1220,  1224,
-    1227,  1231,  1233,  1321,  1406,  1470,  1497,  1508,  1609,  1671,
-    1692,  1715,  1762,  1781,  1793,  1829,  1865,  1997,  2029,  2052,
-    2089,  2189,  2207,  2252,  2290,  2299,  2308,  2324,  2343,  2354,
-    2514,  2519,  2571,  2580,  2582,  2585,  2597,  2599,  2615,  2625,
-    2632,  2639,  2644,  2649,  2653,  2655,  2657,  2659,  2664,  2669,
-    2675,  2682,  2685,  2690,  2692,  2697,  2706,  2709,  2712,  2716,
-    2720,  2726,  2728,  2733,  2745,  2761,  2773,  2784,  2792,  2794,
-    2797,  2801,  2803,  2809,  2817,  2826,  2832,  2834,  2836,  2860,
-    2881,  2888,  2897,  2899,  2902,  2904,  2907,  2967,  2970,  2975,
-    3025,  3045,  3048
+    1227,  1231,  1233,  1319,  1399,  1461,  1488,  1499,  1600,  1662,
+    1683,  1706,  1751,  1769,  1781,  1815,  1841,  1968,  2000,  2021,
+    2056,  2152,  2170,  2216,  2254,  2263,  2272,  2288,  2307,  2318,
+    2476,  2481,  2533,  2542,  2544,  2547,  2559,  2561,  2577,  2587,
+    2594,  2601,  2606,  2611,  2615,  2617,  2619,  2621,  2626,  2631,
+    2637,  2644,  2647,  2652,  2654,  2659,  2668,  2671,  2674,  2678,
+    2682,  2688,  2690,  2695,  2707,  2723,  2735,  2746,  2754,  2756,
+    2759,  2763,  2765,  2771,  2779,  2788,  2794,  2796,  2798,  2822,
+    2843,  2850,  2859,  2861,  2864,  2866,  2869,  2924,  2927,  2932,
+    2982,  3002,  3005
 };
 #endif
 
@@ -1940,8 +1940,8 @@ yyreduce:
 #endif
 		  envblock->aat.xpos = (east + west) * 0.5;
 		  envblock->aat.ypos = (north + south) * 0.5;
-		  envblock->Upr.UBLOCK.blockheight = north - south;
-		  envblock->Upr.UBLOCK.blockwidth = east - west;
+		  envblock->blockheight_ = north - south;
+		  envblock->blockwidth_ = east - west;
 	      if (drawmode == xfig) {
 		    shift(envblock, -west, -south);
 		    north -= south;
@@ -1990,6 +1990,9 @@ yyreduce:
 		      dptextratio = findvar("dptextratio", 11);
 		      if (dptextratio == 0) { dptextratio = 1.0; }
 		      dpPPI = findvar("dpPPI", 5); }
+            else if (drawmode == xfig) {
+              xfigres = findvar("xfigres", 7);
+              xdispres = findvar("xdispres", 8); }
 	        drawtree(north, south, east, west, envblock);
 #ifdef DDEBUG
 	        if (debuglevel > 0) {
@@ -1997,88 +2000,88 @@ yyreduce:
 #endif
 	        }
 	      }
-#line 2001 "dpic.tab.c" /* yacc.c:1646  */
+#line 2004 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 483 "dpic.y" /* yacc.c:1646  */
+#line 486 "dpic.y" /* yacc.c:1646  */
     { yyerrok; yyclearin; }
-#line 2007 "dpic.tab.c" /* yacc.c:1646  */
+#line 2010 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 487 "dpic.y" /* yacc.c:1646  */
+#line 490 "dpic.y" /* yacc.c:1646  */
     { dostart(); (yyval).xval = 0; (yyval).yval = 0;}
-#line 2013 "dpic.tab.c" /* yacc.c:1646  */
+#line 2016 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 490 "dpic.y" /* yacc.c:1646  */
+#line 493 "dpic.y" /* yacc.c:1646  */
     { dostart(); (yyval).xval = (yyvsp[0]).xval; (yyval).yval = 0; }
-#line 2019 "dpic.tab.c" /* yacc.c:1646  */
+#line 2022 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 493 "dpic.y" /* yacc.c:1646  */
+#line 496 "dpic.y" /* yacc.c:1646  */
     { dostart(); (yyval).xval = (yyvsp[-1]).xval; (yyval).yval = (yyvsp[0]).xval; }
-#line 2025 "dpic.tab.c" /* yacc.c:1646  */
+#line 2028 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 499 "dpic.y" /* yacc.c:1646  */
+#line 502 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[0]).prim != NULL) && ((yyvsp[0]).lexval != XLcontinue)) {
             queueprim( (yyvsp[0]).prim, envblock ); }
 #ifdef DDEBUG
           if (debuglevel > 0 ) { snaptree(envblock->son,0); }
 #endif
     	  }
-#line 2036 "dpic.tab.c" /* yacc.c:1646  */
+#line 2039 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 507 "dpic.y" /* yacc.c:1646  */
+#line 510 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[0]).prim != NULL) && ((yyvsp[0]).lexval != XLcontinue)) {
             queueprim( (yyvsp[0]).prim, envblock ); }
 #ifdef DDEBUG
           if (debuglevel > 0 ) { snaptree(envblock->son,0); }
 #endif
 		  }
-#line 2047 "dpic.tab.c" /* yacc.c:1646  */
+#line 2050 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 518 "dpic.y" /* yacc.c:1646  */
+#line 521 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-2]).xval * (yyvsp[0]).xval; }
-#line 2053 "dpic.tab.c" /* yacc.c:1646  */
+#line 2056 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 521 "dpic.y" /* yacc.c:1646  */
+#line 524 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { markerror(852); (yyval).xval = 0.0; }
     		else { (yyval).xval = (yyvsp[-2]).xval / (yyvsp[0]).xval; }
 		  }
-#line 2061 "dpic.tab.c" /* yacc.c:1646  */
+#line 2064 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 526 "dpic.y" /* yacc.c:1646  */
+#line 529 "dpic.y" /* yacc.c:1646  */
     { i = Rnd((yyvsp[-2]).xval);
     	  j = Rnd((yyvsp[0]).xval);
     	  if (j == 0) { markerror(852); (yyval).xval = 0.0; }
     	  else { (yyval).xval = i - ((i / j) * j); }
 		  }
-#line 2071 "dpic.tab.c" /* yacc.c:1646  */
+#line 2074 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 534 "dpic.y" /* yacc.c:1646  */
+#line 537 "dpic.y" /* yacc.c:1646  */
     { if ((yyval).prim != NULL) {
 			prp = (yyval).prim;
 			if ((prp->ptype == XLspline) || (prp->ptype == XLmove) ||
 			    (prp->ptype == XLarrow) || (prp->ptype == XLline)) {
 			  if ((yyval).startchop != 0.0) {
-				dx = prp->Upr.Uline.endpos.xpos - prp->aat.xpos;
-				dy = prp->Upr.Uline.endpos.ypos - prp->aat.ypos;
+				dx = prp->endpos_.xpos - prp->aat.xpos;
+				dy = prp->endpos_.ypos - prp->aat.ypos;
 				s = linlen(dx, dy);
 #ifdef DDEBUG
 				if (debuglevel == 2) { fprintf(log_, " element1 startchop=");
@@ -2093,8 +2096,8 @@ yyreduce:
 			    }
 			  while (prp->son != NULL) { prp = prp->son; }
 			  if ((yyval).endchop != 0.0) {
-				dx = prp->Upr.Uline.endpos.xpos - prp->aat.xpos;
-				dy = prp->Upr.Uline.endpos.ypos - prp->aat.ypos;
+				dx = prp->endpos_.xpos - prp->aat.xpos;
+				dy = prp->endpos_.ypos - prp->aat.ypos;
 				s = linlen(dx, dy);
 #ifdef DDEBUG
 				if (debuglevel == 2) { fprintf(log_, " element1 endchop=");
@@ -2104,24 +2107,24 @@ yyreduce:
 #endif
 				if (s != 0.0) {
 				  t = (yyval).endchop / s;
-				  prp->Upr.Uline.endpos.xpos -= t * dx;
-				  prp->Upr.Uline.endpos.ypos -= t * dy; }
+				  prp->endpos_.xpos -= t * dx;
+				  prp->endpos_.ypos -= t * dy; }
 			    }
 			  }
-			FindExitPoint(prp, &envblockB.here); }
+			FindExitPoint(prp, &envblock->here_); }
 #ifdef DDEBUG
 			if (debuglevel > 0) { prattribute("element1", &(yyval));
 			  fprintf(log_, " element1 Here=");
-			  wpair(&log_, envblock->Upr.UBLOCK.here.xpos,
-				envblock->Upr.UBLOCK.here.ypos); putc('\n', log_);
+			  wpair(&log_, envblock->here_.xpos, envblock->here_.ypos);
+              putc('\n', log_);
 			  printobject((yyval).prim); }
 #endif
 			}
-#line 2121 "dpic.tab.c" /* yacc.c:1646  */
+#line 2124 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 581 "dpic.y" /* yacc.c:1646  */
+#line 584 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval != XEMPTY) {
 		    addsuffix(chbuf, &(yyvsp[-3]).chbufx,&(yyvsp[-3]).toklen, (yyvsp[-2]).xval,(yyvsp[-2]).lexval,(yyvsp[-2]).yval);}
 		  prp = findplace(envblock->son, chbuf, (yyvsp[-3]).chbufx, (yyvsp[-3]).toklen);
@@ -2144,29 +2147,29 @@ yyreduce:
             if ((yyval).prim != NULL) printobject((yyval).prim); }
 #endif
 		  }
-#line 2148 "dpic.tab.c" /* yacc.c:1646  */
+#line 2151 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 607 "dpic.y" /* yacc.c:1646  */
+#line 610 "dpic.y" /* yacc.c:1646  */
     { envblock->direction = (yyvsp[0]).lexval; }
-#line 2154 "dpic.tab.c" /* yacc.c:1646  */
+#line 2157 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 610 "dpic.y" /* yacc.c:1646  */
+#line 613 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XLaTeX, envblock);
     	  newstr(&(yyval).prim->textp);
     	  storestring((yyval).prim->textp, chbuf, (yyvsp[0]).chbufx, (yyvsp[0]).toklen, 1);
 		  clearchbuf((yyvsp[0]).chbufx, (yyvsp[0]).toklen);
 		  }
-#line 2164 "dpic.tab.c" /* yacc.c:1646  */
+#line 2167 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 619 "dpic.y" /* yacc.c:1646  */
-    { envblockB.here.xpos = (yyvsp[-3]).xval;
-    	  envblockB.here.ypos = (yyvsp[-3]).yval;
+#line 622 "dpic.y" /* yacc.c:1646  */
+    { envblock->here_.xpos = (yyvsp[-3]).xval;
+    	  envblock->here_.ypos = (yyvsp[-3]).yval;
     	  if (((yyvsp[-3]).state == XLright) || ((yyvsp[-3]).state == XLleft) ||
 			  ((yyvsp[-3]).state == XLdown) || ((yyvsp[-3]).state == XLup)) {
 			envblock->direction = (yyvsp[-3]).state; }
@@ -2174,11 +2177,11 @@ yyreduce:
           if (debuglevel>1) { prattribute("element7", &(yyval)); }
 #endif
 		  }
-#line 2178 "dpic.tab.c" /* yacc.c:1646  */
+#line 2181 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 636 "dpic.y" /* yacc.c:1646  */
+#line 639 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 			newprim(&(yyval).prim, XLaTeX, envblock);
 			(yyval).prim->textp = (yyvsp[0]).prim->textp;
@@ -2187,11 +2190,11 @@ yyreduce:
 			deletestringbox(&(yyvsp[0]).prim);
 			}
 		  }
-#line 2191 "dpic.tab.c" /* yacc.c:1646  */
+#line 2194 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 646 "dpic.y" /* yacc.c:1646  */
+#line 649 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim == NULL) { }
           else if ((yyvsp[0]).prim->textp == NULL) { }
           else if ((yyvsp[0]).prim->textp->segmnt != NULL) {
@@ -2213,25 +2216,25 @@ yyreduce:
 			deletestringbox(&(yyvsp[0]).prim);
 			disposebufs(&lastm); }
 		  }
-#line 2217 "dpic.tab.c" /* yacc.c:1646  */
+#line 2220 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 670 "dpic.y" /* yacc.c:1646  */
-    { (yyval).xval = envblockB.here.xpos;
-    	  (yyval).yval = envblockB.here.ypos;
+#line 673 "dpic.y" /* yacc.c:1646  */
+    { (yyval).xval = envblock->here_.xpos;
+    	  (yyval).yval = envblock->here_.ypos;
     	  (yyval).state = envblock->direction; }
-#line 2225 "dpic.tab.c" /* yacc.c:1646  */
+#line 2228 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 676 "dpic.y" /* yacc.c:1646  */
+#line 679 "dpic.y" /* yacc.c:1646  */
     { donamedobj(&(yyval)); }
-#line 2231 "dpic.tab.c" /* yacc.c:1646  */
+#line 2234 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 679 "dpic.y" /* yacc.c:1646  */
+#line 682 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 		    if ((yyvsp[-2]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-3]).chbufx,
                   &(yyvsp[-3]).toklen, (yyvsp[-2]).xval,(yyvsp[-2]).lexval,(yyvsp[-2]).yval); }
@@ -2248,56 +2251,56 @@ yyreduce:
 			}
 		  clearchbuf((yyvsp[-3]).chbufx, (yyvsp[-3]).toklen);
 		  }
-#line 2252 "dpic.tab.c" /* yacc.c:1646  */
+#line 2255 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 698 "dpic.y" /* yacc.c:1646  */
+#line 701 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XEMPTY; }
-#line 2258 "dpic.tab.c" /* yacc.c:1646  */
+#line 2261 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 701 "dpic.y" /* yacc.c:1646  */
+#line 704 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).xval > maxint) { fatal(9); } else { (yyval).xval = (yyvsp[-1]).xval; } }
-#line 2264 "dpic.tab.c" /* yacc.c:1646  */
+#line 2267 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 704 "dpic.y" /* yacc.c:1646  */
+#line 707 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = Xcomma;
     	  (yyval).xval = (yyvsp[-1]).xval;
     	  (yyval).yval = (yyvsp[-1]).yval;
     	  if ((fabs((yyvsp[-1]).xval) > maxint) || (fabs((yyvsp[-1]).yval) > maxint)) {fatal(9);}
 		  }
-#line 2274 "dpic.tab.c" /* yacc.c:1646  */
+#line 2277 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 712 "dpic.y" /* yacc.c:1646  */
+#line 715 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[0]); }
-#line 2280 "dpic.tab.c" /* yacc.c:1646  */
+#line 2283 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 715 "dpic.y" /* yacc.c:1646  */
+#line 718 "dpic.y" /* yacc.c:1646  */
     { r = (yyvsp[-4]).xval;
     	  (yyval).xval = (yyvsp[-2]).xval + (r * ((yyvsp[0]).xval - (yyvsp[-2]).xval));
     	  (yyval).yval = (yyvsp[-2]).yval + (r * ((yyvsp[0]).yval - (yyvsp[-2]).yval)); }
-#line 2288 "dpic.tab.c" /* yacc.c:1646  */
+#line 2291 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 721 "dpic.y" /* yacc.c:1646  */
+#line 724 "dpic.y" /* yacc.c:1646  */
     {
     	  r = (yyvsp[-7]).xval;
     	  (yyval).xval = (yyvsp[-2]).xval + (r * ((yyvsp[0]).xval - (yyvsp[-2]).xval));
     	  (yyval).yval = (yyvsp[-2]).yval + (r * ((yyvsp[0]).yval - (yyvsp[-2]).yval)); }
-#line 2297 "dpic.tab.c" /* yacc.c:1646  */
+#line 2300 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 728 "dpic.y" /* yacc.c:1646  */
+#line 731 "dpic.y" /* yacc.c:1646  */
     { r = (yyvsp[-6]).xval;
     	  (yyval).xval = (yyvsp[-4]).xval + (r * ((yyvsp[-2]).xval - (yyvsp[-4]).xval));
     	  (yyval).yval = (yyvsp[-4]).yval + (r * ((yyvsp[-2]).yval - (yyvsp[-4]).yval));
@@ -2307,17 +2310,17 @@ yyreduce:
 	   	    (yyval).yval += (yyvsp[0]).yval;
 			}
 		  }
-#line 2311 "dpic.tab.c" /* yacc.c:1646  */
+#line 2314 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 742 "dpic.y" /* yacc.c:1646  */
+#line 745 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[0]).xval; }
-#line 2317 "dpic.tab.c" /* yacc.c:1646  */
+#line 2320 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 746 "dpic.y" /* yacc.c:1646  */
+#line 749 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XEMPTY) {
             wfloat(&errout, (yyvsp[-1]).xval); putc('\n', errout); }
     	  else if ((yyvsp[0]).state == 0) {
@@ -2328,11 +2331,11 @@ yyreduce:
 #endif
 			}
 		  }
-#line 2332 "dpic.tab.c" /* yacc.c:1646  */
+#line 2335 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 758 "dpic.y" /* yacc.c:1646  */
+#line 761 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XEMPTY) {
 	  		wpair(&errout, (yyvsp[-1]).xval, (yyvsp[-1]).yval); putc('\n', errout); }
     	  else if ((yyvsp[0]).state == 0) {
@@ -2344,11 +2347,11 @@ yyreduce:
 #endif
 			}
 		  }
-#line 2348 "dpic.tab.c" /* yacc.c:1646  */
+#line 2351 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 771 "dpic.y" /* yacc.c:1646  */
+#line 774 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XEMPTY) {
 	      	wstring(&errout, (yyvsp[-1]).prim->textp);
 			putc('\n', errout); }
@@ -2363,17 +2366,17 @@ yyreduce:
 			}
 		  deletestringbox(&(yyvsp[-1]).prim);
 		  }
-#line 2367 "dpic.tab.c" /* yacc.c:1646  */
+#line 2370 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 787 "dpic.y" /* yacc.c:1646  */
+#line 790 "dpic.y" /* yacc.c:1646  */
     { resetenv(0, envblock); }
-#line 2373 "dpic.tab.c" /* yacc.c:1646  */
+#line 2376 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 794 "dpic.y" /* yacc.c:1646  */
+#line 797 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 #ifdef SAFE_MODE
 			markerror(901);
@@ -2383,65 +2386,65 @@ yyreduce:
 			deletestringbox(&(yyvsp[0]).prim);
     		}
 		  }
-#line 2387 "dpic.tab.c" /* yacc.c:1646  */
+#line 2390 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 805 "dpic.y" /* yacc.c:1646  */
+#line 808 "dpic.y" /* yacc.c:1646  */
     { currprod = 4;
           (yyval) = (yyvsp[0]);
 		  dodefhead( &(yyval) );
           }
-#line 2396 "dpic.tab.c" /* yacc.c:1646  */
+#line 2399 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 811 "dpic.y" /* yacc.c:1646  */
+#line 814 "dpic.y" /* yacc.c:1646  */
     { currprod = 5;
           (yyval) = (yyvsp[0]);
 		  dodefhead( &(yyval) );
           }
-#line 2405 "dpic.tab.c" /* yacc.c:1646  */
+#line 2408 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 818 "dpic.y" /* yacc.c:1646  */
+#line 821 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[0]); doundefine( &(yyvsp[0]) );
 		  clearchbuf((yyvsp[0]).chbufx, (yyvsp[0]).toklen); }
-#line 2412 "dpic.tab.c" /* yacc.c:1646  */
+#line 2415 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 822 "dpic.y" /* yacc.c:1646  */
+#line 825 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[0]); doundefine( &(yyvsp[0]) );
 		  clearchbuf((yyvsp[0]).chbufx, (yyvsp[0]).toklen); }
-#line 2419 "dpic.tab.c" /* yacc.c:1646  */
+#line 2422 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 835 "dpic.y" /* yacc.c:1646  */
+#line 838 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval == 1.0) { currprod = 1; skiptobrace(); } }
-#line 2425 "dpic.tab.c" /* yacc.c:1646  */
+#line 2428 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 839 "dpic.y" /* yacc.c:1646  */
+#line 842 "dpic.y" /* yacc.c:1646  */
     { forattr = (yyval);
 #ifdef DDEBUG
 		  if (debuglevel>0) prattribute("for1",&(yyval));
 #endif
 		  }
-#line 2435 "dpic.tab.c" /* yacc.c:1646  */
+#line 2438 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 846 "dpic.y" /* yacc.c:1646  */
+#line 849 "dpic.y" /* yacc.c:1646  */
     { forattr = (yyval); }
-#line 2441 "dpic.tab.c" /* yacc.c:1646  */
+#line 2444 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 850 "dpic.y" /* yacc.c:1646  */
+#line 853 "dpic.y" /* yacc.c:1646  */
     {
 #ifdef DDEBUG
 		  if (debuglevel>0) {
@@ -2450,15 +2453,14 @@ yyreduce:
   			fflush(log_); }
 #endif
 		  }
-#line 2454 "dpic.tab.c" /* yacc.c:1646  */
+#line 2457 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 860 "dpic.y" /* yacc.c:1646  */
+#line 863 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) { prp = (yyvsp[0]).prim;
-		  (yyval).prim->Upr.Ubox.boxwidth += prp->Upr.Ubox.boxwidth;
-		  (yyval).prim->Upr.Ubox.boxheight = Max((yyvsp[-2]).prim->Upr.Ubox.boxheight,
-			       prp->Upr.Ubox.boxheight);
+		  (yyval).prim->boxwidth_ += prp->boxwidth_;
+		  (yyval).prim->boxheight_ = Max((yyvsp[-2]).prim->boxheight_, prp->boxheight_);
 		  if (prp->textp != NULL) {
     	    if ((yyvsp[-2]).prim->textp == NULL) {
 			  (yyval).prim->textp = prp->textp; prp->textp = NULL; }
@@ -2474,29 +2476,27 @@ yyreduce:
 		  }
 		deletetree(&(yyvsp[0]).prim); }
 		}
-#line 2478 "dpic.tab.c" /* yacc.c:1646  */
+#line 2480 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 882 "dpic.y" /* yacc.c:1646  */
+#line 884 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XLstring, envblock);
 		  eb = findenv(envblock);
 		  With2 = (yyval).prim;
-		  With2->Upr.Ubox.boxheight = eb->envinx(XLtextht);
-		  With2->Upr.Ubox.boxwidth = eb->envinx(XLtextwid);
-		  if (With2->Upr.Ubox.boxwidth == 0.0) {
+		  With2->boxheight_ = eb->envinx(XLtextht);
+		  With2->boxwidth_ = eb->envinx(XLtextwid);
+		  if (With2->boxwidth_ == 0.0) {
 			switch (drawmode) {
 		  	  case xfig:
 							/* To keep xfig from crashing, assume text height
 							   is 0.1 and a character is 0.1*0.75 wide */
-		  	  	if ((yyval).prim->Upr.Ubox.boxheight == 0.0) {
-		  	      (yyval).prim->Upr.Ubox.boxheight = 0.1 * eb->envinx(XLscale); }
-		  	  	(yyval).prim->Upr.Ubox.boxwidth =
-				  (yyval).prim->Upr.Ubox.boxheight * (yyvsp[0]).toklen * 0.75;
+		  	  	if ((yyval).prim->boxheight_ == 0.0) {
+		  	      (yyval).prim->boxheight_ = 0.1 * eb->envinx(XLscale); }
+		  	  	(yyval).prim->boxwidth_ = (yyval).prim->boxheight_ * (yyvsp[0]).toklen * 0.75;
 		  	  	break;
 		  	  case PDF:
-		  	  	(yyval).prim->Upr.Ubox.boxwidth =
-				  (yyval).prim->Upr.Ubox.boxheight * (yyvsp[0]).toklen * 0.6;
+		  	  	(yyval).prim->boxwidth_ = (yyval).prim->boxheight_ * (yyvsp[0]).toklen * 0.6;
 		  	  	break;
 		  	  }
 		    }
@@ -2518,7 +2518,7 @@ yyreduce:
     { if ((yyvsp[-2]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-3]).chbufx,
                 &(yyvsp[-3]).toklen, (yyvsp[-2]).xval,(yyvsp[-2]).lexval,(yyvsp[-2]).yval); }
 		    (yyval).varname = findname(envblock, chbuf, (yyvsp[-3]).chbufx, (yyvsp[-3]).toklen,
-					     &lastvar, &k);
+			     &lastvar, &k);
 		    if (((yyval).varname == NULL) && ((yyvsp[-1]).lexval != XEQ)) {
 			  (yyval).varname = glfindname(envblock->parent, chbuf,
 				 (yyvsp[-3]).chbufx, (yyvsp[-3]).toklen, &namptr, &kk); }
@@ -2539,26 +2539,26 @@ yyreduce:
 			    }
 		#endif
 			With2 = envblock;
-			if (lastvar == NULL) { With2->Upr.UBLOCK.vars[j] = (yyval).varname; }
+			if (lastvar == NULL) { With2->blockparms.vars[j] = (yyval).varname; }
 			else if (k < 0) {
-			  if (With2->Upr.UBLOCK.vars[j]->next_ == NULL) {
-			    With2->Upr.UBLOCK.vars[j]->next_ = (yyval).varname; }
+			  if (With2->blockparms.vars[j]->nextname == NULL) {
+			    With2->blockparms.vars[j]->nextname = (yyval).varname; }
 			  else {
-				(yyval).varname->next_ = lastvar->next_;
-				lastvar->next_ = (yyval).varname; }
+				(yyval).varname->nextname = lastvar->nextname;
+				lastvar->nextname = (yyval).varname; }
 			    }
-			else if (lastvar == With2->Upr.UBLOCK.vars[j]) {
-			  (yyval).varname->next_ = With2->Upr.UBLOCK.vars[j];
-			  With2->Upr.UBLOCK.vars[j] = (yyval).varname; }
+			else if (lastvar == With2->blockparms.vars[j]) {
+			  (yyval).varname->nextname = With2->blockparms.vars[j];
+			  With2->blockparms.vars[j] = (yyval).varname; }
 			else {
-			  namptr = With2->Upr.UBLOCK.vars[j];
+			  namptr = With2->blockparms.vars[j];
 							/* while (namptr^.next<>nil) and
 							   (namptr^.next<>lastvar) do */
-			  while (namptr->next_ != lastvar) { namptr = namptr->next_; }
-			  namptr->next_ = (yyval).varname;
-			  (yyval).varname->next_ = lastvar;
+			  while (namptr->nextname != lastvar) { namptr = namptr->nextname; }
+			  namptr->nextname = (yyval).varname;
+			  (yyval).varname->nextname = lastvar;
 			  }
-			With2->Upr.UBLOCK.nvars[j]++;
+			With2->blockparms.nvars[j]++;
 			(yyval).varname->val = 0.0;
 		    }
 		  if ((yyvsp[-1]).lexval == XEQ) { (yyval).varname->val = (yyvsp[0]).xval; }
@@ -2576,7 +2576,7 @@ yyreduce:
 		    if (((yyvsp[-2]).lexval == XLarrowhead) && (drawmode == TeX) &&
 		      ((yyvsp[0]).xval == 0.0)) { markerror(858); }
 		    else {
-		      if (envblockB.env == NULL) { inheritenv(envblock); }
+		      if (envblock->blockparms.env == NULL) { inheritenv(envblock); }
 		      if ((yyvsp[-2]).lexval == XLscale) {
 			    resetscale((yyvsp[0]).xval, (yyvsp[-1]).lexval, envblock); }
 		      else { eqop(&envblock->envinx((yyvsp[-2]).lexval), (yyvsp[-1]).lexval, (yyvsp[0]).xval); }
@@ -2680,7 +2680,7 @@ yyreduce:
 			(yyval).varname = (yyvsp[-4]).varname;
 			(yyval).varname->val = (yyval).xval; }
 		  else if ((Rnd((yyval).startchop)) != XLscale) {
-			if (envblockB.env == NULL) { inheritenv(envblock); }
+			if (envblock->blockparms.env == NULL) { inheritenv(envblock); }
 			envblock->envinx((yyval).startchop) = (yyval).xval; }
 		  else { resetscale((yyval).xval, XEQ, envblock); }
 
@@ -2881,11 +2881,11 @@ yyreduce:
 			  case XLbox:
 			  case XBLOCK:
 			    if (With2->ptype == XBLOCK) {
-			      r = 0.5 * ((yyvsp[0]).xval - With2->Upr.UBLOCK.blockheight);
-			      With2->Upr.UBLOCK.blockheight = (yyvsp[0]).xval; }
+			      r = 0.5 * ((yyvsp[0]).xval - With2->blockheight_);
+			      With2->blockheight_ = (yyvsp[0]).xval; }
 			    else {
-			      r = 0.5 * ((yyvsp[0]).xval - With2->Upr.Ubox.boxheight);
-			      With2->Upr.Ubox.boxheight = (yyvsp[0]).xval; }
+			      r = 0.5 * ((yyvsp[0]).xval - With2->boxheight_);
+			      With2->boxheight_ = (yyvsp[0]).xval; }
 			    if (!teststflag((yyvsp[-2]).state, XLat)) {
 			      switch (With2->direction) {
 			        case XLleft:
@@ -2901,9 +2901,9 @@ yyreduce:
 			      }
 			    break;
 			  case XLstring:
-	  			With2->Upr.Ubox.boxheight = (yyvsp[0]).xval;
+	  			With2->boxheight_ = (yyvsp[0]).xval;
 	  			if ((drawmode == PDF) && (With2->textp != NULL)) {
-	      		  With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+	      		  With2->boxwidth_ = With2->boxheight_ *
 					With2->textp->len * 0.6;
 	  			  }
 	  			break;
@@ -2914,16 +2914,14 @@ yyreduce:
 			        case XLright:
 				      break; /* blank case */
 			        case XLup:
-				      With2->aat.ypos +=
-				        (0.5 * (yyvsp[0]).xval) - With2->Upr.Ucircle.radius;
+				      With2->aat.ypos += (0.5 * (yyvsp[0]).xval) - With2->circleradius_;
 				      break;
 			        case XLdown:
-				      With2->aat.ypos +=
-				        With2->Upr.Ucircle.radius - (0.5 * (yyvsp[0]).xval);
+				      With2->aat.ypos += With2->circleradius_ - (0.5 * (yyvsp[0]).xval);
 				      break;
 			        }
 			      }
-			    With2->Upr.Ucircle.radius = (yyvsp[0]).xval * 0.5;
+			    With2->circleradius_ = (yyvsp[0]).xval * 0.5;
 			    break;
 			  case XLellipse:
 			    if (!teststflag((yyvsp[-2]).state, XLat)) {
@@ -2933,15 +2931,15 @@ yyreduce:
 				      break; /* blank case */
 			        case XLup:
 				      With2->aat.ypos +=
-				        0.5 * ((yyvsp[0]).xval - With2->Upr.Uellipse.elheight);
+				        0.5 * ((yyvsp[0]).xval - With2->ellipseheight_);
 				      break;
 			        case XLdown:
 				      With2->aat.ypos +=
-				        0.5 * (With2->Upr.Uellipse.elheight - (yyvsp[0]).xval);
+				        0.5 * (With2->ellipseheight_ - (yyvsp[0]).xval);
 				      break;
 			        }
 			      }
-			    With2->Upr.Uellipse.elheight = (yyvsp[0]).xval;
+			    With2->ellipseheight_ = (yyvsp[0]).xval;
 			    break;
 			  case XLline:
 			  case XLarrow:
@@ -2950,7 +2948,7 @@ yyreduce:
 			  case XLspline:
 			    prp = (yyvsp[-2]).prim;
 			    while (prp != NULL) {
-			      prp->Upr.Uline.height = (yyvsp[0]).xval;
+			      prp->lineheight_ = (yyvsp[0]).xval;
 			      if (isthen(prp)) { prp = prp->parent; } else { prp = NULL; }
 			      }
 			    break;
@@ -2961,22 +2959,22 @@ yyreduce:
 			    }
 		      }
 			}
-#line 2965 "dpic.tab.c" /* yacc.c:1646  */
+#line 2963 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 93:
-#line 1322 "dpic.y" /* yacc.c:1646  */
+#line 1320 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			switch (With2->ptype) {
 			  case XLbox:
 			  case XBLOCK:
 			    if (With2->ptype == XBLOCK) {
-			      r = 0.5 * ((yyvsp[0]).xval - With2->Upr.UBLOCK.blockwidth);
-			      With2->Upr.UBLOCK.blockwidth = (yyvsp[0]).xval; }
+			      r = 0.5 * ((yyvsp[0]).xval - With2->blockwidth_);
+			      With2->blockwidth_ = (yyvsp[0]).xval; }
 			  else {
-			      r = 0.5 * ((yyvsp[0]).xval - With2->Upr.Ubox.boxwidth);
-			      With2->Upr.Ubox.boxwidth = (yyvsp[0]).xval; }
+			      r = 0.5 * ((yyvsp[0]).xval - With2->boxwidth_);
+			      With2->boxwidth_ = (yyvsp[0]).xval; }
 			  if (!teststflag((yyvsp[-2]).state, XLat)) {
 			    switch (With2->direction) {
 			      case XLup:
@@ -2992,7 +2990,7 @@ yyreduce:
 			    }
 			  break;
 			case XLstring:
-			  With2->Upr.Ubox.boxwidth = (yyvsp[0]).xval;
+			  With2->boxwidth_ = (yyvsp[0]).xval;
 			  break;
 			case XLcircle:
 			  if (!teststflag((yyvsp[-2]).state, XLat)) {
@@ -3001,16 +2999,14 @@ yyreduce:
 			      case XLdown:
 				    break; /* blank case */
 			      case XLright:
-				    With2->aat.xpos +=
-				      (0.5 * (yyvsp[0]).xval) - With2->Upr.Ucircle.radius;
+				    With2->aat.xpos += (0.5 * (yyvsp[0]).xval) - With2->circleradius_;
 				    break;
 			      case XLleft:
-				    With2->aat.xpos +=
-				      With2->Upr.Ucircle.radius - (0.5 * (yyvsp[0]).xval);
+				    With2->aat.xpos += With2->circleradius_ - (0.5 * (yyvsp[0]).xval);
 				    break;
 			      }
 			    }
-			  With2->Upr.Ucircle.radius = (yyvsp[0]).xval * 0.5;
+			  With2->circleradius_ = (yyvsp[0]).xval * 0.5;
 			  break;
 			case XLellipse:
 			  if (!teststflag((yyvsp[-2]).state, XLat)) {
@@ -3019,16 +3015,14 @@ yyreduce:
 			      case XLdown:
 				    break; /* blank case */
 			      case XLright:
-				    With2->aat.xpos +=
-				      0.5 * ((yyvsp[0]).xval - With2->Upr.Uellipse.elwidth);
+				    With2->aat.xpos += 0.5 * ((yyvsp[0]).xval - With2->ellipsewidth_);
 				    break;
 			      case XLleft:
-				    With2->aat.xpos +=
-				      0.5 * (With2->Upr.Uellipse.elwidth - (yyvsp[0]).xval);
+				    With2->aat.xpos += 0.5 * (With2->ellipsewidth_ - (yyvsp[0]).xval);
 				    break;
 			      }
 			    }
-			  With2->Upr.Uellipse.elwidth = (yyvsp[0]).xval;
+			  With2->ellipsewidth_ = (yyvsp[0]).xval;
 			  break;
 			case XLline:
 			case XLarrow:
@@ -3037,9 +3031,8 @@ yyreduce:
 			case XLspline:
 			  prp = (yyvsp[-2]).prim;
 			  while (prp != NULL) {
-			    prp->Upr.Uline.width = (yyvsp[0]).xval;
-			    if (isthen(prp)) { prp = prp->parent; }
-			      else { prp = NULL; }
+			    prp->linewidth_ = (yyvsp[0]).xval;
+			    if (isthen(prp)) { prp = prp->parent; } else { prp = NULL; }
 			    }
 			  break;
 			case XLabel:
@@ -3049,44 +3042,42 @@ yyreduce:
 			  }
 		    }
 	 	  }
-#line 3053 "dpic.tab.c" /* yacc.c:1646  */
+#line 3046 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 1407 "dpic.y" /* yacc.c:1646  */
+#line 1400 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			switch (With2->ptype) {
 			  case XLbox:
-			    With2->Upr.Ubox.boxradius = (yyvsp[0]).xval;
+			    With2->boxradius_ = (yyvsp[0]).xval;
 			    break;
 			  case XLarc:
 			    t = (yyvsp[0]).xval;
 			    if (With2->direction == 0) {
-			      (yyvsp[0]).xval = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos( With2->Upr.Uline.endpos.xpos +
-                         With2->Upr.Uline.endpos.ypos));
-			      (yyvsp[0]).yval = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin( With2->Upr.Uline.endpos.xpos +
-                         With2->Upr.Uline.endpos.ypos));
-			      r = cos(With2->Upr.Uline.endpos.xpos);
-			      s = sin(With2->Upr.Uline.endpos.xpos);
-			      With2->aat.xpos += With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos += With2->Upr.Uline.aradius * s;
-			      With2->Upr.Uline.aradius = t;
-			      With2->aat.xpos -= With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos -= With2->Upr.Uline.aradius * s;
+			      (yyvsp[0]).xval = With2->aat.xpos + (With2->aradius_ *
+                    cos( With2->startangle_ + With2->arcangle_));
+			      (yyvsp[0]).yval = With2->aat.ypos + (With2->aradius_ *
+                    sin( With2->startangle_ + With2->arcangle_));
+			      r = cos(With2->startangle_);
+			      s = sin(With2->startangle_);
+			      With2->aat.xpos += With2->aradius_ * r;
+			      With2->aat.ypos += With2->aradius_ * s;
+			      With2->aradius_ = t;
+			      With2->aat.xpos -= With2->aradius_ * r;
+			      With2->aat.ypos -= With2->aradius_ * s;
 			      setstflag(&(yyvsp[-2]).state, XLradius);
 			      goto object_xx;
 			      }
 			    else {
-			      r = cos(With2->Upr.Uline.endpos.xpos);
-			      s = sin(With2->Upr.Uline.endpos.xpos);
-			      (yyval).prim->aat.xpos += With2->Upr.Uline.aradius * r;
-			      (yyval).prim->aat.ypos += With2->Upr.Uline.aradius * s;
-			      (yyval).prim->Upr.Uline.aradius = t;
-			      (yyval).prim->aat.xpos -= With2->Upr.Uline.aradius * r;
-			      (yyval).prim->aat.ypos -= With2->Upr.Uline.aradius * s;
+			      r = cos(With2->startangle_);
+			      s = sin(With2->startangle_);
+			      (yyval).prim->aat.xpos += With2->aradius_ * r;
+			      (yyval).prim->aat.ypos += With2->aradius_ * s;
+			      (yyval).prim->aradius_ = t;
+			      (yyval).prim->aat.xpos -= With2->aradius_ * r;
+			      (yyval).prim->aat.ypos -= With2->aradius_ * s;
 			      setstflag(&(yyval).state, XLradius);
 				  }
 			    break;
@@ -3094,20 +3085,20 @@ yyreduce:
 			    if (!teststflag((yyvsp[-2]).state, XLat)) {
 			      switch (With2->direction) {
 			        case XLleft:
-				      With2->aat.xpos += With2->Upr.Ucircle.radius - (yyvsp[0]).xval;
+				      With2->aat.xpos += With2->circleradius_ - (yyvsp[0]).xval;
 				      break;
 			        case XLright:
-				      With2->aat.xpos += (yyvsp[0]).xval - With2->Upr.Ucircle.radius;
+				      With2->aat.xpos += (yyvsp[0]).xval - With2->circleradius_;
 				      break;
 			        case XLup:
-				      With2->aat.ypos += (yyvsp[0]).xval - With2->Upr.Ucircle.radius;
+				      With2->aat.ypos += (yyvsp[0]).xval - With2->circleradius_;
 				      break;
 			        case XLdown:
-				      With2->aat.ypos += With2->Upr.Ucircle.radius - (yyvsp[0]).xval;
+				      With2->aat.ypos += With2->circleradius_ - (yyvsp[0]).xval;
 				      break;
 			        }
 			      }
-			    With2->Upr.Ucircle.radius = (yyvsp[0]).xval;
+			    With2->circleradius_ = (yyvsp[0]).xval;
 			    setstflag(&(yyvsp[-2]).state, XLradius);
 			    break;
 			  default:
@@ -3116,11 +3107,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3120 "dpic.tab.c" /* yacc.c:1646  */
+#line 3111 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 1471 "dpic.y" /* yacc.c:1646  */
+#line 1462 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			if (With2->ptype == XLcircle) {
@@ -3128,29 +3119,29 @@ yyreduce:
 			  if (!teststflag((yyvsp[-2]).state, XLat)) {
 				switch (With2->direction) {
 				  case XLleft:
-				    With2->aat.xpos += With2->Upr.Ucircle.radius - r;
+				    With2->aat.xpos += With2->circleradius_ - r;
 				    break;
 				  case XLright:
-				    With2->aat.xpos += r - With2->Upr.Ucircle.radius;
+				    With2->aat.xpos += r - With2->circleradius_;
 				    break;
 				  case XLup:
-				    With2->aat.ypos += r - With2->Upr.Ucircle.radius;
+				    With2->aat.ypos += r - With2->circleradius_;
 				    break;
 				  case XLdown:
-				    With2->aat.ypos += With2->Upr.Ucircle.radius - r;
+				    With2->aat.ypos += With2->circleradius_ - r;
 				    break;
 				  }
 			    }
-			  With2->Upr.Ucircle.radius = r;
+			  With2->circleradius_ = r;
 			  }
 			else { markerror(858); }
 		    }
 		  }
-#line 3150 "dpic.tab.c" /* yacc.c:1646  */
+#line 3141 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 96:
-#line 1498 "dpic.y" /* yacc.c:1646  */
+#line 1489 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			if ((yyvsp[0]).xval < 0.0) {
@@ -3160,11 +3151,11 @@ yyreduce:
 			else { With2->lthick = (yyvsp[0]).xval; }
 		    }
 		  }
-#line 3164 "dpic.tab.c" /* yacc.c:1646  */
+#line 3155 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 97:
-#line 1509 "dpic.y" /* yacc.c:1646  */
+#line 1500 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).prim != NULL) && ((yyvsp[0]).lexval != XEMPTY)) {
 			With2 = (yyval).prim;
 			r = (yyvsp[0]).xval - 1;
@@ -3178,12 +3169,12 @@ yyreduce:
 			      dy = 0.0;
 			      }
 			    else if (With2->ptype == XBLOCK) {
-			      dx = With2->Upr.UBLOCK.blockwidth * r / 2;
-			      dy = With2->Upr.UBLOCK.blockheight * r / 2;
+			      dx = With2->blockwidth_ * r / 2;
+			      dy = With2->blockheight_ * r / 2;
 			      }
 			    else {
-			      dx = With2->Upr.Ubox.boxwidth * r / 2;
-			      dy = With2->Upr.Ubox.boxheight * r / 2;
+			      dx = With2->boxwidth_ * r / 2;
+			      dy = With2->boxheight_ * r / 2;
 			      }
 			    scaleobj((yyval).prim, (yyvsp[0]).xval);
 			    switch (With2->direction) {
@@ -3202,47 +3193,47 @@ yyreduce:
 			      }
 			    break;
 			  case XLcircle:
-			    With2->Upr.Ucircle.radius = (yyvsp[0]).xval * With2->Upr.Ucircle.radius;
+			    With2->circleradius_ = (yyvsp[0]).xval * With2->circleradius_;
 			    if (!teststflag((yyvsp[-2]).state, XLat)) {
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 + With2->Upr.Ucircle.radius;
+				      With2->aat.ypos = z1 + With2->circleradius_;
 				      break;
 			        case XLdown:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 - With2->Upr.Ucircle.radius;
+				      With2->aat.ypos = z1 - With2->circleradius_;
 				      break;
 			        case XLright:
-				      With2->aat.xpos = x1 + With2->Upr.Ucircle.radius;
+				      With2->aat.xpos = x1 + With2->circleradius_;
 				      With2->aat.ypos = z1;
 				      break;
 			        case XLleft:
-				      With2->aat.xpos = x1 - With2->Upr.Ucircle.radius;
+				      With2->aat.xpos = x1 - With2->circleradius_;
 				      With2->aat.ypos = z1;
 				      break;
 			        }
 			      }
 			    break;
 			  case XLellipse:
-			    With2->Upr.Uellipse.elwidth *= (yyvsp[0]).xval;
-			    With2->Upr.Uellipse.elheight *= (yyvsp[0]).xval;
+			    With2->ellipsewidth_ *= (yyvsp[0]).xval;
+			    With2->ellipseheight_ *= (yyvsp[0]).xval;
 			    if (!teststflag((yyvsp[-2]).state, XLat)) {
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 + (With2->Upr.Uellipse.elheight / 2);
+				      With2->aat.ypos = z1 + (With2->ellipseheight_ / 2);
 				      break;
 			        case XLdown:
 				      With2->aat.xpos = x1;
-				      With2->aat.ypos = z1 - (With2->Upr.Uellipse.elheight / 2);
+				      With2->aat.ypos = z1 - (With2->ellipseheight_ / 2);
 				      break;
 			        case XLright:
-				      With2->aat.xpos = x1 + (With2->Upr.Uellipse.elwidth / 2);
+				      With2->aat.xpos = x1 + (With2->ellipsewidth_ / 2);
 				      With2->aat.ypos = z1;
 				      break;
 			        case XLleft:
-				      With2->aat.xpos = x1 - (With2->Upr.Uellipse.elwidth / 2);
+				      With2->aat.xpos = x1 - (With2->ellipsewidth_ / 2);
 				      With2->aat.ypos = z1;
 				      break;
 			        }
@@ -3264,11 +3255,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3268 "dpic.tab.c" /* yacc.c:1646  */
+#line 3259 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 98:
-#line 1610 "dpic.y" /* yacc.c:1646  */
+#line 1601 "dpic.y" /* yacc.c:1646  */
     { if ((yyval).prim != NULL) {
 			With2 = (yyval).prim;
 			if ((With2->ptype == XLspline) || (With2->ptype == XLarrow) ||
@@ -3279,25 +3270,25 @@ yyreduce:
 			  eb = findenv(envblock);
 			  switch (With2->ptype) {
 			    case XLarc:
-			      r = cos(With2->Upr.Uline.endpos.xpos);
-			      s = sin(With2->Upr.Uline.endpos.xpos);
-			      With2->aat.xpos += With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos += With2->Upr.Uline.aradius * s;
+			      r = cos(With2->startangle_);
+			      s = sin(With2->startangle_);
+			      With2->aat.xpos += With2->aradius_ * r;
+			      With2->aat.ypos += With2->aradius_ * s;
 				  nwi = With2->direction;
 			      if (((nwi == XLup) && (i == XLleft)) ||
 				      ((nwi == XLdown) && (i == XLright)) ||
 				      ((nwi == XLright) && (i == XLup)) ||
 				      ((nwi == XLleft) && (i == XLdown))) {
-				    With2->Upr.Uline.endpos.ypos = pi * 0.5; }
+				    With2->arcangle_ = pi * 0.5; }
 			      else if (((nwi == XLup) && (i == XLright)) ||
 				      ((nwi == XLdown) && (i == XLleft)) ||
 				      ((nwi == XLright) && (i == XLdown)) ||
 				      ((nwi == XLleft) && (i == XLup))) {
-				    With2->Upr.Uline.endpos.ypos = (-pi) * 0.5; }
+				    With2->arcangle_ = (-pi) * 0.5; }
 			      if ((yyvsp[0]).lexval != XEMPTY) {
-				    With2->Upr.Uline.aradius = (yyvsp[0]).xval; }
-			      With2->aat.xpos -= With2->Upr.Uline.aradius * r;
-			      With2->aat.ypos -= With2->Upr.Uline.aradius * s;
+				    With2->aradius_ = (yyvsp[0]).xval; }
+			      With2->aat.xpos -= With2->aradius_ * r;
+			      With2->aat.ypos -= With2->aradius_ * s;
 			      With2->direction = i;
 			      break;
 			    case XLline:
@@ -3329,11 +3320,11 @@ yyreduce:
 	    if (debuglevel > 0) { printobject((yyval).prim); }
 #endif
 		  }
-#line 3333 "dpic.tab.c" /* yacc.c:1646  */
+#line 3324 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 99:
-#line 1672 "dpic.y" /* yacc.c:1646  */
+#line 1663 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			setspec(&(yyval).prim->spec, (yyvsp[-1]).lexval);
 			if ((yyvsp[0]).lexval == XEMPTY) {
@@ -3353,11 +3344,11 @@ yyreduce:
 	    if (debuglevel > 0) { printobject((yyval).prim); }
 #endif
 		  }
-#line 3357 "dpic.tab.c" /* yacc.c:1646  */
+#line 3348 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 100:
-#line 1693 "dpic.y" /* yacc.c:1646  */
+#line 1684 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			if (((yyvsp[-2]).prim->ptype != XLspline) &&
 			    ((yyvsp[-2]).prim->ptype != XLmove) &&
@@ -3379,11 +3370,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3383 "dpic.tab.c" /* yacc.c:1646  */
+#line 3374 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 101:
-#line 1716 "dpic.y" /* yacc.c:1646  */
+#line 1707 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyvsp[-2]).prim;
 			if ((yyvsp[0]).lexval != XEMPTY) { s = (yyvsp[0]).xval; }
@@ -3395,19 +3386,17 @@ yyreduce:
 			while (prp != NULL) {
 			  switch (With2->ptype) {
 			    case XLbox:
-			      prp->Upr.Ubox.boxfill = s;
+			      prp->boxfill_ = s;
 			      break;
 			    case XLcircle:
-			      prp->Upr.Ucircle.cfill = s;
+			      prp->circlefill_ = s;
 			      break;
 			    case XLellipse:
-			      prp->Upr.Uellipse.efill = s;
+			      prp->ellipsefill_ = s;
 			      break;
 			    default:
-			      if ((drawmode >= 0) && (drawmode < 32) &&
-				  (((1L << drawmode) &
-				    ((1L << TeX) | (1L << tTeX) | (1L << Pict2e))) != 0)) {
-				    markerror(858); }
+                  if ((drawmode == TeX) || (drawmode == tTeX) ||
+                      (drawmode == Pict2e)) { markerror(858); }
 			      else {
 				    switch (With2->ptype) {
 				      case XLline:
@@ -3415,7 +3404,7 @@ yyreduce:
 				      case XLmove:
 				      case XLspline:
 				      case XLarc:
-				        prp->Upr.Uline.lfill = s;
+				        prp->linefill_ = s;
 				        break;
 				      default:
 				        markerror(858);
@@ -3429,33 +3418,32 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3433 "dpic.tab.c" /* yacc.c:1646  */
+#line 3422 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 102:
-#line 1763 "dpic.y" /* yacc.c:1646  */
+#line 1752 "dpic.y" /* yacc.c:1646  */
     { if ((yyval).prim != NULL) {
 			With2 = (yyval).prim;
 			if ((With2->ptype != XLspline) && (With2->ptype != XLarc) &&
 			    (With2->ptype != XLarrow) && (With2->ptype != XLline)) {
 			  markerror(858); }
 			else {
-			  With2->Upr.Uline.atype =
-                pahlex(With2->Upr.Uline.atype,(yyvsp[-1]).lexval);
+			  With2->lineatype_ = pahlex(With2->lineatype_,(yyvsp[-1]).lexval);
 			  if ((yyvsp[0]).lexval != XEMPTY) { lj = Rnd((yyvsp[0]).xval); }
 			  else {
 				eb = findenv(envblock);
 				lj = (long)floor(eb->envinx(XLarrowhead)+0.5);
 			    }
-			  With2->Upr.Uline.atype = pahnum(With2->Upr.Uline.atype, lj);
+			  With2->lineatype_ = pahnum(With2->lineatype_, lj);
 			  }
 		    }
 		  }
-#line 3455 "dpic.tab.c" /* yacc.c:1646  */
+#line 3443 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 103:
-#line 1782 "dpic.y" /* yacc.c:1646  */
+#line 1770 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 #ifdef DDEBUG
 		    if (debuglevel > 0) {
@@ -3466,89 +3454,77 @@ yyreduce:
 			if ((yyvsp[-1]).prim->ptype != XLarc) { setstflag(&(yyval).state, XEMPTY); }
 		    }
 		  }
-#line 3470 "dpic.tab.c" /* yacc.c:1646  */
+#line 3458 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 104:
-#line 1794 "dpic.y" /* yacc.c:1646  */
+#line 1782 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			With2 = (yyvsp[-1]).prim;
 			if (With2->ptype != XLarc) { markerror(858); }
 			else {
-			  if ((With2->Upr.Uline.endpos.ypos > 0.0) &&
-                  (With2->direction == 0)) {
-				With2->Upr.Uline.endpos.ypos = -fabs(
-				  principal((2.0 * pi) - With2->Upr.Uline.endpos.ypos,2.0*pi));}
+			  if ((With2->arcangle_ > 0.0) && (With2->direction == 0)) {
+				With2->arcangle_ = -fabs(
+				  principal((2.0 * pi) - With2->arcangle_,2.0*pi));}
 			  else if (With2->direction != 0) {
 				With2->aat = arcstart((yyval).prim);
 				switch (With2->direction) {
 				  case XLup:
-				    With2->aat.xpos += With2->Upr.Uline.aradius;
+				    With2->aat.xpos += With2->aradius_;
 				    break;
 				  case XLdown:
-				    With2->aat.xpos -= With2->Upr.Uline.aradius;
+				    With2->aat.xpos -= With2->aradius_;
 				    break;
 				  case XLleft:
-				    With2->aat.ypos += With2->Upr.Uline.aradius;
+				    With2->aat.ypos += With2->aradius_;
 				    break;
 				  case XLright:
-				    With2->aat.ypos -= With2->Upr.Uline.aradius;
+				    With2->aat.ypos -= With2->aradius_;
 				    break;
 				  }
-				if (With2->Upr.Uline.endpos.ypos > 0.0) {
-				    With2->Upr.Uline.endpos.xpos =
-                      principal(With2->Upr.Uline.endpos.xpos + pi, pi); }
-				With2->Upr.Uline.endpos.ypos =
-                 -fabs(With2->Upr.Uline.endpos.ypos);
+				if (With2->arcangle_ > 0.0) {
+				  With2->startangle_ =
+                    principal(With2->startangle_ + pi, pi); }
+				  With2->arcangle_ = -fabs(With2->arcangle_);
 			    }
 			  setstflag(&(yyval).state, XLcw);
 			  }
 		    }
 		  }
-#line 3509 "dpic.tab.c" /* yacc.c:1646  */
+#line 3495 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 105:
-#line 1830 "dpic.y" /* yacc.c:1646  */
+#line 1816 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			With2 = (yyvsp[-1]).prim;
 			if (With2->ptype != XLarc) { markerror(858); }
 			else {
-			  if ((With2->Upr.Uline.endpos.ypos < 0.0) &&
-                (With2->direction == 0)) {
-				With2->Upr.Uline.endpos.ypos = fabs(
-				  principal(With2->Upr.Uline.endpos.ypos - (2.0 * pi),2.0*pi));}
+			  if ((With2->arcangle_ < 0.0) && (With2->direction == 0)) {
+				With2->arcangle_ =
+                  fabs(principal(With2->arcangle_ - (2.0 * pi),2.0*pi)); }
 			  else if (With2->direction != 0) {
 				With2->aat = arcstart((yyvsp[-1]).prim);
 				switch (With2->direction) {
-				  case XLup:
-				    With2->aat.xpos -= With2->Upr.Uline.aradius;
-				    break;
-				  case XLdown:
-				    With2->aat.xpos += With2->Upr.Uline.aradius;
-				    break;
-				  case XLleft:
-				    With2->aat.ypos -= With2->Upr.Uline.aradius;
-				    break;
-				  case XLright:
-				    With2->aat.ypos += With2->Upr.Uline.aradius;
-				    break;
+				  case XLup: With2->aat.xpos -= With2->aradius_; break;
+				  case XLdown: With2->aat.xpos += With2->aradius_; break;
+				  case XLleft: With2->aat.ypos -= With2->aradius_; break;
+				  case XLright: With2->aat.ypos += With2->aradius_; break;
 				  }
-				if (With2->Upr.Uline.endpos.ypos < 0.0) {
-				  With2->Upr.Uline.endpos.xpos =
-                    principal( With2->Upr.Uline.endpos.xpos + pi, pi); }
-				With2->Upr.Uline.endpos.ypos =
-                  fabs(With2->Upr.Uline.endpos.ypos);
+				if (With2->arcangle_ < 0.0) {
+				  With2->startangle_ =
+                    principal( With2->startangle_ + pi, pi); }
+				  With2->arcangle_ = fabs(With2->arcangle_);
 			    }
 			  setstflag(&(yyvsp[-1]).state, XLccw);
 			  }
 		    }
 		  }
-#line 3548 "dpic.tab.c" /* yacc.c:1646  */
+#line 3524 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 106:
-#line 1866 "dpic.y" /* yacc.c:1646  */
+#line 1842 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			prp = nthprimobj(envblock->son, 0, (yyvsp[-1]).prim->ptype);
 			if (prp == NULL) { markerror(857); }
@@ -3572,27 +3548,26 @@ yyreduce:
 				    switch (With2->direction) {
 				      case XLup:
 				        With2->aat.ypos += 0.5 *
-					    (prp->Upr.Ubox.boxheight - With2->Upr.Ubox.boxheight);
+					      (prp->boxheight_ - With2->boxheight_);
 				        break;
 				      case XLdown:
 				        With2->aat.ypos -= 0.5 *
-					    (prp->Upr.Ubox.boxheight - With2->Upr.Ubox.boxheight);
+					      (prp->boxheight_ - With2->boxheight_);
 				        break;
 				      case XLleft:
 				        With2->aat.xpos -=
-				          0.5 * (prp->Upr.Ubox.boxwidth -
-						    With2->Upr.Ubox.boxwidth);
+				          0.5 * (prp->boxwidth_ - With2->boxwidth_);
 				        break;
 				      case XLright:
 				        With2->aat.xpos +=
-				          0.5*(prp->Upr.Ubox.boxwidth-With2->Upr.Ubox.boxwidth);
+				          0.5 * (prp->boxwidth_-With2->boxwidth_);
 				        break;
 				      }
 			        }
-			      With2->Upr.Ubox.boxfill = prp->Upr.Ubox.boxfill;
-			      With2->Upr.Ubox.boxheight = prp->Upr.Ubox.boxheight;
-			      With2->Upr.Ubox.boxwidth = prp->Upr.Ubox.boxwidth;
-			      With2->Upr.Ubox.boxradius = prp->Upr.Ubox.boxradius;
+			      With2->boxfill_ = prp->boxfill_;
+			      With2->boxheight_ = prp->boxheight_;
+			      With2->boxwidth_ = prp->boxwidth_;
+			      With2->boxradius_ = prp->boxradius_;
 			      break;
 			    case XBLOCK:
 			      markerror(858);
@@ -3601,75 +3576,71 @@ yyreduce:
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.ypos +=
-                        prp->Upr.Ucircle.radius - With2->Upr.Ucircle.radius;
+                        prp->circleradius_ - With2->circleradius_;
 				      break;
 			        case XLdown:
 				      With2->aat.ypos +=
-                        With2->Upr.Ucircle.radius - prp->Upr.Ucircle.radius;
+                        With2->circleradius_ - prp->circleradius_;
 				      break;
 			        case XLleft:
 				      With2->aat.xpos +=
-                        With2->Upr.Ucircle.radius - prp->Upr.Ucircle.radius;
+                        With2->circleradius_ - prp->circleradius_;
 				      break;
 			        case XLright:
 				      With2->aat.xpos +=
-                        prp->Upr.Ucircle.radius - With2->Upr.Ucircle.radius;
+                        prp->circleradius_ - With2->circleradius_;
 				      break;
 			        }
-			      With2->Upr.Ucircle.cfill = prp->Upr.Ucircle.cfill;
-			      With2->Upr.Ucircle.radius = prp->Upr.Ucircle.radius;
+			      With2->circlefill_ = prp->circlefill_;
+			      With2->circleradius_ = prp->circleradius_;
 			      break;
 			    case XLellipse:
 			      switch (With2->direction) {
 			        case XLup:
 				      With2->aat.ypos +=
-				        0.5 * (prp->Upr.Uellipse.elheight -
-                          With2->Upr.Uellipse.elheight);
+				        0.5 * (prp->ellipseheight_ - With2->ellipseheight_);
 				      break;
 			        case XLdown:
 				      With2->aat.ypos -=
-				        0.5 * (prp->Upr.Uellipse.elheight -
-                          With2->Upr.Uellipse.elheight);
+				        0.5 * (prp->ellipseheight_ - With2->ellipseheight_);
 				      break;
 			        case XLleft:
 				      With2->aat.xpos -=
-				        0.5 * (prp->Upr.Uellipse.elwidth -
-                          With2->Upr.Uellipse.elwidth);
+				        0.5 * (prp->ellipsewidth_ - With2->ellipsewidth_);
 				      break;
 			        case XLright:
 				      With2->aat.xpos +=
-				        0.5 * (prp->Upr.Uellipse.elwidth -
-                          With2->Upr.Uellipse.elwidth);
+				        0.5 * (prp->ellipsewidth_ - With2->ellipsewidth_);
 				      break;
 			        }
-			      With2->Upr.Uellipse.efill = prp->Upr.Uellipse.efill;
-			      With2->Upr.Uellipse.elheight = prp->Upr.Uellipse.elheight;
-			      With2->Upr.Uellipse.elwidth = prp->Upr.Uellipse.elwidth;
+			      With2->ellipsefill_ = prp->ellipsefill_;
+			      With2->ellipseheight_ = prp->ellipseheight_;
+			      With2->ellipsewidth_ = prp->ellipsewidth_;
 			      break;
 			    case XLarc:
-			      x1 = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos(With2->Upr.Uline.endpos.xpos));
-			      z1 = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin(With2->Upr.Uline.endpos.xpos));
-			      With2->Upr.Uline.aradius = prp->Upr.Uline.aradius;
-			      With2->Upr.Uline.endpos.xpos = prp->Upr.Uline.endpos.xpos;
-			      With2->aat.xpos = x1 - (With2->Upr.Uline.aradius *
-						      cos(With2->Upr.Uline.endpos.xpos));
-			      With2->aat.ypos = z1 - (With2->Upr.Uline.aradius *
-						      sin(With2->Upr.Uline.endpos.xpos));
-			      With2->Upr.Uline.endpos.ypos = prp->Upr.Uline.endpos.ypos;
+			      x1 = With2->aat.xpos +
+                    (With2->aradius_ * cos(With2->startangle_));
+			      z1 = With2->aat.ypos + 
+                    (With2->aradius_ * sin(With2->startangle_));
+			      With2->aradius_ = prp->aradius_;
+			      With2->startangle_ = prp->startangle_;
+			      With2->aat.xpos = x1 -
+                    (With2->aradius_ * cos(With2->startangle_));
+			      With2->aat.ypos = z1 -
+                    (With2->aradius_ * sin(With2->startangle_));
+			      With2->arcangle_ = prp->arcangle_;
 			      break;
 			    case XLline:
 			    case XLarrow:
 			    case XLmove:
 			    case XLspline:
-			      With2->Upr.Uline.endpos.xpos =
-				    With2->aat.xpos + prp->Upr.Uline.endpos.xpos-prp->aat.xpos;
-			      With2->Upr.Uline.endpos.ypos =
-				    With2->aat.ypos + prp->Upr.Uline.endpos.ypos-prp->aat.ypos;
-			      With2->Upr.Uline.height = prp->Upr.Uline.height;
-			      With2->Upr.Uline.width = prp->Upr.Uline.width;
-			      With2->Upr.Uline.atype = prp->Upr.Uline.atype;
+			      With2->endpos_.xpos =
+				    With2->aat.xpos + prp->endpos_.xpos-prp->aat.xpos;
+			      With2->endpos_.ypos =
+				    With2->aat.ypos + prp->endpos_.ypos-prp->aat.ypos;
+			      With2->lineheight_ = prp->lineheight_;
+			      With2->linewidth_ = prp->linewidth_;
+			      With2->lineatype_ = prp->lineatype_;
 			      break;
 			    case XLabel:
 			    case XLaTeX:
@@ -3679,11 +3650,11 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 3683 "dpic.tab.c" /* yacc.c:1646  */
+#line 3654 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 107:
-#line 1998 "dpic.y" /* yacc.c:1646  */
+#line 1969 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).prim != NULL) {
 			if ((yyvsp[-1]).prim != NULL) {
 			  With2 = (yyvsp[-1]).prim;
@@ -3691,18 +3662,18 @@ yyreduce:
 			  else {
 				namptr = With2->textp;
 				i = 1;
-				while (namptr->next_ != NULL) { namptr = namptr->next_; i++; }
-				namptr->next_ = (yyvsp[0]).prim->textp;
+				while (namptr->nextname != NULL) { namptr = namptr->nextname; i++; }
+				namptr->nextname = (yyvsp[0]).prim->textp;
 				if (With2->ptype == XLstring) {
 				  if (drawmode == SVG) {
 					eb = findenv(envblock);
 					if (eb != NULL) {
 					  r = findvar("dptextratio", 11);
 					  if (r == 0) { r = 1.0; }
-					  With2->Upr.Ubox.boxheight += eb->envinx(XLtextht) / r;
+					  With2->boxheight_ += eb->envinx(XLtextht) / r;
 					  }
 				    }
-				  else { With2->Upr.Ubox.boxheight *= ((i + 1) / i); }
+				  else { With2->boxheight_ *= ((i + 1) / i); }
 				  }
 			    }
 			  if ((drawmode == PS) || (drawmode == PDF) ||
@@ -3714,11 +3685,11 @@ yyreduce:
 			deletestringbox(&(yyvsp[0]).prim);
 		    }
 		  }
-#line 3718 "dpic.tab.c" /* yacc.c:1646  */
+#line 3689 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 108:
-#line 2030 "dpic.y" /* yacc.c:1646  */
+#line 2001 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval)  = (yyvsp[-2]);
 			if (((yyvsp[-2]).prim->ptype == XLmove) || ((yyvsp[-2]).prim->ptype == XLspline) ||
@@ -3728,10 +3699,8 @@ yyreduce:
 			    x1 = (yyvsp[0]).xval + With2->aat.xpos;
 			    z1 = (yyvsp[0]).yval + With2->aat.ypos;
 			    if (With2->ptype == XLarc) {
-				  x1 += With2->Upr.Uline.aradius *
-                    cos(With2->Upr.Uline.endpos.xpos);
-				  z1 += With2->Upr.Uline.aradius *
-                    sin(With2->Upr.Uline.endpos.xpos);
+				  x1 += With2->aradius_ * cos(With2->startangle_);
+				  z1 += With2->aradius_ * sin(With2->startangle_);
 			      }
 			    (yyvsp[0]).xval = x1;
 			    (yyvsp[0]).yval = z1;
@@ -3740,11 +3709,11 @@ yyreduce:
 			  else { markerror(858); }
 		    }
 		  }
-#line 3744 "dpic.tab.c" /* yacc.c:1646  */
+#line 3713 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 109:
-#line 2053 "dpic.y" /* yacc.c:1646  */
+#line 2022 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			With2 = (yyval).prim;
 			if ((With2->ptype == XLmove) || (With2->ptype == XLspline) ||
@@ -3754,17 +3723,15 @@ yyreduce:
 				 r = (yyvsp[0]).xval;
 				 s = (yyvsp[0]).yval;
 				if (teststflag((yyvsp[-2]).state, XLto)) {
-				  (yyvsp[0]).xval = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos( With2->Upr.Uline.endpos.xpos +
-                        With2->Upr.Uline.endpos.ypos));
-				  (yyvsp[0]).yval = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin( With2->Upr.Uline.endpos.xpos +
-                         With2->Upr.Uline.endpos.ypos));
+				  (yyvsp[0]).xval = With2->aat.xpos + (With2->aradius_ *
+                    cos( With2->startangle_ + With2->arcangle_));
+				  (yyvsp[0]).yval = With2->aat.ypos + (With2->aradius_ *
+                    sin( With2->startangle_ + With2->arcangle_));
 				  }
-				With2->aat.xpos = r - (With2->Upr.Uline.aradius *
-						       cos(With2->Upr.Uline.endpos.xpos));
-				With2->aat.ypos = s - (With2->Upr.Uline.aradius *
-						       sin(With2->Upr.Uline.endpos.xpos));
+				With2->aat.xpos = r -
+                  (With2->aradius_ * cos(With2->startangle_));
+				With2->aat.ypos = s -
+                  (With2->aradius_ * sin(With2->startangle_));
 				if (teststflag((yyvsp[-2]).state, XLto)) { goto object_xx; }
 			    }
 			  else if (!teststflag((yyvsp[-2]).state, XLto)) {
@@ -3780,11 +3747,11 @@ yyreduce:
 			else { markerror(858); }
 		    }
 		  }
-#line 3784 "dpic.tab.c" /* yacc.c:1646  */
+#line 3751 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 110:
-#line 2090 "dpic.y" /* yacc.c:1646  */
+#line 2057 "dpic.y" /* yacc.c:1646  */
     {
           object_xx:
     	    if ((yyvsp[-2]).prim != NULL) {
@@ -3802,14 +3769,14 @@ yyreduce:
     	          }
     	        With2 = (yyval).prim;
     	        if (With2->ptype != XLarc) {
-    	    	  With2->Upr.Uline.endpos.xpos = (yyvsp[0]).xval;
-    	    	  With2->Upr.Uline.endpos.ypos = (yyvsp[0]).yval;
+    	    	  With2->startangle_ = (yyvsp[0]).xval;
+    	    	  With2->arcangle_ = (yyvsp[0]).yval;
     	          }
     	        else {
-    	    	  x1 = With2->aat.xpos + (With2->Upr.Uline.aradius *
-                    cos(With2->Upr.Uline.endpos.xpos));
-    	    	  z1 = With2->aat.ypos + (With2->Upr.Uline.aradius *
-                    sin(With2->Upr.Uline.endpos.xpos));
+    	    	  x1 = With2->aat.xpos + (With2->aradius_ *
+                    cos(With2->startangle_));
+    	    	  z1 = With2->aat.ypos + (With2->aradius_ *
+                    sin(With2->startangle_));
     	    	  dx = (yyvsp[0]).xval - x1;
     	    	  dy = (yyvsp[0]).yval - z1;
     	    	  ts = (dx * dx) + (dy * dy);
@@ -3822,37 +3789,33 @@ yyreduce:
     	    	  fprintf(log_, " ts="); wfloat(&log_, ts);
     	    	  fprintf(log_, " i=%d", i); }
 #endif
-    	    	if (ts == 0.0) { With2->Upr.Uline.endpos.ypos = 0.0; }
+    	    	if (ts == 0.0) { With2->arcangle_ = 0.0; }
     	    	else {
-    	    	    t = sqrt(Max(0.0, (4.0 * With2->Upr.Uline.aradius * With2->
-    	    				 Upr.Uline.aradius) - ts) / ts);
+    	    	    t = sqrt(Max(0.0,(4.0 *
+                          With2->aradius_ * With2->aradius_) - ts) / ts);
 #ifdef DDEBUG
     	    	    if (debuglevel == 2) {
     	    		  fprintf(log_, " t="); wfloat(&log_, t);
     	    		  fprintf(log_, " |arcangle|=");
-    	    		  wfloat(&log_, With2->Upr.Uline.endpos.ypos * 180 / pi);
+    	    		  wfloat(&log_, With2->arcangle_ * 180 / pi);
     	    		  putc('\n', log_); }
 #endif
     	    	    r = sqrt(ts);               /* t is always nonnegative  */
-    	    	    if (t <= 0.0) { With2->Upr.Uline.aradius = 0.5 * r; }
+    	    	    if (t <= 0.0) { With2->aradius_ = 0.5 * r; }
     	    	    switch (i) {
 							/* Determine which of the two default arcs to
 							   draw: */
     	    	    case XLup:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        ((-dx) - (t * dy)) < 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * ((-dx) - (t * dy)) < 0.0) {t= -t; }
     	    	      break;
     	    	    case XLdown:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        ((-dx) - (t * dy)) > 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * ((-dx) - (t * dy)) > 0.0) { t=-t; }
     	    	      break;
     	    	    case XLright:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        (dy - (t * dx)) < 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * (dy - (t * dx)) < 0.0) { t = -t; }
     	    	      break;
     	    	    case XLleft:
-    	    	      if (With2->Upr.Uline.endpos.ypos *
-                        (dy - (t * dx)) > 0.0) { t = -t; }
+    	    	      if (With2->arcangle_ * (dy - (t * dx)) > 0.0) { t = -t; }
     	    	      break;
     	    	      }
     	    	    With2->aat.xpos = x1 + (0.5 * (dx + (t * dy)));
@@ -3861,33 +3824,33 @@ yyreduce:
     	    	    if (debuglevel == 2) {
     	    		  fprintf(log_, " t="); wfloat(&log_, t);
     	    		  fprintf(log_, " aradius=");
-    	    		  wfloat(&log_, With2->Upr.Uline.aradius);
+    	    		  wfloat(&log_, With2->aradius_);
     	    		  fprintf(log_, " aat=");
     	    		  wpair(&log_, With2->aat.xpos, With2->aat.ypos);
     	    		  putc('\n', log_);
     	    	      }
 #endif
-    	    	    setangles(&With2->Upr.Uline.endpos.xpos,
-    	    		      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1,
+    	    	    setangles(&With2->startangle_,
+    	    		      &With2->arcangle_, With2->aat, x1, z1,
     	    		      (yyvsp[0]).xval, (yyvsp[0]).yval);
-    	    	}
+    	    	    }
 							/* ratio centre-to-chord/half-chord */
-    	    	    if (With2->direction != 0) { (yyval).toklen = With2->direction; }
-    	    	    With2->direction = 0;
-    	            }
-    	          setstflag(&(yyval).state, XLto);
+    	    	  if (With2->direction != 0) { (yyval).toklen = With2->direction; }
+    	    	  With2->direction = 0;
+    	          }
+    	        setstflag(&(yyval).state, XLto);
 #ifdef DDEBUG
-    	          if (debuglevel > 0) { printobject((yyval).prim); }
+    	        if (debuglevel > 0) { printobject((yyval).prim); }
 #endif
     	        }
     	      else { markerror(858); }
     	      }
 		   }
-#line 3887 "dpic.tab.c" /* yacc.c:1646  */
+#line 3850 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 111:
-#line 2190 "dpic.y" /* yacc.c:1646  */
+#line 2153 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -3904,19 +3867,20 @@ yyreduce:
 #endif
 		    }
 		  }
-#line 3908 "dpic.tab.c" /* yacc.c:1646  */
+#line 3871 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 112:
-#line 2208 "dpic.y" /* yacc.c:1646  */
+#line 2171 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			namptr = (yyval).prim->textp;
 			if (namptr != NULL) {
-			  while (namptr->next_ != NULL) { namptr = namptr->next_; }
+			  while (namptr->nextname != NULL) { namptr = namptr->nextname; }
 			  setjust(namptr, (yyvsp[0]).lexval);
 			  if (drawmode == SVG) {
 				With2 = (yyval).prim;
-				if (!teststflag((yyval).state, XLat)) {
+				if ((!teststflag((yyval).state, XLat)) &&
+                    (With2->ptype == XLstring)) {
 				  (yyval).xval = With2->aat.xpos;
 				  (yyval).yval = With2->aat.ypos;
 				  setstflag(&(yyval).state, XLat); }
@@ -3952,11 +3916,11 @@ yyreduce:
 			else { markerror(861); }
 		    }
 		  }
-#line 3956 "dpic.tab.c" /* yacc.c:1646  */
+#line 3920 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 113:
-#line 2253 "dpic.y" /* yacc.c:1646  */
+#line 2217 "dpic.y" /* yacc.c:1646  */
     { if ((drawmode == Pict2e) || (drawmode == TeX) ||
 		      (drawmode == tTeX) || (drawmode == xfig)) { markerror(858); }
 		  else if (((yyvsp[0]).prim != NULL) && ((yyvsp[-2]).prim != NULL)) {
@@ -3993,11 +3957,11 @@ yyreduce:
 		    }
 		    deletestringbox(&(yyvsp[0]).prim);
 		  }
-#line 3997 "dpic.tab.c" /* yacc.c:1646  */
+#line 3961 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 114:
-#line 2291 "dpic.y" /* yacc.c:1646  */
+#line 2255 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4005,11 +3969,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4009 "dpic.tab.c" /* yacc.c:1646  */
+#line 3973 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 115:
-#line 2300 "dpic.y" /* yacc.c:1646  */
+#line 2264 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4017,11 +3981,11 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4021 "dpic.tab.c" /* yacc.c:1646  */
+#line 3985 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 116:
-#line 2309 "dpic.y" /* yacc.c:1646  */
+#line 2273 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).xval = (yyvsp[0]).xval;
 			(yyval).yval = (yyvsp[0]).yval;
@@ -4036,17 +4000,17 @@ yyreduce:
 			setstflag(&(yyval).state, XLat);
 		    }
 		  }
-#line 4040 "dpic.tab.c" /* yacc.c:1646  */
+#line 4004 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 117:
-#line 2325 "dpic.y" /* yacc.c:1646  */
+#line 2289 "dpic.y" /* yacc.c:1646  */
     { primp = NULL;
 	      prp = envblock->son;
 	      while (prp != NULL) { i = prp->ptype;
 		    if ( (i != XLaTeX) && (i != XLstring) && (i != XBLOCK)
 			  && (i != XLabel) ) { primp = prp; }
-		    prp = prp->next_; }
+		    prp = prp->nextname; }
 	      if (primp == NULL) { markerror(857); }
 	      else {
 		    while (primp->son != NULL) { primp = primp->son; }
@@ -4057,31 +4021,30 @@ yyreduce:
 		      }
 		    }
 		  }
-#line 4061 "dpic.tab.c" /* yacc.c:1646  */
+#line 4025 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 118:
-#line 2344 "dpic.y" /* yacc.c:1646  */
+#line 2308 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XBLOCK, envblock);
-		  (yyval).prim->Upr.UBLOCK.here.xpos = 0.0;
-		  (yyval).prim->Upr.UBLOCK.here.ypos = 0.0;
+		  (yyval).prim->here_.xpos = 0.0;
+		  (yyval).prim->here_.ypos = 0.0;
 		  envblock = (yyval).prim;
 		  tail = NULL;
 		  (yyval).lexval = 0;
 		  }
-#line 4073 "dpic.tab.c" /* yacc.c:1646  */
+#line 4037 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 119:
-#line 2355 "dpic.y" /* yacc.c:1646  */
+#line 2319 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-1]).lexval > XLprimitiv) && ((yyvsp[-1]).lexval < XLenvvar)) {
 			newprim(&(yyval).prim, (yyvsp[-1]).lexval, envblock);
 			eb = findenv(envblock);
 			if (( ((yyvsp[-1]).lexval != XLmove) && ((drawmode == MPost) ||
 			      (drawmode == Pict2e) || (drawmode == PDF) ||
 			      (drawmode == PS) || (drawmode == SVG) ||
-			      (drawmode == PSfrag)) ) ||
-			    ((yyvsp[-1]).lexval == XLarc)) {
+			      (drawmode == PSfrag)) ) || ((yyvsp[-1]).lexval == XLarc)) {
 			  (yyval).prim->lthick = eb->envinx(XLlinethick); }
 			if (((yyvsp[0]).lexval != XEMPTY) &&               /* check expr allowed */
 			    ((yyvsp[-1]).lexval != XLmove) &&
@@ -4091,93 +4054,92 @@ yyreduce:
 			With2 = (yyval).prim;
 			switch ((yyvsp[-1]).lexval) {
 			  case XLbox:
-			    With2->Upr.Ubox.boxheight = eb->envinx(XLboxht);
-			    With2->Upr.Ubox.boxwidth = eb->envinx(XLboxwid);
-			    With2->Upr.Ubox.boxradius = eb->envinx(XLboxrad);
+			    With2->boxheight_ = eb->envinx(XLboxht);
+			    With2->boxwidth_ = eb->envinx(XLboxwid);
+			    With2->boxradius_ = eb->envinx(XLboxrad);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->aat.ypos += With2->Upr.Ubox.boxheight * 0.5;
+			        With2->aat.ypos += With2->boxheight_ * 0.5;
 			        break;
 			      case XLdown:
-			        With2->aat.ypos -= With2->Upr.Ubox.boxheight * 0.5;
+			        With2->aat.ypos -= With2->boxheight_ * 0.5;
 			        break;
 			      case XLleft:
-			        With2->aat.xpos -= With2->Upr.Ubox.boxwidth * 0.5;
+			        With2->aat.xpos -= With2->boxwidth_ * 0.5;
 			        break;
 			      case XLright:
-			        With2->aat.xpos += With2->Upr.Ubox.boxwidth * 0.5;
+			        With2->aat.xpos += With2->boxwidth_ * 0.5;
 			        break;
 			      }
 			    break;
 			  case XLcircle:
-			    With2->Upr.Ucircle.radius = eb->envinx(XLcirclerad);
+			    With2->circleradius_ = eb->envinx(XLcirclerad);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->aat.ypos += With2->Upr.Ucircle.radius;
+			        With2->aat.ypos += With2->circleradius_;
 			        break;
 			      case XLdown:
-			        With2->aat.ypos -= With2->Upr.Ucircle.radius;
+			        With2->aat.ypos -= With2->circleradius_;
 			        break;
 			      case XLleft:
-			        With2->aat.xpos -= With2->Upr.Ucircle.radius;
+			        With2->aat.xpos -= With2->circleradius_;
 			        break;
 			      case XLright:
-			        With2->aat.xpos += With2->Upr.Ucircle.radius;
+			        With2->aat.xpos += With2->circleradius_;
 			        break;
 			      }
 			    break;
 			  case XLellipse:
-			    With2->Upr.Uellipse.elheight = eb->envinx(XLellipseht);
-			    With2->Upr.Uellipse.elwidth = eb->envinx(XLellipsewid);
+			    With2->ellipseheight_ = eb->envinx(XLellipseht);
+			    With2->ellipsewidth_ = eb->envinx(XLellipsewid);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->aat.ypos += With2->Upr.Uellipse.elheight * 0.5;
+			        With2->aat.ypos += With2->ellipseheight_ * 0.5;
 			        break;
 			      case XLdown:
-			        With2->aat.ypos -= With2->Upr.Uellipse.elheight * 0.5;
+			        With2->aat.ypos -= With2->ellipseheight_ * 0.5;
 			        break;
 			      case XLleft:
-			        With2->aat.xpos -= With2->Upr.Uellipse.elwidth * 0.5;
+			        With2->aat.xpos -= With2->ellipsewidth_ * 0.5;
 			        break;
 			      case XLright:
-			        With2->aat.xpos += With2->Upr.Uellipse.elwidth * 0.5;
+			        With2->aat.xpos += With2->ellipsewidth_ * 0.5;
 			        break;
 			      }
 			    break;
 			  case XLarc:
-			    With2->Upr.Uline.aradius =
-                  eb->envinx(XLarcrad);
+			    With2->aradius_ = eb->envinx(XLarcrad);
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->Upr.Uline.endpos.xpos = 0.0;
-			        With2->aat.xpos -= With2->Upr.Uline.aradius;
+			        With2->startangle_ = 0.0;
+			        With2->aat.xpos -= With2->aradius_;
 			        break;
 			      case XLdown:
-			        With2->Upr.Uline.endpos.xpos = pi;
-			        With2->aat.xpos += With2->Upr.Uline.aradius;
+			        With2->startangle_ = pi;
+			        With2->aat.xpos += With2->aradius_;
 			        break;
 			      case XLleft:
-			        With2->Upr.Uline.endpos.xpos = 0.5 * pi;
-			        With2->aat.ypos -= With2->Upr.Uline.aradius;
+			        With2->startangle_ = 0.5 * pi;
+			        With2->aat.ypos -= With2->aradius_;
 			        break;
 			      case XLright:
-			        With2->Upr.Uline.endpos.xpos = (-0.5) * pi;
-			        With2->aat.ypos += With2->Upr.Uline.aradius;
+			        With2->startangle_ = (-0.5) * pi;
+			        With2->aat.ypos += With2->aradius_;
 			        break;
 			      }
-			    With2->Upr.Uline.height = eb->envinx(XLarrowht);
-			    With2->Upr.Uline.width = eb->envinx(XLarrowwid);
-			    With2->Upr.Uline.atype = pahnum(pahlex(0, XEMPTY),
+			    With2->lineheight_ = eb->envinx(XLarrowht);
+			    With2->linewidth_ = eb->envinx(XLarrowwid);
+			    With2->lineatype_ = pahnum(pahlex(0, XEMPTY),
 			      Rnd(eb->envinx(XLarrowhead)));
-			    With2->Upr.Uline.endpos.ypos = pi * 0.5;
+			    With2->arcangle_ = pi * 0.5;
 			    break;
 			  case XLline:
 			  case XLarrow:
 			  case XLspline:
 			  case XLmove:
-			    With2->Upr.Uline.endpos = With2->aat;
+			    With2->endpos_ = With2->aat;
 			    if ((With2->ptype == XLspline) && ((yyvsp[0]).lexval != XEMPTY)) {
-			      With2->Upr.Uline.aradius = (yyvsp[0]).xval;
+			      With2->aradius_ = (yyvsp[0]).xval;
 			      (yyvsp[0]).lexval = XEMPTY; }
 			    if ((yyvsp[0]).lexval != XEMPTY) { r = (yyvsp[0]).xval; }
 			    else if (With2->ptype == XLmove) {
@@ -4206,24 +4168,24 @@ yyreduce:
 			      }
 			    switch (With2->direction) {
 			      case XLup:
-			        With2->Upr.Uline.endpos.ypos = With2->aat.ypos + r;
+			        With2->endpos_.ypos = With2->aat.ypos + r;
 			        break;
 			      case XLdown:
-			        With2->Upr.Uline.endpos.ypos = With2->aat.ypos - r;
+			        With2->endpos_.ypos = With2->aat.ypos - r;
 			        break;
 			      case XLleft:
-			        With2->Upr.Uline.endpos.xpos = With2->aat.xpos - r;
+			        With2->endpos_.xpos = With2->aat.xpos - r;
 			        break;
 			      case XLright:
-			        With2->Upr.Uline.endpos.xpos = With2->aat.xpos + r;
+			        With2->endpos_.xpos = With2->aat.xpos + r;
 			        break;
 			      }
-			    With2->Upr.Uline.height = eb->envinx(XLarrowht);
-			    With2->Upr.Uline.width = eb->envinx(XLarrowwid);
+			    With2->lineheight_ = eb->envinx(XLarrowht);
+			    With2->linewidth_ = eb->envinx(XLarrowwid);
 			    if (With2->ptype == XLarrow) {
-			      With2->Upr.Uline.atype = pahlex(0, XRIGHTHEAD); }
-			    else { With2->Upr.Uline.atype = pahlex(0, XEMPTY); }
-			  With2->Upr.Uline.atype = pahnum(With2->Upr.Uline.atype,
+			      With2->lineatype_ = pahlex(0, XRIGHTHEAD); }
+			    else { With2->lineatype_ = pahlex(0, XEMPTY); }
+			  With2->lineatype_ = pahnum(With2->lineatype_,
 			    Rnd(eb->envinx(XLarrowhead)));
 			  break;
 			  }
@@ -4232,42 +4194,42 @@ yyreduce:
 			if (debuglevel > 0) { printobject((yyval).prim); }
 #endif
 		  }
-#line 4236 "dpic.tab.c" /* yacc.c:1646  */
+#line 4198 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 120:
-#line 2515 "dpic.y" /* yacc.c:1646  */
+#line 2477 "dpic.y" /* yacc.c:1646  */
     { if ((drawmode == PS) || (drawmode == PDF) || (drawmode == PSfrag)) {
 			printstate = ((printstate >> 1) * 2) + 1; }
 		  }
-#line 4244 "dpic.tab.c" /* yacc.c:1646  */
+#line 4206 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 121:
-#line 2520 "dpic.y" /* yacc.c:1646  */
+#line 2482 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).prim != NULL) {
 			envblock = (yyvsp[-2]).prim->parent;
 			tail = NULL;
 			getnesw((yyvsp[-2]).prim->son);
 			With2 = (yyvsp[-2]).prim;
-			With2->Upr.UBLOCK.blockwidth = east - west;
-			With2->Upr.UBLOCK.blockheight = north - south;
+			With2->blockwidth_ = east - west;
+			With2->blockheight_ = north - south;
 			With2->aat.xpos = (east + west) * 0.5;
 			With2->aat.ypos = (north + south) * 0.5;
-			dx = envblockB.here.xpos - With2->aat.xpos;
-			dy = envblockB.here.ypos - With2->aat.ypos;
+			dx = envblock->here_.xpos - With2->aat.xpos;
+			dy = envblock->here_.ypos - With2->aat.ypos;
 			switch (envblock->direction) {
-			  case XLright: dx += With2->Upr.UBLOCK.blockwidth * 0.5; break;
-			  case XLleft: dx -= With2->Upr.UBLOCK.blockwidth * 0.5; break;
-			  case XLup: dy += With2->Upr.UBLOCK.blockheight * 0.5; break;
-			  case XLdown: dy -= With2->Upr.UBLOCK.blockheight * 0.5; break;
+			  case XLright: dx += With2->blockwidth_ * 0.5; break;
+			  case XLleft: dx -= With2->blockwidth_ * 0.5; break;
+			  case XLup: dy += With2->blockheight_ * 0.5; break;
+			  case XLdown: dy -= With2->blockheight_ * 0.5; break;
 			  }
 			With2->direction = envblock->direction;
 #ifdef DDEBUG
 			if ((debuglevel > 0) && ((yyvsp[-2]).prim->son != NULL)) {
 			  printobject((yyvsp[-2]).prim->son);
-			  if ((yyvsp[-2]).prim->son->next_ != NULL) {
-                printobject((yyvsp[-2]).prim->son->next_); }
+			  if ((yyvsp[-2]).prim->son->nextname != NULL) {
+                printobject((yyvsp[-2]).prim->son->nextname); }
 			  }
 #endif
 			shift((yyvsp[-2]).prim, dx, dy);
@@ -4275,18 +4237,18 @@ yyreduce:
 			if (debuglevel > 0) {
 			  With2 = (yyvsp[-2]).prim;
 			  fprintf(log_, "Block3: (north,south),(west,east)");
-			  wpair(&log_,With2->aat.ypos + (With2->Upr.UBLOCK.blockheight*0.5),
-				  With2->aat.ypos - (With2->Upr.UBLOCK.blockheight * 0.5));
-			  wpair(&log_,With2->aat.xpos -(With2->Upr.UBLOCK.blockwidth*0.5),
-				  With2->aat.xpos + (With2->Upr.UBLOCK.blockwidth * 0.5));
+			  wpair(&log_,With2->aat.ypos + (With2->blockheight_*0.5),
+				  With2->aat.ypos - (With2->blockheight_ * 0.5));
+			  wpair(&log_,With2->aat.xpos -(With2->blockwidth_*0.5),
+				  With2->aat.xpos + (With2->blockwidth_ * 0.5));
 			  fprintf(log_, " here=");
 			  wpair(&log_,
-				  With2->Upr.UBLOCK.here.xpos, With2->Upr.UBLOCK.here.ypos);
+				  With2->here_.xpos, With2->here_.ypos);
 			  putc('\n', log_);
 			  if ((yyvsp[-2]).prim->son != NULL) {
 				printobject((yyvsp[-2]).prim->son);
-				if ((yyvsp[-2]).prim->son->next_ != NULL) {
-				  printobject((yyval).prim->son->next_); }
+				if ((yyvsp[-2]).prim->son->nextname != NULL) {
+				  printobject((yyval).prim->son->nextname); }
 			    }
 			  (yyval).prim = (yyvsp[-2]).prim;
 			  snaptree((yyval).prim, 0);
@@ -4295,28 +4257,28 @@ yyreduce:
 #endif
 		    }
 		  }
-#line 4299 "dpic.tab.c" /* yacc.c:1646  */
+#line 4261 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 122:
-#line 2572 "dpic.y" /* yacc.c:1646  */
+#line 2534 "dpic.y" /* yacc.c:1646  */
     { newprim(&(yyval).prim, XBLOCK, envblock);
-		  (yyval).prim->Upr.UBLOCK.here.xpos = 0.0;
-		  (yyval).prim->Upr.UBLOCK.here.ypos = 0.0;
+		  (yyval).prim->here_.xpos = 0.0;
+		  (yyval).prim->here_.ypos = 0.0;
 		  (yyval).lexval = 0;
 		  }
-#line 4309 "dpic.tab.c" /* yacc.c:1646  */
+#line 4271 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 123:
-#line 2580 "dpic.y" /* yacc.c:1646  */
+#line 2542 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XEMPTY; }
-#line 4315 "dpic.tab.c" /* yacc.c:1646  */
+#line 4277 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 125:
-#line 2586 "dpic.y" /* yacc.c:1646  */
-    { if (envblockB.env != NULL) {
+#line 2548 "dpic.y" /* yacc.c:1646  */
+    { if (envblock->blockparms.env != NULL) {
 			eb = findenv(envblock->parent);
 			if (envblock->envinx(XLlinethick) != eb->envinx(XLlinethick)) {
 		      newprim(&prp, XLaTeX, envblock);
@@ -4325,11 +4287,11 @@ yyreduce:
               }
 		    }
 		  }
-#line 4329 "dpic.tab.c" /* yacc.c:1646  */
+#line 4291 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 127:
-#line 2600 "dpic.y" /* yacc.c:1646  */
+#line 2562 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[0]).lexval != XEMPTY) {
 			  With1 = &(yyvsp[-1]);
@@ -4344,11 +4306,11 @@ yyreduce:
 		    }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4348 "dpic.tab.c" /* yacc.c:1646  */
+#line 4310 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 128:
-#line 2616 "dpic.y" /* yacc.c:1646  */
+#line 2578 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[-3]).internal == NULL) { prp = (yyvsp[-3]).prim; }
 			else { prp = (yyvsp[-3]).internal; }
@@ -4356,160 +4318,160 @@ yyreduce:
 			if ((yyval).internal == NULL) { markerror(857); deletetree(&(yyval).prim); }
 		    }
 		  }
-#line 4360 "dpic.tab.c" /* yacc.c:1646  */
+#line 4322 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 129:
-#line 2626 "dpic.y" /* yacc.c:1646  */
+#line 2588 "dpic.y" /* yacc.c:1646  */
     { (yyval).yval = (yyvsp[0]).xval;
 #ifdef DDEBUG
 			if (debuglevel>1) prattribute("pair1",&(yyval));
 #endif
 			}
-#line 4370 "dpic.tab.c" /* yacc.c:1646  */
+#line 4332 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 130:
-#line 2633 "dpic.y" /* yacc.c:1646  */
+#line 2595 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) {
 			(yyval).xval += (yyvsp[0]).xval;
 			(yyval).yval += (yyvsp[0]).yval; }
 		  }
-#line 4379 "dpic.tab.c" /* yacc.c:1646  */
+#line 4341 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 131:
-#line 2640 "dpic.y" /* yacc.c:1646  */
+#line 2602 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).xval <= 0.0) { markerror(856); }
 		  else { (yyval).toklen = Rnd((yyvsp[-1]).xval); }
 		  }
-#line 4387 "dpic.tab.c" /* yacc.c:1646  */
+#line 4349 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 132:
-#line 2645 "dpic.y" /* yacc.c:1646  */
+#line 2607 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval <= 0.0) { markerror(856); }
 		  else { (yyval).toklen = -Rnd((yyvsp[-2]).xval); }
 		  }
-#line 4395 "dpic.tab.c" /* yacc.c:1646  */
+#line 4357 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 133:
-#line 2650 "dpic.y" /* yacc.c:1646  */
+#line 2612 "dpic.y" /* yacc.c:1646  */
     { (yyval).toklen = 0; }
-#line 4401 "dpic.tab.c" /* yacc.c:1646  */
+#line 4363 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 137:
-#line 2660 "dpic.y" /* yacc.c:1646  */
+#line 2622 "dpic.y" /* yacc.c:1646  */
     { (yyval).lexval = XBLOCK; }
-#line 4407 "dpic.tab.c" /* yacc.c:1646  */
+#line 4369 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 138:
-#line 2664 "dpic.y" /* yacc.c:1646  */
+#line 2626 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = 0.0;
 		  (yyval).yval = 0.0;
 		  (yyval).lexval = XEMPTY;
 		  }
-#line 4416 "dpic.tab.c" /* yacc.c:1646  */
+#line 4378 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 139:
-#line 2670 "dpic.y" /* yacc.c:1646  */
+#line 2632 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval += (yyvsp[0]).xval;
 		  (yyval).yval += (yyvsp[0]).yval;
 		  (yyval).lexval = XLfloat;
 		  }
-#line 4425 "dpic.tab.c" /* yacc.c:1646  */
+#line 4387 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 140:
-#line 2676 "dpic.y" /* yacc.c:1646  */
+#line 2638 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval -= (yyvsp[0]).xval;
 		  (yyval).yval -= (yyvsp[0]).yval;
 		  (yyval).lexval = XLfloat;
 		  }
-#line 4434 "dpic.tab.c" /* yacc.c:1646  */
+#line 4396 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 141:
-#line 2683 "dpic.y" /* yacc.c:1646  */
+#line 2645 "dpic.y" /* yacc.c:1646  */
     { (yyval) = (yyvsp[-1]); }
-#line 4440 "dpic.tab.c" /* yacc.c:1646  */
+#line 4402 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 142:
-#line 2686 "dpic.y" /* yacc.c:1646  */
+#line 2648 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-3]).xval;
 		  (yyval).yval = (yyvsp[-1]).yval;
 		  }
-#line 4448 "dpic.tab.c" /* yacc.c:1646  */
+#line 4410 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 144:
-#line 2693 "dpic.y" /* yacc.c:1646  */
+#line 2655 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval *= (yyvsp[0]).xval;
 		  (yyval).yval *= (yyvsp[0]).xval;
 		  }
-#line 4456 "dpic.tab.c" /* yacc.c:1646  */
+#line 4418 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 145:
-#line 2698 "dpic.y" /* yacc.c:1646  */
+#line 2660 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { markerror(852); }
 		  else {
 			(yyval).xval /= (yyvsp[0]).xval;
 			(yyval).yval /= (yyvsp[0]).xval;
 		    }
 		  }
-#line 4467 "dpic.tab.c" /* yacc.c:1646  */
+#line 4429 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 146:
-#line 2707 "dpic.y" /* yacc.c:1646  */
+#line 2669 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, XEMPTY, &(yyval).xval, &(yyval).yval); }
-#line 4473 "dpic.tab.c" /* yacc.c:1646  */
+#line 4435 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 147:
-#line 2710 "dpic.y" /* yacc.c:1646  */
+#line 2672 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[-1]).prim, (yyvsp[0]).lexval, &(yyval).xval, &(yyval).yval); }
-#line 4479 "dpic.tab.c" /* yacc.c:1646  */
+#line 4441 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 148:
-#line 2713 "dpic.y" /* yacc.c:1646  */
+#line 2675 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, (yyvsp[-1]).lexval, &(yyvsp[0]).xval, &(yyvsp[0]).yval);
  		  (yyval) = (yyvsp[0]); }
-#line 4486 "dpic.tab.c" /* yacc.c:1646  */
+#line 4448 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 149:
-#line 2717 "dpic.y" /* yacc.c:1646  */
+#line 2679 "dpic.y" /* yacc.c:1646  */
     { corner((yyvsp[0]).prim, (yyvsp[-2]).lexval, &(yyvsp[0]).xval, &(yyvsp[0]).yval);
  		  (yyval) = (yyvsp[0]); }
-#line 4493 "dpic.tab.c" /* yacc.c:1646  */
+#line 4455 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 150:
-#line 2721 "dpic.y" /* yacc.c:1646  */
-    { (yyval).xval = envblockB.here.xpos;
-		  (yyval).yval = envblockB.here.ypos;
+#line 2683 "dpic.y" /* yacc.c:1646  */
+    { (yyval).xval = envblock->here_.xpos;
+		  (yyval).yval = envblock->here_.ypos;
 		  }
-#line 4501 "dpic.tab.c" /* yacc.c:1646  */
+#line 4463 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 152:
-#line 2729 "dpic.y" /* yacc.c:1646  */
+#line 2691 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).xval == 0.0) { (yyval).xval = 1.0; }
     	  else { (yyval).xval = 0.0; }
 		  }
-#line 4509 "dpic.tab.c" /* yacc.c:1646  */
+#line 4471 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 153:
-#line 2734 "dpic.y" /* yacc.c:1646  */
+#line 2696 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).xval == 0.0) && ((yyvsp[0]).xval < 0.0)) { markerror(852); }
 		  else {
 			j = Rnd((yyvsp[0]).xval);
@@ -4519,11 +4481,11 @@ yyreduce:
 			else if ((yyvsp[-2]).xval != 0.0) { (yyval).xval = exp((yyvsp[0]).xval * log((yyvsp[-2]).xval));}
 			}
     	  }
-#line 4523 "dpic.tab.c" /* yacc.c:1646  */
+#line 4485 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 154:
-#line 2746 "dpic.y" /* yacc.c:1646  */
+#line 2708 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-1]).chbufx, &(yyvsp[-1]).toklen,
                 (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
 		  prp = NULL;
@@ -4538,11 +4500,11 @@ yyreduce:
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  (yyval).prim = prp;
 		  }
-#line 4542 "dpic.tab.c" /* yacc.c:1646  */
+#line 4504 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 155:
-#line 2762 "dpic.y" /* yacc.c:1646  */
+#line 2724 "dpic.y" /* yacc.c:1646  */
     { (yyval).prim = nthprimobj(envblock->son, (yyvsp[-1]).toklen, (yyvsp[0]).lexval);
 		  if ((yyval).prim == NULL) { markerror(857); }
 #ifdef DDEBUG
@@ -4553,11 +4515,11 @@ yyreduce:
             }
 #endif
 		  }
-#line 4557 "dpic.tab.c" /* yacc.c:1646  */
+#line 4519 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 156:
-#line 2774 "dpic.y" /* yacc.c:1646  */
+#line 2736 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf, &(yyvsp[-1]).chbufx,
               &(yyvsp[-1]).toklen, (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
@@ -4567,52 +4529,52 @@ yyreduce:
 		    }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4571 "dpic.tab.c" /* yacc.c:1646  */
+#line 4533 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 157:
-#line 2785 "dpic.y" /* yacc.c:1646  */
+#line 2747 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-3]).prim != NULL) {
 			(yyval).prim = nthprimobj((yyvsp[-3]).prim->son, (yyvsp[-1]).toklen, (yyvsp[0]).lexval);
 			if ((yyval).prim == NULL) { markerror(857); }
 		    }
 		  }
-#line 4581 "dpic.tab.c" /* yacc.c:1646  */
+#line 4543 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 159:
-#line 2795 "dpic.y" /* yacc.c:1646  */
+#line 2757 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4587 "dpic.tab.c" /* yacc.c:1646  */
+#line 4549 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 160:
-#line 2798 "dpic.y" /* yacc.c:1646  */
+#line 2760 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4593 "dpic.tab.c" /* yacc.c:1646  */
+#line 4555 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 162:
-#line 2804 "dpic.y" /* yacc.c:1646  */
+#line 2766 "dpic.y" /* yacc.c:1646  */
     { if (((yyvsp[-2]).xval == 0.0) || ((yyvsp[0]).xval == 0.0)) { (yyval).xval = 0.0; }
 		  else { (yyval).xval = 1.0; }
 		  }
-#line 4601 "dpic.tab.c" /* yacc.c:1646  */
+#line 4563 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 163:
-#line 2810 "dpic.y" /* yacc.c:1646  */
+#line 2772 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval == XLstring) {
 			markerror(869);
 			(yyval).lexval = XLfloat;
 			deletestringbox(&(yyvsp[0]).prim);
 		    }
 		  }
-#line 4612 "dpic.tab.c" /* yacc.c:1646  */
+#line 4574 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 164:
-#line 2818 "dpic.y" /* yacc.c:1646  */
+#line 2780 "dpic.y" /* yacc.c:1646  */
     { i = cmpstring((yyvsp[-2]).prim, (yyvsp[0]).prim);
 		  if (i < 0) { (yyval).xval = 1.0; }
 		  else { (yyval).xval = 0.0; }
@@ -4620,19 +4582,19 @@ yyreduce:
 		  deletestringbox(&(yyvsp[0]).prim);
 		  deletestringbox(&(yyvsp[-2]).prim);
 		  }
-#line 4624 "dpic.tab.c" /* yacc.c:1646  */
+#line 4586 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 165:
-#line 2827 "dpic.y" /* yacc.c:1646  */
+#line 2789 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).xval < (yyvsp[0]).xval) { (yyval).xval = 1.0; }
 		  else { (yyval).xval = 0.0; }
 		  }
-#line 4632 "dpic.tab.c" /* yacc.c:1646  */
+#line 4594 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 168:
-#line 2837 "dpic.y" /* yacc.c:1646  */
+#line 2799 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval == XLstring) {
 			markerror(869);
 			bswitch = false;
@@ -4655,11 +4617,11 @@ yyreduce:
 		    }
 		  if (bswitch) { (yyval).xval = 1.0; } else { (yyval).xval = 0.0; }
 		  }
-#line 4659 "dpic.tab.c" /* yacc.c:1646  */
+#line 4621 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 169:
-#line 2861 "dpic.y" /* yacc.c:1646  */
+#line 2823 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-2]).lexval != XLstring) { markerror(869); bswitch = false; }
 		  else {
 			i = cmpstring((yyvsp[-2]).prim, (yyvsp[0]).prim);
@@ -4678,21 +4640,21 @@ yyreduce:
 		  (yyval).lexval = XLfloat;
 		  deletestringbox(&(yyvsp[0]).prim);
 		  }
-#line 4682 "dpic.tab.c" /* yacc.c:1646  */
+#line 4644 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 170:
-#line 2882 "dpic.y" /* yacc.c:1646  */
+#line 2844 "dpic.y" /* yacc.c:1646  */
     { if (envblock != NULL) {
 			eb = findenv(envblock);
 			(yyval).xval = eb->envinx((yyvsp[0]).lexval);
 		    }
 		  }
-#line 4692 "dpic.tab.c" /* yacc.c:1646  */
+#line 4654 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 171:
-#line 2889 "dpic.y" /* yacc.c:1646  */
+#line 2851 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[0]).lexval != XEMPTY) { addsuffix(chbuf,
 		    &(yyvsp[-1]).chbufx, &(yyvsp[-1]).toklen, (yyvsp[0]).xval,(yyvsp[0]).lexval,(yyvsp[0]).yval); }
     	  namptr = glfindname(envblock,chbuf,(yyvsp[-1]).chbufx,(yyvsp[-1]).toklen, &lastvar, &k);
@@ -4700,23 +4662,23 @@ yyreduce:
     	  else { (yyval).xval = namptr->val; }
 		  clearchbuf((yyvsp[-1]).chbufx, (yyvsp[-1]).toklen);
 		  }
-#line 4704 "dpic.tab.c" /* yacc.c:1646  */
+#line 4666 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 173:
-#line 2900 "dpic.y" /* yacc.c:1646  */
+#line 2862 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4710 "dpic.tab.c" /* yacc.c:1646  */
+#line 4672 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 175:
-#line 2905 "dpic.y" /* yacc.c:1646  */
+#line 2867 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).yval; }
-#line 4716 "dpic.tab.c" /* yacc.c:1646  */
+#line 4678 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 176:
-#line 2908 "dpic.y" /* yacc.c:1646  */
+#line 2870 "dpic.y" /* yacc.c:1646  */
     { if ((yyvsp[-1]).prim != NULL) {
 			switch ((yyvsp[0]).lexval) {
 			  case XLheight:
@@ -4727,22 +4689,17 @@ yyreduce:
 			    break;
 			  case XLradius:
 			    With2 = (yyval).prim;
-			    if (With2->ptype == XLcircle) {
-			      (yyval).xval = With2->Upr.Ucircle.radius; }
-			    else if (With2->ptype == XLarc) {
-			      (yyval).xval = With2->Upr.Uline.aradius; }
-			    else if (With2->ptype == XLbox) {
-			      (yyval).xval = With2->Upr.Ubox.boxradius; }
+			    if (With2->ptype == XLcircle) {(yyval).xval = With2->circleradius_; }
+			    else if (With2->ptype == XLarc) {(yyval).xval = With2->aradius_; }
+			    else if (With2->ptype == XLbox) {(yyval).xval = With2->boxradius_; }
 			    else {
 			      (yyval).xval = 0.0;
 			      markerror(858); }
 			    break;
 			case XLdiameter:
 			  With2 = (yyvsp[-1]).prim;
-			  if (With2->ptype == XLcircle) {
-			    (yyval).xval = With2->Upr.Ucircle.radius * 2; }
-			  else if (With2->ptype == XLarc) {
-			    (yyval).xval = With2->Upr.Uline.aradius * 2; }
+			  if (With2->ptype == XLcircle) {(yyval).xval = With2->circleradius_*2; }
+			  else if (With2->ptype == XLarc) {(yyval).xval = With2->aradius_*2; }
 			  else {
 			    (yyval).xval = 0.0;
 			    markerror(858); }
@@ -4762,8 +4719,8 @@ yyreduce:
                 (j == XLline)) {
 			    primp = (yyvsp[-1]).prim;
 			    while (primp->son != NULL) { primp = primp->son; }
-			    r = fabs(primp->Upr.Uline.endpos.xpos - With2->aat.xpos);
-			    s = fabs(primp->Upr.Uline.endpos.ypos - With2->aat.ypos);
+			    r = fabs(primp->endpos_.xpos - With2->aat.xpos);
+			    s = fabs(primp->endpos_.ypos - With2->aat.ypos);
 			    if (r == 0.0) { (yyval).xval = s; }
 			    else if (s == 0.0) { (yyval).xval = r; }
 			    else { (yyval).xval = sqrt((r * r) + (s * s)); }
@@ -4775,25 +4732,25 @@ yyreduce:
 			  }
 		    }
 		  }
-#line 4779 "dpic.tab.c" /* yacc.c:1646  */
+#line 4736 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 177:
-#line 2968 "dpic.y" /* yacc.c:1646  */
+#line 2925 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = ((double)random()) / randmax; }
-#line 4785 "dpic.tab.c" /* yacc.c:1646  */
+#line 4742 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 178:
-#line 2971 "dpic.y" /* yacc.c:1646  */
+#line 2928 "dpic.y" /* yacc.c:1646  */
     { srandom(Rnd((yyvsp[-1]).xval));
 		  (yyval).xval = ((double)random()) / randmax;
 		  }
-#line 4793 "dpic.tab.c" /* yacc.c:1646  */
+#line 4750 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 179:
-#line 2976 "dpic.y" /* yacc.c:1646  */
+#line 2933 "dpic.y" /* yacc.c:1646  */
     { switch ((yyval).lexval) {
 		    case XLabs: (yyval).xval = fabs((yyvsp[-1]).xval);
 		      break;
@@ -4842,11 +4799,11 @@ yyreduce:
 		      break;
 		    }
 		  }
-#line 4846 "dpic.tab.c" /* yacc.c:1646  */
+#line 4803 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 180:
-#line 3026 "dpic.y" /* yacc.c:1646  */
+#line 2983 "dpic.y" /* yacc.c:1646  */
     { switch ((yyvsp[-5]).lexval) {
 		    case XLatan2: (yyval).xval = datan((yyvsp[-3]).xval, (yyvsp[-1]).xval);
 		      break;
@@ -4865,23 +4822,23 @@ yyreduce:
 		      break;
 		    }
 		  }
-#line 4869 "dpic.tab.c" /* yacc.c:1646  */
+#line 4826 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 181:
-#line 3046 "dpic.y" /* yacc.c:1646  */
+#line 3003 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4875 "dpic.tab.c" /* yacc.c:1646  */
+#line 4832 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
   case 182:
-#line 3049 "dpic.y" /* yacc.c:1646  */
+#line 3006 "dpic.y" /* yacc.c:1646  */
     { (yyval).xval = (yyvsp[-1]).xval; }
-#line 4881 "dpic.tab.c" /* yacc.c:1646  */
+#line 4838 "dpic.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 4885 "dpic.tab.c" /* yacc.c:1646  */
+#line 4842 "dpic.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -5109,7 +5066,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 3052 "dpic.y" /* yacc.c:1906  */
+#line 3009 "dpic.y" /* yacc.c:1906  */
  /* start of programs */
 
 int
@@ -5156,13 +5113,11 @@ newbuf(fbuffer **buf)
 void
 deletefreeargs(arg **a)
 { arg *na;
-
   while ((*a) != NULL) {
-      na = (*a)->nexta;
-      disposebufs(&(*a)->argbody);
-      Free(*a);
-      *a = na;
-  }
+    na = (*a)->nexta;
+    disposebufs(&(*a)->argbody);
+    Free(*a);
+    *a = na; }
 }
 
 
@@ -5170,13 +5125,11 @@ deletefreeargs(arg **a)
 void
 deletefreeinbufs(fbuffer **p)
 { fbuffer *q;
-
   while ((*p) != NULL) {
-      q = (*p)->nextb;
-      Free((*p)->carray);
-      Free(*p);
-      *p = q;
-  }
+    q = (*p)->nextb;
+    Free((*p)->carray);
+    Free(*p);
+    *p = q; }
 }
 
 
@@ -5211,8 +5164,8 @@ preproduce(int p)
     inlogic = false;
     inbuf = NULL;
     break;
-	}
   }
+}
 
 							/* Compute integer power of x */
 double
@@ -5346,125 +5299,98 @@ markerror(int emi) {
       }
     fprintf(errout, " {...} contents\n");
     break;
-
   case 805:
     fprintf(errout, "Bad macro argument number\n");
     break;
-
   case 806:
     fprintf(errout, "End of file while evaluating macro argument\n");
     break;
-
 							/* context error messages */
   case 851:
     fprintf(errout, "Variable not found\n");
     break;
-
   case 852:
     fprintf(errout, "Zero divisor not allowed\n");
     break;
-
   case 853:
     fprintf(errout, "Only one copy file may be open at any time\n");
     break;
-
   case 854:
     fprintf(errout, "Place name not found\n");
     break;
-
   case 855:
     fprintf(errout, "Internal name not found\n");
     break;
-
   case 856:
     fprintf(errout, "Invalid non-positive value for object count\n");
     break;
-
   case 857:
     fprintf(errout, "Enumerated or previous object not found\n");
     break;
-
   case 858:
     fprintf(errout, "This usage is inapplicable in this context\n");
     break;
-
   case 859:
     fprintf(errout, "File not readable\n");
     break;
-
   case 860:
     fprintf(errout, "Infinite looping not allowed\n");
     break;
-
   case 861:
     fprintf(errout, "Missing or blank string\n");
     break;
-
   case 862:
     fprintf(errout, "For ... by *() limits must have the same sign\n");
     break;
-
   case 863:
     fprintf(errout, "Non-integer power of negative value\n");
     break;
-
   case 864:
     fprintf(errout, "Incorrect number of sprintf arguments\n");
     break;
-
   case 865:
     fprintf(errout, "Bad sprintf format; only e, f, g allowed\n");
     break;
-
   case 866:
     fprintf(errout, "String exceeds max length of 4095 characters\n");
     break;
-
   case 867:
     fprintf(errout, "Invalid log or sqrt argument\n");
     break;
-
   case 868:
     fprintf(errout, "Function argument out of range\n");
     break;
-
   case 869:
     fprintf(errout, "Improper use of logical operator\n");
     break;
-
   case 870:
     fprintf(errout, "Zero value of scale not allowed\n");
     break;
-
   case 871:
     fprintf(errout, "Zero second argument of pmod not allowed\n");
     break;
-
   case 872:
     fprintf(errout, "Buffer overflow while defining macro argument\n");
     break;
-
   case 873:
     fprintf(errout, "Format width too large\n");
     break;
-
   case 874:
     fprintf(errout, "System routine snprintf error: bad formatted value\n");
     break;
-
 							/* warning messages */
   case 901:
     fprintf(errout, "Safe mode: sh, copy, and print to file disallowed\n");
     break;
-
+  case 902:
+    fprintf(errout, "Output number out of range: 10e32 used\n");
+    break;
   case 903:
     fprintf(errout, "Picture size adjusted to maxpswid value\n");
     break;
-
   case 904:
     fprintf(errout, "Picture size adjusted to maxpsht value\n");
     break;
-
   default:
     fprintf(errout, "Unknown error\n");
     break;
@@ -5486,20 +5412,17 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
     if (chb != NULL) {
 	  fprintf(log_, " for \"");
 	  for (i = inx; i < (inx + len); i++) { putc(chb[i], log_); }
-	  putc('"', log_);
-      }
+	  putc('"', log_); }
     putc('\n', log_);
     }
 #endif
   markerror(eno);
   fprintf(errout, "\nSearch failure");
   if (chb != NULL) {
-      fprintf(errout, " for \"");
-      for (i = inx; i < (inx + len); i++) {
-	  putc(chb[i], errout);
-      }
-      putc('"', errout);
-  }
+    fprintf(errout, " for \"");
+    for (i = inx; i < (inx + len); i++) { putc(chb[i], errout); }
+    putc('"', errout);
+    }
   putc('\n', errout);
 }
 
@@ -5510,13 +5433,10 @@ varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
 { int idx;
 
   if (chb == NULL) {
-      idx = 0;
-      return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1)));
-  }
+    idx = 0;
+    return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1))); }
   idx = chb[chbufx];
-  if (toklen > 2) {
-      idx += chb[chbufx + toklen - 2];
-  }
+  if (toklen > 2) { idx += chb[chbufx + toklen - 2]; }
   return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1)));
 }
 
@@ -5537,7 +5457,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
     for (i = chbufx; i < (chbufx + toklen); i++) { putc(chb[i], log_); }
     fprintf(log_, "|:");
     if (eb == NULL) { fprintf(log_, " eb=nil"); }
-    else { fprintf(log_, " nvars[%d]=%d", idx, eb->Upr.UBLOCK.nvars[idx]); }
+    else { fprintf(log_, " nvars[%d]=%d", idx, eb->blockparms.nvars[idx]); }
     if (debuglevel > 1) { putc('\n', log_); }
     }
 #endif
@@ -5548,7 +5468,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #ifdef DDEBUG
     if (debuglevel > 0) { fprintf(log_, " eb!=NULL: k=%d idx=%d ", *k,idx); }
 #endif
-    leftptr = eb->Upr.UBLOCK.vars[idx];
+    leftptr = eb->blockparms.vars[idx];
     *last = leftptr; }
 #ifdef DDEBUG
     if (debuglevel > 0) {
@@ -5564,8 +5484,8 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #endif
     if ((*k) < 0) {
 	  left = 2;
-	  leftptr = leftptr->next_;
-	  right = eb->Upr.UBLOCK.nvars[idx] + 1; }
+	  leftptr = leftptr->nextname;
+	  right = eb->blockparms.nvars[idx] + 1; }
     else { rightptr = leftptr; }
     }
 #ifdef DDEBUG
@@ -5575,7 +5495,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
   while (leftptr != rightptr) {
     midpt = (left + right) >> 1;
     *last = leftptr;
-    for (i = left + 1; i <= midpt; i++) { *last = (*last)->next_; }
+    for (i = left + 1; i <= midpt; i++) { *last = (*last)->nextname; }
     With = *last;
     *k = eqstring(chb, chbufx, toklen, With->segmnt, With->seginx,With->len);
 #ifdef DDEBUG
@@ -5583,7 +5503,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #endif
     if ((*k) < 0) {
 	  left = midpt + 1;
-	  leftptr = (*last)->next_;
+	  leftptr = (*last)->nextname;
 	  continue; }
     if ((*k) == 0) {
 	  leftptr = *last;
@@ -5684,14 +5604,10 @@ wrbuf(fbuffer *p, int job, int r)
 	    else {
 		  m = i;
 		  k = With->savedlen + 1;
-		  while (i < k) {
-		    if (With->carray[i] == 0) { i++; }
-		    else { k = i; }
-		    }
+		  while (i < k) { if (With->carray[i] == 0) { i++; } else { k = i; } }
 		  fprintf(log_, "(%d)x", i - m);
 		  wchar(&log_, '\0');
-		  i--;
-	      }
+		  i--; }
 	    i++;
 	    }
       }
@@ -5769,7 +5685,7 @@ snaptree(primitive *pr, int indent)
       case XLabel: i = 12; break;
       default: i = 3; break;
       }
-    snaptree(pr->next_, indent + i + j);
+    snaptree(pr->nextname, indent + i + j);
     j = 0;
     if (pr->son != NULL) { fprintf(log_, "\n%*c", indent, ' '); }
     pr = pr->son;
@@ -5783,12 +5699,12 @@ printtext(nametype *namptr)
   while (namptr != NULL) {
       With = namptr;
       putc(' ', log_);
-      wpair(&log_, ordp(namptr), ordp(With->next_));
+      wpair(&log_, ordp(namptr), ordp(With->nextname));
       fprintf(log_, " val=");
       wfloat(&log_, With->val);
       fflush(log_);
       snapname(With->segmnt, With->seginx, With->len);
-      namptr = With->next_;
+      namptr = With->nextname;
       putc('\n', log_);
   }
 }
@@ -5798,7 +5714,6 @@ printobject(primitive *primp)
 { double xx, yy;
   int i;
   primitive *With;
-
   if (debuglevel != 0) {
     if (primp == NULL) { fprintf(log_, "Object is nil\n"); }
     else {
@@ -5811,7 +5726,7 @@ printobject(primitive *primp)
 	    if (With->parent != NULL) {
 		  fprintf(log_, ") Parent^.son(%d", ordp(With->parent->son)); }
 	    fprintf(log_, ") Son(%d) Next(%d)\n",
-		      ordp(With->son), ordp(With->next_));
+		      ordp(With->son), ordp(With->nextname));
 	    if (With->name != NULL) {
 		  fprintf(log_, " name: ");
 		  printtext(With->name); }
@@ -5838,73 +5753,68 @@ printobject(primitive *primp)
 	    switch (With->ptype) {
 	      case XLbox:
 	      case XLstring:
-		    wlogfl("boxfill", With->Upr.Ubox.boxfill, 0);
-		    wlogfl("boxheight", With->Upr.Ubox.boxheight, 0);
-		    wlogfl("boxwidth", With->Upr.Ubox.boxwidth, 0);
-		    wlogfl("boxrad", With->Upr.Ubox.boxradius, 0);
+		    wlogfl("boxfill", With->boxfill_, 0);
+		    wlogfl("boxheight", With->boxheight_, 0);
+		    wlogfl("boxwidth", With->boxwidth_, 0);
+		    wlogfl("boxrad", With->boxradius_, 0);
 		    break;
 	      case XBLOCK:
-		    wlogfl("blockheight", With->Upr.UBLOCK.blockheight, 0);
-		    wlogfl("blockwidth", With->Upr.UBLOCK.blockwidth, 0);
+		    wlogfl("blockheight", With->blockheight_, 0);
+		    wlogfl("blockwidth", With->blockwidth_, 0);
 		    fprintf(log_, " here=");
-		    wpair(&log_, With->Upr.UBLOCK.here.xpos,
-			  With->Upr.UBLOCK.here.ypos);
+		    wpair(&log_, With->here_.xpos, With->here_.ypos);
 		    fprintf(log_, " vars=");
 		    for (i = 0; i <= HASHLIM; i++) {
-		      if (With->Upr.UBLOCK.vars[i] == NULL) {
+		      if (With->blockparms.vars[i] == NULL) {
 				 fprintf(log_, " %d nil;", i);}
 		      else {
-				fprintf(log_, " %d %d;", i, ordp(With->Upr.UBLOCK.vars[i])); }
+				fprintf(log_, " %d %d;", i, ordp(With->blockparms.vars[i])); }
 		      }
 		    fprintf(log_, "\n env=");
-		    if (With->Upr.UBLOCK.env == NULL) { fprintf(log_, "nil"); }
-		    else { fprintf(log_, "%d", ordp(With->Upr.UBLOCK.env)); }
+		    if (With->blockparms.env == NULL) { fprintf(log_, "nil"); }
+		    else { fprintf(log_, "%d", ordp(With->blockparms.env)); }
 		    break;
 	      case XLcircle:
-		    wlogfl("cfill", With->Upr.Ucircle.cfill, 0);
-		    wlogfl("radius", With->Upr.Ucircle.radius, 0);
+		    wlogfl("cfill", With->circlefill_, 0);
+		    wlogfl("radius", With->circleradius_, 0);
 		    break;
 	      case XLellipse:
-		    wlogfl("efill", With->Upr.Uellipse.efill, 0);
-		    wlogfl("elheight", With->Upr.Uellipse.elheight, 0);
-		    wlogfl("elwidth", With->Upr.Uellipse.elwidth, 0);
+		    wlogfl("efill", With->ellipsefill_, 0);
+		    wlogfl("elheight", With->ellipseheight_, 0);
+		    wlogfl("elwidth", With->ellipsewidth_, 0);
 		    break;
 	      case XLline:
 	      case XLarrow:
 	      case XLmove:
 	      case XLspline:
 		    fprintf(log_, " endpos=");
-		    wpair(&log_, With->Upr.Uline.endpos.xpos,
-		      With->Upr.Uline.endpos.ypos);
-		    wlogfl("height", With->Upr.Uline.height, 0);
-		    wlogfl("width", With->Upr.Uline.width, 0);
-		    wlogfl("lfill", With->Upr.Uline.lfill, 0);
-		    wlogfl("aradius", With->Upr.Uline.aradius, 0);
-		    fprintf(log_, "\n ahlex(atype)=%d",
-			    ahlex(With->Upr.Uline.atype));
-		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->Upr.Uline.atype));
+		    wpair(&log_, With->endpos_.xpos, With->endpos_.ypos);
+		    wlogfl("height", With->lineheight_, 0);
+		    wlogfl("width", With->linewidth_, 0);
+		    wlogfl("lfill", With->linefill_, 0);
+		    wlogfl("aradius", With->aradius_, 0);
+		    fprintf(log_, "\n ahlex(atype)=%d", ahlex(With->lineatype_));
+		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->lineatype_));
 		    break;
 	      case XLarc:
 		    fprintf(log_, " lspec=%d", lspec(With->spec));
-		    wlogfl("lfill", With->Upr.Uline.lfill, 0);
-		    wlogfl("aradius", With->Upr.Uline.aradius, 0);
-		    fprintf(log_, " (|startangle|,|arcangle|)(deg)=");
-		    wpair(&log_, With->Upr.Uline.endpos.xpos * 180.0 / pi,
-		      With->Upr.Uline.endpos.ypos * 180.0 / pi);
+		    wlogfl("lfill", With->linefill_, 0);
+		    wlogfl("aradius", With->aradius_, 0);
+		    fprintf(log_, " (startangle_,arcangle_)(deg)=");
+		    wpair(&log_, With->startangle_ * 180.0 / pi,
+		      With->arcangle_ * 180.0 / pi);
 		    fprintf(log_, "\n (from)=");
-		    xx = With->aat.xpos +
-		     (With->Upr.Uline.aradius * cos(With->Upr.Uline.endpos.xpos));
-		    yy = With->aat.ypos +
-		     (With->Upr.Uline.aradius * sin(With->Upr.Uline.endpos.xpos));
+		    xx = With->aat.xpos + (With->aradius_ * cos(With->startangle_));
+		    yy = With->aat.ypos + (With->aradius_ * sin(With->startangle_));
 		    wpair(&log_, xx, yy);
 		    fprintf(log_, " (to)=");
-		    xx = With->aat.xpos + (With->Upr.Uline.aradius * cos(
-			 With->Upr.Uline.endpos.xpos + With->Upr.Uline.endpos.ypos));
-		    yy = With->aat.ypos + (With->Upr.Uline.aradius * sin(
-			 With->Upr.Uline.endpos.xpos + With->Upr.Uline.endpos.ypos));
+		    xx = With->aat.xpos + (With->aradius_ *
+              cos(With->startangle_ + With->arcangle_));
+		    yy = With->aat.ypos + (With->aradius_ *
+              sin(With->startangle_ + With->arcangle_));
 		    wpair(&log_, xx, yy);
-		    fprintf(log_, " ahlex(atype)=%d", ahlex(With->Upr.Uline.atype));
-		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->Upr.Uline.atype));
+		    fprintf(log_, " ahlex(atype)=%d", ahlex(With->lineatype_));
+		    fprintf(log_, " ahnum(atype)=%d", ahnum(With->lineatype_));
 		    break;
 	      case XLaTeX:
 	      case XLabel:
@@ -5953,20 +5863,20 @@ prvars(primitive *eb)
 { nametype *lv;
   int i = 0, x = HASHLIM + 1;
   if (eb == NULL) { fprintf(log_, "vars=nil: nil envblock"); return; }
-  while (i < x) { if (eb->Upr.UBLOCK.vars[i] != NULL) { x = i; } else { i++; } }
+  while (i < x) { if (eb->blockparms.vars[i] != NULL) { x = i; } else { i++; } }
   fprintf(log_, "vars=\n");
   if (x > HASHLIM) { fprintf(log_, "  None set\n"); return; }
   for (i = 0; i <= HASHLIM; i++) {
     fprintf(log_, "%d", i);
-    lv = eb->Upr.UBLOCK.vars[i];
+    lv = eb->blockparms.vars[i];
     if (lv == NULL) { fprintf(log_, " nil\n"); }
     while (lv != NULL) {
-	  fprintf(log_, " (%d,%d)=", ordp(lv), ordp(lv->next_));
+	  fprintf(log_, " (%d,%d)=", ordp(lv), ordp(lv->nextname));
 	  snapname(lv->segmnt, lv->seginx, lv->len);
 	  putc('=', log_);
 	  wfloat(&log_, lv->val);
 	  putc('\n', log_);
-	  lv = lv->next_;
+	  lv = lv->nextname;
       }
     }
   putc('\n', log_);
@@ -5981,9 +5891,9 @@ deletetree(primitive **p)
   primitive *With;
   if ((*p) != NULL) { (*p)->parent = NULL; }
   while ((*p) != NULL) {
-    while (((*p)->next_ != NULL) || ((*p)->son != NULL)) {
+    while (((*p)->nextname != NULL) || ((*p)->son != NULL)) {
 	  r = *p;
-	  if ((*p)->next_ != NULL) { *p = (*p)->next_; r->next_ = NULL; }
+	  if ((*p)->nextname != NULL) { *p = (*p)->nextname; r->nextname = NULL; }
 	  else { *p = (*p)->son; r->son = NULL; }
 	  (*p)->parent = r;
       }
@@ -5994,8 +5904,8 @@ deletetree(primitive **p)
     deletename(&(*p)->name);
     With = *p;
     if ((With->ptype) == XBLOCK) {
-	  for (i = HASHLIM; i >= 0; i--) { deletename(&With->Upr.UBLOCK.vars[i]);}
-	  if (With->Upr.UBLOCK.env != NULL) { Free(With->Upr.UBLOCK.env); }
+	  for (i = HASHLIM; i >= 0; i--) { deletename(&With->blockparms.vars[i]);}
+	  if (With->blockparms.env != NULL) { Free(With->blockparms.env); }
       }
     else { Free(*p); }
     *p = r;
@@ -6008,15 +5918,10 @@ void
 setangles(double *strtang, double *arcang, postype ctr, double xs, double ys,
 	  double xf, double yf)
 { double ra;                       /* set arc angles given centre, start, end */
-
   *strtang = datan(ys - ctr.ypos, xs - ctr.xpos);
   ra = principal(datan(yf - ctr.ypos, xf - ctr.xpos) - (*strtang), pi);
-  if ((ra < 0.0) && ((*arcang) > 0.0)) {
-      ra += 2.0 * pi;
-  }
-  else if ((ra > 0.0) && ((*arcang) < 0.0)) {
-      ra -= 2.0 * pi;
-  }
+  if ((ra < 0.0) && ((*arcang) > 0.0)) { ra += 2.0 * pi; }
+  else if ((ra > 0.0) && ((*arcang) < 0.0)) { ra -= 2.0 * pi; }
   *arcang = ra;
 }
 
@@ -6027,43 +5932,28 @@ eqop(double *x, int op, double y)
 { int i, j;
 
   switch (op) {
-
   case XEQ:
   case XLcoloneq:
     *x = y;
     break;
-
   case XLpluseq:
     *x += y;
     break;
-
   case XLminuseq:
     *x -= y;
     break;
-
   case XLmulteq:
     *x *= y;
     break;
-
   case XLdiveq:
-    if (y == 0) {
-	markerror(852);
-    }
-    else {
-	*x /= y;
-    }
+    if (y == 0) { markerror(852); }
+    else { *x /= y; }
     break;
-
   case XLremeq:
     i = Rnd((*x));
     j = Rnd(y);
-    if (j == 0) {
-	markerror(852);
-	*x = 0.0;
-    }
-    else {
-	*x = i - ((i / j) * j);
-    }
+    if (j == 0) { markerror(852); *x = 0.0; }
+    else { *x = i - ((i / j) * j); }
     break;
   }
 }
@@ -6084,39 +5974,30 @@ getstval(int st)
 void
 setstflag(int *st, int value)
 { switch (value) {
-
   case XEMPTY:
     *st = ((*st) >> 6) * 64;
     break;
-
   case XLto:
     *st = (((*st) >> 1) * 2) + 1;
     break;
-
   case XLfrom:
     *st = (((*st) >> 2) * 4) + ((*st) & 1) + 2;
     break;
-
   case XLat:
     *st = (((*st) >> 3) * 8) + ((*st) & 3) + 4;
     break;
-
   case XLradius:
     *st = (((*st) >> 4) * 16) + ((*st) & 7) + 8;
     break;
-
   case XLcw:
     *st = (((*st) >> 5) * 32) + ((*st) & 15) + 16;
     break;
-
   case XLccw:
     *st = (((*st) >> 6) * 64) + ((*st) & 31) + 32;
     break;
-
   case XLchop:
     *st = (((*st) >> 7) * 128) + ((*st) & 63) + 64;
     break;
-
   case XLdirecton:
     *st = (((*st) >> 8) * 256) + ((*st) & 127) + 128;
     break;
@@ -6130,35 +6011,27 @@ teststflag(int st, int value)
 { boolean b = false;
 
   switch (value) {
-
   case XLto:
     b = st & 1;
     break;
-
   case XLfrom:
     b = (st >> 1) & 1;
     break;
-
   case XLat:
     b = (st >> 2) & 1;
     break;
-
   case XLradius:
     b = (st >> 3) & 1;
     break;
-
   case XLcw:
     b = (st >> 4) & 1;
     break;
-
   case XLccw:
     b = (st >> 5) & 1;
     break;
-
   case XLchop:
     b = (st >> 6) & 1;
     break;
-
   case XLdirecton:
     b = (st >> 7) & 1;
     break;
@@ -6169,19 +6042,12 @@ teststflag(int st, int value)
 							/* String equality of primitives */
 int
 cmpstring(primitive *p1, primitive *p2)
-{ if ((p1 == NULL) || (p2 == NULL)) {
-      return maxint;
-  }
-  else if (p1->textp == NULL) {
-      return maxint;
-  }
-  else if (p2->textp == NULL) {
-      return (-maxint);
-  }
-  else {
-      return (eqstring(p1->textp->segmnt, p1->textp->seginx, p1->textp->len,
-		       p2->textp->segmnt, p2->textp->seginx, p2->textp->len));
-  }
+{ if ((p1 == NULL) || (p2 == NULL)) { return maxint; }
+  else if (p1->textp == NULL) { return maxint; }
+  else if (p2->textp == NULL) { return (-maxint); }
+  else { return (
+          eqstring(p1->textp->segmnt, p1->textp->seginx, p1->textp->len,
+		           p2->textp->segmnt, p2->textp->seginx, p2->textp->len)); }
 }
 
 
@@ -6192,20 +6058,14 @@ findplace(primitive *p, Char *chb, chbufinx inx, chbufinx toklen))
   nametype *With;
 
   while (p != pj) {
-      if (p->name == NULL) {
-	  p = p->next_;
-      }
-      else {
+    if (p->name == NULL) { p = p->nextname; }
+    else {
 	  With = p->name;
-	  if (eqstring(With->segmnt, With->seginx, With->len, chb, inx,
-		       toklen) == 0) {
-	      pj = p;
-	  }
-	  else {
-	      p = p->next_;
-	  }
+	  if (eqstring(With->segmnt,With->seginx,With->len, chb, inx,toklen) == 0) {
+	      pj = p; }
+	  else { p = p->nextname; }
       }
-  }
+    }
   return p;
 }
 
@@ -6215,19 +6075,11 @@ findvar(Char *s, int ln)
 { int i, k;
   nametype *last, *np;
 
-  if (tmpfmt == NULL) {
-      tmpfmt = malloc(sizeof(chbufarray));
-  }
-  for (i = 1; i <= ln; i++) {
-      tmpfmt[i] = s[i-1];
-  }
+  if (tmpfmt == NULL) { tmpfmt = malloc(sizeof(chbufarray)); }
+  for (i = 1; i <= ln; i++) { tmpfmt[i] = s[i-1]; }
   np = findname(globalenv, tmpfmt, 1, ln, &last, &k);
-  if (np == NULL) {
-      return 0.0;
-  }
-  else {
-      return (np->val);
-  }
+  if (np == NULL) { return 0.0; }
+  else { return (np->val); }
 }
 
 							/* Search for variable in this and higer scope*/
@@ -6254,10 +6106,7 @@ appendsuff(Char *buf, chbufinx inx, int *len, double x)
   i = Rnd(x);
   if (i < 0) { buf[inx + (*len)] = '-'; (*len)++; i = -i; }
   k = i;
-  do {
-    (*len)++;
-    k /= 10;
-    } while (k != 0);
+  do { (*len)++; k /= 10; } while (k != 0);
   if (inx + (*len) - 1 > CHBUFSIZ) { fatal(4); }
   j = (*len) - 1;
   do {
@@ -6265,7 +6114,7 @@ appendsuff(Char *buf, chbufinx inx, int *len, double x)
     buf[inx + j] = i - (k * 10) + '0';
     i = k;
     j--;
-    } while (i != 0);
+  } while (i != 0);
 }
 
 							/* Append the suffix string to the name string
@@ -6302,7 +6151,7 @@ appendthen(primitive **pr)
   copyprim(prq, &prp);
   prp->parent = prq;
   prp->son = NULL;
-  prp->next_ = NULL;
+  prp->nextname = NULL;
   prp->name = NULL;
   prp->textp = NULL;
   prp->shadedp = NULL;
@@ -6318,19 +6167,19 @@ appendthen(primitive **pr)
 void
 lineardir(primitive *pr, double dy, double dx, int *state)
 { if (!(teststflag(*state, XLto) | teststflag(*state, XLdirecton))) {
-      pr->Upr.Uline.endpos = pr->aat; }
+      pr->endpos_ = pr->aat; }
   switch (pr->direction) {
   case XLup:
-    pr->Upr.Uline.endpos.ypos += dy;
+    pr->endpos_.ypos += dy;
     break;
   case XLdown:
-    pr->Upr.Uline.endpos.ypos -= dy;
+    pr->endpos_.ypos -= dy;
     break;
   case XLleft:
-    pr->Upr.Uline.endpos.xpos -= dx;
+    pr->endpos_.xpos -= dx;
     break;
   case XLright:
-    pr->Upr.Uline.endpos.xpos += dx;
+    pr->endpos_.xpos += dx;
     break;
   }
   setstflag(state, XLdirecton);
@@ -6354,10 +6203,8 @@ boolean
 hasshade(int lx, boolean warn)
 { boolean hs;
   if ((lx == XLellipse) || (lx == XLcircle) || (lx == XLbox)) { hs = true; }
-  else if ((drawmode >= 0) && (drawmode < 32) &&
-	   (((1L << drawmode) & ((1L << Pict2e) | (1L << TeX) | (1L << tTeX) |
-				 (1L << xfig))) != 0)) {
-      hs = false; }
+  else if ((drawmode == Pict2e) || (drawmode == TeX) || (drawmode == tTeX) ||
+           (drawmode == xfig)) { hs = false; }
   else { hs = ((lx == XLspline) || (lx == XLarrow) || (lx == XLline) ||
 	    (lx == XLarc)); }
   if (drawmode == SVG) { hs = (hs || (lx == XLstring)); }
@@ -6377,7 +6224,7 @@ newstr(nametype **sp)
   With->segmnt = NULL;
   With->seginx = 0;
   With->len = 0;
-  With->next_ = NULL;
+  With->nextname = NULL;
 #ifdef DDEBUG
   if (debuglevel > 0) { fprintf(log_, "newstr[%d]\n", ordp(*sp)); }
 #endif
@@ -6421,13 +6268,11 @@ storestring(nametype *outstr,Char *srcbuf,chbufinx psrc,chbufinx lsrc,int job)
 							/* Duplicate a strptr and copy the body */
 void
 copystr(nametype **sp, nametype *ip)
-{ if (ip == NULL) {
-      *sp = NULL;
-  }
+{ if (ip == NULL) { *sp = NULL; }
   else {
-      newstr(sp);
-      storestring(*sp, ip->segmnt, ip->seginx, ip->len, 0);
-  }
+    newstr(sp);
+    storestring(*sp, ip->segmnt, ip->seginx, ip->len, 0);
+    }
 }
 
 
@@ -6484,12 +6329,8 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 							/* Store or append string */
 int
 putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
-{ if (ix <= 0) {
-      storestring(sp, buf, px, ll, 0);
-  }
-  else {
-      appendstring(sp, buf, px, ll);
-  }
+{ if (ix <= 0) { storestring(sp, buf, px, ll, 0); }
+  else { appendstring(sp, buf, px, ll); }
   return (ix + 1);
 }
 
@@ -6498,40 +6339,29 @@ putstring(int ix, nametype *sp, Char *buf, chbufinx px, chbufinx ll)
 double
 pheight(primitive *pr)
 { double ph;
-
-  if (pr == NULL) {
-      ph = 0.0;
-      return ph;
-  }
+  if (pr == NULL) { ph = 0.0; return ph; }
   switch (pr->ptype) {
-
   case XLbox:
-    ph = pr->Upr.Ubox.boxheight;
+    ph = pr->boxheight_;
     break;
-
   case XLstring:
-    ph = pr->Upr.Ubox.boxheight;
+    ph = pr->boxheight_;
     break;
-
   case XBLOCK:
-    ph = pr->Upr.UBLOCK.blockheight;
+    ph = pr->blockheight_;
     break;
-
   case XLellipse:
-    ph = pr->Upr.Uellipse.elheight;
+    ph = pr->ellipseheight_;
     break;
-
   case XLcircle:
-    ph = 2.0 * pr->Upr.Ucircle.radius;
+    ph = 2.0 * pr->circleradius_;
     break;
-
   case XLline:
   case XLarrow:
   case XLmove:
   case XLspline:
-    ph = pr->Upr.Uline.height;
+    ph = pr->lineheight_;
     break;
-
   default:
     ph = 0.0;
     break;
@@ -6553,26 +6383,26 @@ pwidth(primitive *pr)
 
   case XLbox:
   case XLstring:
-    pw = pr->Upr.Ubox.boxwidth;
+    pw = pr->boxwidth_;
     break;
 
   case XBLOCK:
-    pw = pr->Upr.UBLOCK.blockwidth;
+    pw = pr->blockwidth_;
     break;
 
   case XLellipse:
-    pw = pr->Upr.Uellipse.elwidth;
+    pw = pr->ellipsewidth_;
     break;
 
   case XLcircle:
-    pw = 2.0 * pr->Upr.Ucircle.radius;
+    pw = 2.0 * pr->circleradius_;
     break;
 
   case XLline:
   case XLarrow:
   case XLmove:
   case XLspline:
-    pw = pr->Upr.Uline.width;
+    pw = pr->linewidth_;
     break;
 
   default:
@@ -6589,7 +6419,7 @@ neswrec(primitive *ptm)
 { while (ptm != NULL) {
     nesw(ptm);
     if (ptm->ptype != XBLOCK) { neswrec(ptm->son); }
-    ptm = ptm->next_;
+    ptm = ptm->nextname;
     }
   }
 
@@ -6647,16 +6477,10 @@ findenv(primitive *p))
 { primitive *q = NULL;
 
   while (p != q) {
-      if (p->ptype != XBLOCK) {
-	  p = p->parent;
-      }
-      else if (p->Upr.UBLOCK.env == NULL) {
-	  p = p->parent;
-      }
-      else {
-	  q = p;
-      }
-  }
+    if (p->ptype != XBLOCK) { p = p->parent; }
+    else if (p->blockparms.env == NULL) { p = p->parent; }
+    else { q = p; }
+    }
   return p;
 }
 
@@ -6667,7 +6491,7 @@ venv(primitive *p, int ind)
 { double v = 0.0;
   if ((ind <= XXenvvar) || (ind > XLlastenv)) { return v; }
   p = findenv(p);
-  if (p != NULL) { v = p->Upr.UBLOCK.env[ind - XXenvvar - 1]; }
+  if (p != NULL) { v = p->blockparms.env[ind - XXenvvar - 1]; }
   return v;
 }
 
@@ -6678,11 +6502,11 @@ double
 qenv(primitive *p, int ind, double localval)
 { double noval;
   switch (ind) {
-    case XLfillval: noval = -1.0; break;
-    case XLlinethick: noval = mdistmax; break;
-    case XLdashwid: noval = mdistmax; break;
-    default: noval = 0.0; break;
-    }
+  case XLfillval: noval = -1.0; break;
+  case XLlinethick: noval = mdistmax; break;
+  case XLdashwid: noval = mdistmax; break;
+  default: noval = 0.0; break;
+  }
   if (localval != noval) { return localval; }
   else { return (venv(p, ind)); }
 }
@@ -6709,13 +6533,11 @@ affang(postype point, postype shaft)
 
   lgth = linlen(shaft.xpos - point.xpos, shaft.ypos - point.ypos);
   if (lgth == 0.0) {
-      tpos.xpos = 1.0;
-      tpos.ypos = 0.0;
-  }
+    tpos.xpos = 1.0;
+    tpos.ypos = 0.0; }
   else {
-      tpos.xpos = (point.xpos - shaft.xpos) / lgth;
-      tpos.ypos = (point.ypos - shaft.ypos) / lgth;
-  }
+    tpos.xpos = (point.xpos - shaft.xpos) / lgth;
+    tpos.ypos = (point.ypos - shaft.ypos) / lgth; }
   return tpos;
 }
 
@@ -6771,35 +6593,30 @@ neswline(primitive *pmp)
 { double aht, awd;
   postype cs, cc, cd;
   int TEMP;
-
-  if (pmp == NULL) {
-      return;
-  }
-  west = Min(west, Min(pmp->aat.xpos, pmp->Upr.Uline.endpos.xpos));
-  east = Max(east, Max(pmp->aat.xpos, pmp->Upr.Uline.endpos.xpos));
-  south = Min(south, Min(pmp->aat.ypos, pmp->Upr.Uline.endpos.ypos));
-  north = Max(north, Max(pmp->aat.ypos, pmp->Upr.Uline.endpos.ypos));
-  TEMP = ahlex(pmp->Upr.Uline.atype);
+  if (pmp == NULL) { return; }
+  west = Min(west, Min(pmp->aat.xpos, pmp->endpos_.xpos));
+  east = Max(east, Max(pmp->aat.xpos, pmp->endpos_.xpos));
+  south = Min(south, Min(pmp->aat.ypos, pmp->endpos_.ypos));
+  north = Max(north, Max(pmp->aat.ypos, pmp->endpos_.ypos));
+  TEMP = ahlex(pmp->lineatype_);
   if ((TEMP == XLEFTHEAD) || (TEMP == XDOUBLEHEAD)) {
-      cs = affang(pmp->Upr.Uline.endpos, pmp->aat);
-      awd = qenv(pmp, XLarrowht, pmp->Upr.Uline.width);
-      aht = qenv(pmp, XLarrowwid, pmp->Upr.Uline.height);
-      cc = affine(aht, awd / 2, pmp->aat, cs);
-      cd = affine(aht, awd / (-2), pmp->aat, cs);
-      west = Min(west, Min(cc.xpos, cd.xpos));
-      east = Max(east, Max(cc.xpos, cd.xpos));
-      south = Min(south, Min(cc.ypos, cd.ypos));
-      north = Max(north, Max(cc.ypos, cd.ypos));
-  }
-  TEMP = ahlex(pmp->Upr.Uline.atype);
-  if (!((TEMP == XRIGHTHEAD) || (TEMP == XDOUBLEHEAD))) {
-      return;
-  }
-  cs = affang(pmp->aat, pmp->Upr.Uline.endpos);
-  awd = qenv(pmp, XLarrowht, pmp->Upr.Uline.width);
-  aht = qenv(pmp, XLarrowwid, pmp->Upr.Uline.height);
-  cc = affine(aht, awd / 2, pmp->Upr.Uline.endpos, cs);
-  cd = affine(aht, awd / (-2), pmp->Upr.Uline.endpos, cs);
+    cs = affang(pmp->endpos_, pmp->aat);
+    awd = qenv(pmp, XLarrowht, pmp->linewidth_);
+    aht = qenv(pmp, XLarrowwid, pmp->lineheight_);
+    cc = affine(aht, awd / 2, pmp->aat, cs);
+    cd = affine(aht, awd / (-2), pmp->aat, cs);
+    west = Min(west, Min(cc.xpos, cd.xpos));
+    east = Max(east, Max(cc.xpos, cd.xpos));
+    south = Min(south, Min(cc.ypos, cd.ypos));
+    north = Max(north, Max(cc.ypos, cd.ypos));
+    }
+  TEMP = ahlex(pmp->lineatype_);
+  if (!((TEMP == XRIGHTHEAD) || (TEMP == XDOUBLEHEAD))) { return; }
+  cs = affang(pmp->aat, pmp->endpos_);
+  awd = qenv(pmp, XLarrowht, pmp->linewidth_);
+  aht = qenv(pmp, XLarrowwid, pmp->lineheight_);
+  cc = affine(aht, awd / 2, pmp->endpos_, cs);
+  cd = affine(aht, awd / (-2), pmp->endpos_, cs);
   west = Min(west, Min(cc.xpos, cd.xpos));
   east = Max(east, Max(cc.xpos, cd.xpos));
   south = Min(south, Min(cc.ypos, cd.ypos));
@@ -6813,32 +6630,17 @@ inarc(double strt, double fin, double ang, double arcang)
 { boolean inarctmp;
 
   if (arcang >= 0.0) {
-      while (fin < strt) {
-	  fin += 2.0 * pi;
-      }
-      while (ang < strt) {
-	  ang += 2.0 * pi;
-      }
-      if (ang <= fin) {
-	  inarctmp = true;
-      }
-      else {
-	  inarctmp = false;
-      }
-      return inarctmp;
-  }
-  while (fin > strt) {
-      fin -= 2.0 * pi;
-  }
-  while (ang > strt) {
-      ang -= 2.0 * pi;
-  }
-  if (ang >= fin) {
-      inarctmp = true;
-  }
+    while (fin < strt) { fin += 2.0 * pi; }
+    while (ang < strt) { ang += 2.0 * pi; }
+    if (ang <= fin) { inarctmp = true; }
+    else { inarctmp = false; }
+    }
   else {
-      inarctmp = false;
-  }
+    while (fin > strt) { fin -= 2.0 * pi; }
+    while (ang > strt) { ang -= 2.0 * pi; }
+    if (ang >= fin) { inarctmp = true; }
+    else { inarctmp = false; }
+    }
   return inarctmp;
 }
 
@@ -6850,24 +6652,24 @@ nesw(primitive *ptmp)
   if (ptmp == NULL) { return; }
   switch (ptmp->ptype) {
     case XLstring:
-      hight = ptmp->Upr.Ubox.boxheight;
-      wdth = ptmp->Upr.Ubox.boxwidth;
+      hight = ptmp->boxheight_;
+      wdth = ptmp->boxwidth_;
       break;
     case XLbox:
-      hight = ptmp->Upr.Ubox.boxheight;
-      wdth = ptmp->Upr.Ubox.boxwidth;
+      hight = ptmp->boxheight_;
+      wdth = ptmp->boxwidth_;
       break;
     case XBLOCK:
-      hight = ptmp->Upr.UBLOCK.blockheight;
-      wdth = ptmp->Upr.UBLOCK.blockwidth;
+      hight = ptmp->blockheight_;
+      wdth = ptmp->blockwidth_;
       break;
     case XLcircle:
-      hight = 2.0 * ptmp->Upr.Ucircle.radius;
+      hight = 2.0 * ptmp->circleradius_;
       wdth = hight;
       break;
     case XLellipse:
-      hight = ptmp->Upr.Uellipse.elheight;
-      wdth = ptmp->Upr.Uellipse.elwidth;
+      hight = ptmp->ellipseheight_;
+      wdth = ptmp->ellipsewidth_;
       break;
     default:
       hight = 0.0;
@@ -6906,24 +6708,24 @@ nesw(primitive *ptmp)
 	/* blank case */
     break;
   case XLarc:
-    sang = principal(ptmp->Upr.Uline.endpos.xpos, pi);
-    eang = ptmp->Upr.Uline.endpos.xpos + ptmp->Upr.Uline.endpos.ypos;
-    if (inarc(sang, eang, 0.5 * pi, ptmp->Upr.Uline.endpos.ypos)) {
-	  north = Max(north, ptmp->aat.ypos + ptmp->Upr.Uline.aradius); }
+    sang = principal(ptmp->startangle_, pi);
+    eang = ptmp->startangle_ + ptmp->arcangle_;
+    if (inarc(sang, eang, 0.5 * pi, ptmp->arcangle_)) {
+	  north = Max(north, ptmp->aat.ypos + ptmp->aradius_); }
     else { north = Max(north,
-	  ptmp->aat.ypos + (ptmp->Upr.Uline.aradius * Max(sin(sang), sin(eang)))); }
-    if (inarc(sang, eang, (-0.5) * pi, ptmp->Upr.Uline.endpos.ypos)) {
-	  south = Min(south, ptmp->aat.ypos - ptmp->Upr.Uline.aradius); }
+	  ptmp->aat.ypos + (ptmp->aradius_ * Max(sin(sang), sin(eang)))); }
+    if (inarc(sang, eang, (-0.5) * pi, ptmp->arcangle_)) {
+	  south = Min(south, ptmp->aat.ypos - ptmp->aradius_); }
     else { south = Min(south,
-	  ptmp->aat.ypos + (ptmp->Upr.Uline.aradius * Min(sin(sang), sin(eang)))); }
-    if (inarc(sang, eang, pi, ptmp->Upr.Uline.endpos.ypos)) {
-	  west = Min(west, ptmp->aat.xpos - ptmp->Upr.Uline.aradius); }
+	  ptmp->aat.ypos + (ptmp->aradius_ * Min(sin(sang), sin(eang)))); }
+    if (inarc(sang, eang, pi, ptmp->arcangle_)) {
+	  west = Min(west, ptmp->aat.xpos - ptmp->aradius_); }
     else { west = Min(west,
-	  ptmp->aat.xpos + (ptmp->Upr.Uline.aradius * Min(cos(sang),cos(eang)))); }
-    if (inarc(sang, eang, 0.0, ptmp->Upr.Uline.endpos.ypos)) {
-	  east = Max(east, ptmp->aat.xpos + ptmp->Upr.Uline.aradius); }
+	  ptmp->aat.xpos + (ptmp->aradius_ * Min(cos(sang),cos(eang)))); }
+    if (inarc(sang, eang, 0.0, ptmp->arcangle_)) {
+	  east = Max(east, ptmp->aat.xpos + ptmp->aradius_); }
     else { east = Max(east,
-	  ptmp->aat.xpos + (ptmp->Upr.Uline.aradius * Max(cos(sang),cos(eang)))); }
+	  ptmp->aat.xpos + (ptmp->aradius_ * Max(cos(sang),cos(eang)))); }
     break;
   }
 #ifdef DDEBUG
@@ -6948,108 +6750,87 @@ FindExitPoint(primitive *pr, postype *pe)
   }
   *pe = pr->aat;
   switch (pr->ptype) {
-
   case XLbox:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->boxheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->boxheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->boxwidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->boxwidth_ * 0.5);
       break;
     }
     break;
 
   case XLstring:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->boxheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.Ubox.boxheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->boxheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->boxwidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.Ubox.boxwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->boxwidth_ * 0.5);
       break;
     }
     break;
 
   case XBLOCK:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.UBLOCK.blockheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->blockheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.UBLOCK.blockheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->blockheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.UBLOCK.blockwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->blockwidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.UBLOCK.blockwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->blockwidth_ * 0.5);
       break;
     }
     break;
 
   case XLcircle:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + pr->Upr.Ucircle.radius;
+      pe->ypos = pr->aat.ypos + pr->circleradius_;
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - pr->Upr.Ucircle.radius;
+      pe->ypos = pr->aat.ypos - pr->circleradius_;
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - pr->Upr.Ucircle.radius;
+      pe->xpos = pr->aat.xpos - pr->circleradius_;
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + pr->Upr.Ucircle.radius;
+      pe->xpos = pr->aat.xpos + pr->circleradius_;
       break;
     }
     break;
 
   case XLellipse:
     switch (pr->direction) {
-
     case XLup:
-      pe->ypos = pr->aat.ypos + (pr->Upr.Uellipse.elheight * 0.5);
+      pe->ypos = pr->aat.ypos + (pr->ellipseheight_ * 0.5);
       break;
-
     case XLdown:
-      pe->ypos = pr->aat.ypos - (pr->Upr.Uellipse.elheight * 0.5);
+      pe->ypos = pr->aat.ypos - (pr->ellipseheight_ * 0.5);
       break;
-
     case XLleft:
-      pe->xpos = pr->aat.xpos - (pr->Upr.Uellipse.elwidth * 0.5);
+      pe->xpos = pr->aat.xpos - (pr->ellipsewidth_ * 0.5);
       break;
-
     case XLright:
-      pe->xpos = pr->aat.xpos + (pr->Upr.Uellipse.elwidth * 0.5);
+      pe->xpos = pr->aat.xpos + (pr->ellipsewidth_ * 0.5);
       break;
     }
     break;
@@ -7062,7 +6843,7 @@ FindExitPoint(primitive *pr, postype *pe)
   case XLarrow:
   case XLmove:
   case XLspline:
-    *pe = pr->Upr.Uline.endpos;
+    *pe = pr->endpos_;
     break;
 
   case XLabel:
@@ -7094,8 +6875,8 @@ deletename(nametype **head)
   while ((*head) != NULL) {
     pn = *head;
     r = pn;
-    while (pn->next_ != NULL) { r = pn; pn = pn->next_; }
-    r->next_ = NULL;
+    while (pn->nextname != NULL) { r = pn; pn = pn->nextname; }
+    r->nextname = NULL;
     if (pn == (*head)) { *head = NULL; }
     if (pn->segmnt != NULL) {
 	  if (bval(pn->segmnt) > 1) {
@@ -7194,7 +6975,7 @@ newprim(primitive **pr, int primtype, primitive *envblk)
   With->outlinep = NULL;
   With->shadedp = NULL;
   With->son = NULL;
-  With->next_ = NULL;
+  With->nextname = NULL;
   if (envblk == NULL) {
     With->parent = NULL;
     With->aat.xpos = 0.0;
@@ -7203,7 +6984,7 @@ newprim(primitive **pr, int primtype, primitive *envblk)
     }
   else {
     With->parent = envblk;
-    With->aat = envblk->Upr.UBLOCK.here;
+    With->aat = envblk->here_;
     With->direction = envblk->direction;
     }
   With->lparam = mdistmax;
@@ -7217,41 +6998,41 @@ newprim(primitive **pr, int primtype, primitive *envblk)
   switch (primtype) {
     case XLbox:
     case XLstring:
-      With->Upr.Ubox.boxfill = -1.0;
-      With->Upr.Ubox.boxheight = 0.0;
-      With->Upr.Ubox.boxwidth = 0.0;
-      With->Upr.Ubox.boxradius = 0.0;
+      With->boxfill_ = -1.0;
+      With->boxheight_ = 0.0;
+      With->boxwidth_ = 0.0;
+      With->boxradius_ = 0.0;
       break;
     case XBLOCK:
-      With->Upr.UBLOCK.blockheight = 0.0;
-      With->Upr.UBLOCK.blockwidth = 0.0;
-      With->Upr.UBLOCK.here = With->aat;
+      With->blockheight_ = 0.0;
+      With->blockwidth_ = 0.0;
+      With->here_ = With->aat;
       for (i = 0; i <= HASHLIM; i++) {
-	    With->Upr.UBLOCK.vars[i]   = NULL;
-	    With->Upr.UBLOCK.nvars[i]   = 0; }
-      With->Upr.UBLOCK.env = NULL;
+	    With->blockparms.vars[i]   = NULL;
+	    With->blockparms.nvars[i]   = 0; }
+      With->blockparms.env = NULL;
       break;
     case XLcircle:
-      With->Upr.Ucircle.cfill = -1.0;
-      With->Upr.Ucircle.radius = 0.0;
+      With->circlefill_ = -1.0;
+      With->circleradius_ = 0.0;
       break;
     case XLellipse:
-      With->Upr.Uellipse.efill = -1.0;
-      With->Upr.Uellipse.elheight = 0.0;
-      With->Upr.Uellipse.elwidth = 0.0;
+      With->ellipsefill_ = -1.0;
+      With->ellipseheight_ = 0.0;
+      With->ellipsewidth_ = 0.0;
       break;
     case XLline:
     case XLarrow:
     case XLmove:
     case XLarc:
     case XLspline:
-      With->Upr.Uline.endpos.xpos = 0.0;
-      With->Upr.Uline.endpos.ypos = 0.0;
-      With->Upr.Uline.height = 0.0;
-      With->Upr.Uline.width = 0.0;
-      With->Upr.Uline.lfill = -1.0;
-      With->Upr.Uline.aradius = mdistmax;
-      With->Upr.Uline.atype = pahlex(0, XEMPTY);
+      With->endpos_.xpos = 0.0;
+      With->endpos_.ypos = 0.0;
+      With->lineheight_ = 0.0;
+      With->linewidth_ = 0.0;
+      With->linefill_ = -1.0;
+      With->aradius_ = mdistmax;
+      With->lineatype_ = pahlex(0, XEMPTY);
       break;
     case XLabel:
     case XLaTeX:
@@ -7263,49 +7044,37 @@ newprim(primitive **pr, int primtype, primitive *envblk)
 							/* Determine drawing direction at arc end */
 void
 arcenddir(primitive *pr)
-{ if (pr->Upr.Uline.endpos.ypos > 0.0) {
-      switch (pr->direction) {
-
-      case 0:
-	/* blank case */
-	break;
-
-      case XLup:
-	envblock->direction = XLleft;
-	break;
-
-      case XLdown:
-	envblock->direction = XLright;
-	break;
-
-      case XLleft:
-	envblock->direction = XLdown;
-	break;
-
-      case XLright:
-	envblock->direction = XLup;
-	break;
-      }
-      return;
+{ if (pr->arcangle_ > 0.0) {
+    switch (pr->direction) {
+    case 0: /* blank case */
+	  break;
+    case XLup:
+	  envblock->direction = XLleft;
+	  break;
+    case XLdown:
+	  envblock->direction = XLright;
+	  break;
+    case XLleft:
+	  envblock->direction = XLdown;
+	  break;
+    case XLright:
+	  envblock->direction = XLup;
+	  break;
+    }
+    return;
   }
   switch (pr->direction) {
-
-  case 0:
-	/* blank case */
+  case 0: /* blank case */
     break;
-
   case XLup:
     envblock->direction = XLright;
     break;
-
   case XLdown:
     envblock->direction = XLleft;
     break;
-
   case XLleft:
     envblock->direction = XLup;
     break;
-
   case XLright:
     envblock->direction = XLdown;
     break;
@@ -7327,7 +7096,7 @@ int j,k;
     while (j < k) { if (r==node[j]) { k = j; } else { j++; } }
     if ( j < k ) { return 0; }
     else {
-      if ( scantree(p, r->next_) == 0) { return 0; }
+      if ( scantree(p, r->nextname) == 0) { return 0; }
       if (ijx > 10000) { return 0; }
       r = r->son;
       ijx++;
@@ -7364,10 +7133,10 @@ shift(primitive *pr, double x, double y)
     pr->aat.ypos += y;
     if ((pr->ptype == XLspline) || (pr->ptype == XLmove) ||
 	    (pr->ptype == XLarrow) || (pr->ptype == XLline)) {
-	  pr->Upr.Uline.endpos.xpos += x;
-	  pr->Upr.Uline.endpos.ypos += y; }
+	  pr->endpos_.xpos += x;
+	  pr->endpos_.ypos += y; }
     if (pr->son != NULL) { shift(pr->son, x, y); }
-    pr = pr->next_;
+    pr = pr->nextname;
     }
 }
 
@@ -7378,40 +7147,39 @@ scaleobj(primitive *pr, double s)
 { primitive *With;
 
   while (pr != NULL) {
-      With = pr;
-      With->aat.xpos *= s;
-      With->aat.ypos *= s;
-      if (With->ptype == XLbox) {
-	  With->Upr.Ubox.boxheight *= s;
-	  With->Upr.Ubox.boxwidth *= s;
-	  With->Upr.Ubox.boxradius *= s;
+    With = pr;
+    With->aat.xpos *= s;
+    With->aat.ypos *= s;
+    if (With->ptype == XLbox) {
+	  With->boxheight_ *= s;
+	  With->boxwidth_ *= s;
+	  With->boxradius_ *= s;
       }
-      else if (With->ptype == XBLOCK) {
-	  With->Upr.UBLOCK.blockheight *= s;
-	  With->Upr.UBLOCK.blockwidth *= s;
+    else if (With->ptype == XBLOCK) {
+	  With->blockheight_ *= s;
+	  With->blockwidth_ *= s;
       }
-      else if (With->ptype == XLcircle) {
-	  With->Upr.Ucircle.radius *= s;
+    else if (With->ptype == XLcircle) {
+	  With->circleradius_ *= s;
       }
-      else if (With->ptype == XLellipse) {
-	  With->Upr.Uellipse.elheight *= s;
-	  With->Upr.Uellipse.elwidth *= s;
+    else if (With->ptype == XLellipse) {
+	  With->ellipseheight_ *= s;
+	  With->ellipsewidth_ *= s;
       }
-      else if (With->ptype == XLarc) {
-	  With->Upr.Uline.aradius *= s;
+    else if (With->ptype == XLarc) {
+	  With->aradius_ *= s;
       }
-      else if ((With->ptype == XLspline) || (With->ptype == XLmove) ||
+    else if ((With->ptype == XLspline) || (With->ptype == XLmove) ||
 	       (With->ptype == XLarrow) || (With->ptype == XLline)) {
-	  With->Upr.Uline.endpos.xpos *= s;
-	  With->Upr.Uline.endpos.ypos *= s;
+	  With->endpos_.xpos *= s;
+	  With->endpos_.ypos *= s;
       }
-      if (With->son != NULL) {
+    if (With->son != NULL) {
 	  scaleobj(With->son, s);
       }
-      pr = With->next_;
-  }
+    pr = With->nextname;
+    }
 }
-
 
 							/* corner(prim,<corner>,xval,yval); Put the
 							   named-corner coordinates into xval,yval   */
@@ -7427,8 +7195,8 @@ corner(primitive *pr, int lexv, double *x, double *y)
       ((pr->ptype == XLspline) || (pr->ptype == XLmove) ||
        (pr->ptype == XLarrow) || (pr->ptype == XLline))) {
     while (pe->son != NULL) { pe = pe->son; }
-    *x = 0.5 * (pr->aat.xpos + pe->Upr.Uline.endpos.xpos);
-    *y = 0.5 * (pr->aat.ypos + pe->Upr.Uline.endpos.ypos);
+    *x = 0.5 * (pr->aat.xpos + pe->endpos_.xpos);
+    *y = 0.5 * (pr->aat.ypos + pe->endpos_.ypos);
     return;
     }
   if ((lexv == XEMPTY) && (pr->ptype != XLstring) && (pr->ptype != XLaTeX)) {
@@ -7456,271 +7224,141 @@ corner(primitive *pr, int lexv, double *x, double *y)
          end; */
       if ((pr->ptype == XLstring) && (drawmode == SVG)) {
 	    switch (lexv) {
-
-	case XDn:
-	  *y = north;
-	  break;
-
-	case XDs:
-	  *y = south;
-	  break;
-
-	case XDe:
-	  *x = east;
-	  break;
-
-	case XDw:
-	  *x = west;
-	  break;
-
-	case XDne:
-	  *y = north;
-	  *x = east;
-	  break;
-
-	case XDse:
-	  *y = south;
-	  *x = east;
-	  break;
-
-	case XDsw:
-	  *y = south;
-	  *x = west;
-	  break;
-
-	case XDnw:
-	  *y = north;
-	  *x = west;
-	  break;
-
-	case XDc:
-	  *y = pr->aat.ypos;
-	  *x = pr->aat.xpos;
-	  break;
-
-	case XDstart:
-	case XDend:
-	  markerror(858);
-	  break;
-	}
-	checkjust(pr->textp, &A, &B, &L, &R);
-	if (L) { pr->Upr.Ubox.boxradius = (west - east) / 2; }
-	else if (R) { pr->Upr.Ubox.boxradius = (east - west) / 2; }
-    }
-    else if (((pr->ptype == XLarc) || (pr->ptype == XLcircle) ||
+	      case XDn: *y = north; break;
+	      case XDs: *y = south; break;
+	      case XDe: *x = east; break;
+	      case XDw: *x = west; break;
+	      case XDne: *y = north; *x = east; break;
+	      case XDse: *y = south; *x = east; break;
+	      case XDsw: *y = south; *x = west; break;
+	      case XDnw: *y = north; *x = west; break;
+	      case XDc: *y = pr->aat.ypos; *x = pr->aat.xpos; break;
+	      case XDstart:
+	      case XDend: markerror(858); break;
+	      }
+	    checkjust(pr->textp, &A, &B, &L, &R);
+	    if (L) { pr->boxradius_ = (west - east) / 2; }
+	    else if (R) { pr->boxradius_ = (east - west) / 2; }
+        }
+      else if (((pr->ptype == XLarc) || (pr->ptype == XLcircle) ||
 	      (pr->ptype == XLellipse) || (pr->ptype == XLbox)) &&
 	     ((lexv == XDnw) || (lexv == XDsw) || (lexv == XDse) ||
 	      (lexv == XDne))) {
-	switch (pr->ptype) {
+	    switch (pr->ptype) {
+	    case XLbox:
+	      *y = Min(pr->boxradius_, Min(fabs(pr->boxheight_),
+		       fabs(pr->boxwidth_)) / 2) * (1 - (1 / sqrt(2.0)));
+	      *x = (pr->boxwidth_ / 2) - (*y);
+	      *y = (pr->boxheight_ / 2) - (*y);
+	      break;
+	    case XLellipse:
+	      *x = pr->ellipsewidth_ * (0.5 / sqrt(2.0));
+	      *y = pr->ellipseheight_ * (0.5 / sqrt(2.0));
+	      break;
+	    case XLarc:
+	      *x = pr->aradius_ / sqrt(2.0);
+	      *y = *x;
+	      break;
+	    case XLcircle:
+	      *x = pr->circleradius_ / sqrt(2.0);
+	      *y = *x;
+	      break;
+	    }
+	    switch (lexv) {
+	    case XDne: /* blank case */ break;
+	    case XDse: *y = -*y; break;
+	    case XDnw: *x = -*x; break;
+	    case XDsw: *x = -*x; *y = -*y; break;
+	    }
+	    *x = pr->aat.xpos + (*x);
+	    *y = pr->aat.ypos + (*y);
+        }
+      else if (pr->ptype == XLarc) {
+	    switch (lexv) {
+	    case XDn: *y = pr->aat.ypos + pr->aradius_; break;
+	    case XDs: *y = pr->aat.ypos - pr->aradius_; break;
+	    case XDe: *x = pr->aat.xpos + pr->aradius_; break;
+	    case XDw: *x = pr->aat.xpos - pr->aradius_; break;
+	    case XDc: /* blank case */ break;
+	    case XDstart:
+	      *x = pr->aat.xpos + (pr->aradius_ * cos(pr->startangle_));
+	      *y = pr->aat.ypos + (pr->aradius_ * sin(pr->startangle_));
+	      break;
+	    case XDend:
+	      *x = pr->aat.xpos +
+                 (pr->aradius_ * cos(pr->startangle_+pr->arcangle_));
+	      *y = pr->aat.ypos +
+                 (pr->aradius_ * sin(pr->startangle_+pr->arcangle_));
+	      break;
+	    } }
+      else {
+	    switch (lexv) {
+	    case XDn: *y = north; break;
+	    case XDs: *y = south; break;
+	    case XDe: *x = east; break;
+	    case XDw: *x = west; break;
+	    case XDne: *y = north; *x = east; break;
+	    case XDse: *y = south; *x = east; break;
+	    case XDsw: *y = south; *x = west; break;
+	    case XDnw: *y = north; *x = west; break;
+	    case XDc: *y = pr->aat.ypos; *x = pr->aat.xpos; break;
+	    case XDstart:
+	    case XDend: markerror(858); break;
+	    } }
+      break;
 
-	case XLbox:
-	  *y = Min(pr->Upr.Ubox.boxradius,
-		   Min(fabs(pr->Upr.Ubox.boxheight),
-		       fabs(pr->Upr.Ubox.boxwidth)) / 2) * (1 - (1 / sqrt(2.0)));
-	  *x = (pr->Upr.Ubox.boxwidth / 2) - (*y);
-	  *y = (pr->Upr.Ubox.boxheight / 2) - (*y);
-	  break;
-
-	case XLellipse:
-	  *x = pr->Upr.Uellipse.elwidth * (0.5 / sqrt(2.0));
-	  *y = pr->Upr.Uellipse.elheight * (0.5 / sqrt(2.0));
-	  break;
-
-	case XLarc:
-	  *x = pr->Upr.Uline.aradius / sqrt(2.0);
-	  *y = *x;
-	  break;
-
-	case XLcircle:
-	  *x = pr->Upr.Ucircle.radius / sqrt(2.0);
-	  *y = *x;
-	  break;
-	}
-	switch (lexv) {
-
-	case XDne:
-	/* blank case */
-	  break;
-
-	case XDse:
-	  *y = -*y;
-	  break;
-
-	case XDnw:
-	  *x = -*x;
-	  break;
-
-	case XDsw:
-	  *x = -*x;
-	  *y = -*y;
-	  break;
-	}
-	*x = pr->aat.xpos + (*x);
-	*y = pr->aat.ypos + (*y);
-    }
-    else if (pr->ptype == XLarc) {
-	switch (lexv) {
-
-	case XDn:
-	  *y = pr->aat.ypos + pr->Upr.Uline.aradius;
-	  break;
-
-	case XDs:
-	  *y = pr->aat.ypos - pr->Upr.Uline.aradius;
-	  break;
-
-	case XDe:
-	  *x = pr->aat.xpos + pr->Upr.Uline.aradius;
-	  break;
-
-	case XDw:
-	  *x = pr->aat.xpos - pr->Upr.Uline.aradius;
-	  break;
-
-	case XDc:
-	/* blank case */
-	  break;
-
-	case XDstart:
-	  *x = pr->aat.xpos + (pr->Upr.Uline.aradius * cos(pr->Upr.Uline.endpos.xpos));
-	  *y = pr->aat.ypos + (pr->Upr.Uline.aradius * sin(pr->Upr.Uline.endpos.xpos));
-	  break;
-
-	case XDend:
-	  *x = pr->aat.xpos + (pr->Upr.Uline.aradius *
-		 cos(pr->Upr.Uline.endpos.xpos + pr->Upr.Uline.endpos.ypos));
-	  *y = pr->aat.ypos + (pr->Upr.Uline.aradius *
-		 sin(pr->Upr.Uline.endpos.xpos + pr->Upr.Uline.endpos.ypos));
-	  break;
-	}
-    }
-    else {
-	switch (lexv) {
-
-	case XDn:
-	  *y = north;
-	  break;
-
-	case XDs:
-	  *y = south;
-	  break;
-
-	case XDe:
-	  *x = east;
-	  break;
-
-	case XDw:
-	  *x = west;
-	  break;
-
-	case XDne:
-	  *y = north;
-	  *x = east;
-	  break;
-
-	case XDse:
-	  *y = south;
-	  *x = east;
-	  break;
-
-	case XDsw:
-	  *y = south;
-	  *x = west;
-	  break;
-
-	case XDnw:
-	  *y = north;
-	  *x = west;
-	  break;
-
-	case XDc:
-	  *y = pr->aat.ypos;
-	  *x = pr->aat.xpos;
-	  break;
-
-	case XDstart:
-	case XDend:
-	  markerror(858);
-	  break;
-	}
-    }
-    break;
-
-  case XLline:
-  case XLarrow:
-  case XLmove:
-  case XLspline:
-    if (lexv != XDstart) {
+    case XLline:
+    case XLarrow:
+    case XLmove:
+    case XLspline:
+      if (lexv != XDstart) {
 	if (lexv == XDend) {
-	    while (pe->son != NULL) {
-		pe = pe->son;
-	    }
-	    *x = pe->Upr.Uline.endpos.xpos;
-	    *y = pe->Upr.Uline.endpos.ypos;
-	}
+	    while (pe->son != NULL) { pe = pe->son; }
+	    *x = pe->endpos_.xpos;
+	    *y = pe->endpos_.ypos; }
 	else if (lexv == XDc) {
-	    while (pe->son != NULL) {
-		pe = pe->son;
-	    }
-	    *x = 0.5 * ((*x) + pe->Upr.Uline.endpos.xpos);
-	    *y = 0.5 * ((*y) + pe->Upr.Uline.endpos.ypos);
-	}
+	    while (pe->son != NULL) { pe = pe->son; }
+	    *x = 0.5 * ((*x) + pe->endpos_.xpos);
+	    *y = 0.5 * ((*y) + pe->endpos_.ypos); }
 	else {
 	    do {
-		sb = false;
-		switch (lexv) {
-
-		case XDn:
-		  sb = (pe->Upr.Uline.endpos.ypos > (*y));
-		  break;
-
-		case XDs:
-		  sb = (pe->Upr.Uline.endpos.ypos < (*y));
-		  break;
-
-		case XDe:
-		  sb = (pe->Upr.Uline.endpos.xpos > (*x));
-		  break;
-
-		case XDw:
-		  sb = (pe->Upr.Uline.endpos.xpos < (*x));
-		  break;
-
-		case XDne:
-		  sb = (((pe->Upr.Uline.endpos.ypos > (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos >= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos >= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos > (*x))));
-		  break;
-
-		case XDse:
-		  sb = (((pe->Upr.Uline.endpos.ypos < (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos >= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos <= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos > (*x))));
-		  break;
-
-		case XDsw:
-		  sb = (((pe->Upr.Uline.endpos.ypos < (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos <= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos <= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos < (*x))));
-		  break;
-
-		case XDnw:
-		  sb = (((pe->Upr.Uline.endpos.ypos > (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos <= (*x))) ||
-			((pe->Upr.Uline.endpos.ypos >= (*y)) &&
-			 (pe->Upr.Uline.endpos.xpos < (*x))));
-		  break;
-		}
-		if (sb) {
-		    *x = pe->Upr.Uline.endpos.xpos;
-		    *y = pe->Upr.Uline.endpos.ypos;
-		}
-		pe = pe->son;
+		  sb = false;
+		  switch (lexv) {
+		  case XDn:
+		    sb = (pe->endpos_.ypos > (*y));
+		    break;
+		  case XDs:
+		    sb = (pe->endpos_.ypos < (*y));
+		    break;
+		  case XDe:
+		    sb = (pe->endpos_.xpos > (*x));
+		    break;
+		  case XDw:
+		    sb = (pe->endpos_.xpos < (*x));
+		    break;
+		  case XDne:
+		    sb = (((pe->endpos_.ypos > (*y)) && (pe->endpos_.xpos >= (*x))) ||
+			  ((pe->endpos_.ypos >= (*y)) && (pe->endpos_.xpos > (*x))));
+		    break;
+		  case XDse:
+		    sb = (((pe->endpos_.ypos < (*y)) && (pe->endpos_.xpos >= (*x))) ||
+			  ((pe->endpos_.ypos <= (*y)) && (pe->endpos_.xpos > (*x))));
+		    break;
+		  case XDsw:
+		    sb = (((pe->endpos_.ypos < (*y)) && (pe->endpos_.xpos <= (*x))) ||
+			  ((pe->endpos_.ypos <= (*y)) && (pe->endpos_.xpos < (*x))));
+		    break;
+		  case XDnw:
+		    sb = (((pe->endpos_.ypos > (*y)) && (pe->endpos_.xpos <= (*x))) ||
+			  ((pe->endpos_.ypos >= (*y)) && (pe->endpos_.xpos < (*x))));
+		    break;
+		  }
+		  if (sb) {
+		    *x = pe->endpos_.xpos;
+		    *y = pe->endpos_.ypos; }
+		  pe = pe->son;
 	    } while (pe != NULL);
-	}
+	  }
     }
     break;
 
@@ -7749,14 +7387,14 @@ nthprimobj(primitive *primp, int nth, int objtype))
   if (nth == 0) { pp = primp;
     while (pp != NULL) {
 	  if ((pp->ptype) == objtype) { prp = pp; }
-	  pp = pp->next_;
+	  pp = pp->nextname;
       }
     }
   else { pp = primp; i = 0;
     if (nth < 0) {
       while (pp != NULL) {
 	    if (pp->ptype == objtype) { i++; }
-	    pp = pp->next_; }
+	    pp = pp->nextname; }
       nth += i + 1;
       }
 #ifdef DDEBUG
@@ -7765,7 +7403,7 @@ nthprimobj(primitive *primp, int nth, int objtype))
     pp = primp; i = 0; prp = NULL;
     while (pp != prp) {
       if (pp->ptype == objtype) { i++; }
-      if (i == nth) { prp = pp; } else { pp = pp->next_; }
+      if (i == nth) { prp = pp; } else { pp = pp->nextname; }
       }
     }
   return prp;
@@ -7790,72 +7428,72 @@ resetenv(int envval, primitive *envbl)
     last = XLlastsc;
     }
   else { last = envval; }
-  if (envbl->Upr.UBLOCK.env == NULL) {
-    envbl->Upr.UBLOCK.env = malloc(sizeof(envarray));
+  if (envbl->blockparms.env == NULL) {
+    envbl->blockparms.env = malloc(sizeof(envarray));
 #ifdef DDEBUG
     if (debuglevel > 0) {
-	  fprintf(log_, "resetenv envarray[%d]\n", ordp(envbl->Upr.UBLOCK.env)); }
+	  fprintf(log_, "resetenv envarray[%d]\n", ordp(envbl->blockparms.env)); }
 #endif
     }
   for (i = envval - 1; i <= (last - 1); i++) {
     switch (i + 1) {
 							/* scaled environment vars (in) */
-      case XLarcrad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.25;
+      case XLarcrad: envbl->blockparms.env[i - XXenvvar] = 0.25;
 	    break;
-      case XLarrowht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.1;
+      case XLarrowht: envbl->blockparms.env[i - XXenvvar] = 0.1;
 	    break;
-      case XLarrowwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.05;
+      case XLarrowwid: envbl->blockparms.env[i - XXenvvar] = 0.05;
 	    break;
-      case XLboxht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLboxht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLboxrad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
+      case XLboxrad: envbl->blockparms.env[i - XXenvvar] = 0.0;
 	    break;
-      case XLboxwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.75;
+      case XLboxwid: envbl->blockparms.env[i - XXenvvar] = 0.75;
 	    break;
-      case XLcirclerad: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.25;
+      case XLcirclerad: envbl->blockparms.env[i - XXenvvar] = 0.25;
 	    break;
-      case XLdashwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.05;
+      case XLdashwid: envbl->blockparms.env[i - XXenvvar] = 0.05;
 	    break;
-      case XLellipseht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLellipseht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLellipsewid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.75;
+      case XLellipsewid: envbl->blockparms.env[i - XXenvvar] = 0.75;
 	    break;
-      case XLlineht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLlineht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLlinewid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLlinewid: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLmoveht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLmoveht: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLmovewid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLmovewid: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
       case XLtextht:
 	    switch (drawmode) {
-	      case PDF: envbl->Upr.UBLOCK.env[i - XXenvvar] = DFONT / 72.0;
+	      case PDF: envbl->blockparms.env[i - XXenvvar] = DFONT / 72.0;
 	        break;
 	      case SVG:
-	        envbl->Upr.UBLOCK.env[i - XXenvvar] = (DFONT / 72.0) * 0.66;
+	        envbl->blockparms.env[i - XXenvvar] = (DFONT / 72.0) * 0.66;
 	        break;
 	      default:
-	        envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
+	        envbl->blockparms.env[i - XXenvvar] = 0.0;
 	        break;
 	      }
 	    break;
-      case XLtextoffset: envbl->Upr.UBLOCK.env[i - XXenvvar] = 2.0 / 72;
+      case XLtextoffset: envbl->blockparms.env[i - XXenvvar] = 2.0 / 72;
 	    break;
-      case XLtextwid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.0;
+      case XLtextwid: envbl->blockparms.env[i - XXenvvar] = 0.0;
 	    break;
 							/* The following are unscaled */
-      case XLarrowhead: envbl->Upr.UBLOCK.env[i - XXenvvar] = 1.0;
+      case XLarrowhead: envbl->blockparms.env[i - XXenvvar] = 1.0;
 	    break;
-      case XLfillval: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.5;
+      case XLfillval: envbl->blockparms.env[i - XXenvvar] = 0.5;
 	    break;
-      case XLlinethick: envbl->Upr.UBLOCK.env[i - XXenvvar] = 0.8;
+      case XLlinethick: envbl->blockparms.env[i - XXenvvar] = 0.8;
 	    break;
-      case XLmaxpsht: envbl->Upr.UBLOCK.env[i - XXenvvar] = 11.0;
+      case XLmaxpsht: envbl->blockparms.env[i - XXenvvar] = 11.0;
 	    break;
-      case XLmaxpswid: envbl->Upr.UBLOCK.env[i - XXenvvar] = 8.5;
+      case XLmaxpswid: envbl->blockparms.env[i - XXenvvar] = 8.5;
 	    break;
-      case XLscale: envbl->Upr.UBLOCK.env[i - XXenvvar] = 1.0;
+      case XLscale: envbl->blockparms.env[i - XXenvvar] = 1.0;
 	    break;
       }
     }
@@ -7870,9 +7508,9 @@ inheritenv(primitive *envbl)
 
   pr = findenv(envbl);
   if (pr == NULL) { resetenv(0, envbl); return; }
-  envbl->Upr.UBLOCK.env = malloc(sizeof(envarray));
+  envbl->blockparms.env = malloc(sizeof(envarray));
   for (i = XXenvvar; i <= (XLlastenv - 1); i++) {
-      envbl->Upr.UBLOCK.env[i - XXenvvar] = pr->Upr.UBLOCK.env[i - XXenvvar];
+      envbl->blockparms.env[i - XXenvvar] = pr->blockparms.env[i - XXenvvar];
   }
 }
 
@@ -7884,11 +7522,11 @@ resetscale(double x, int opr, primitive *envbl)
   int i;
 
   resetenv(-1, envbl);
-  r = envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
-  eqop(&envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1], opr, x);
-  s = envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
+  r = envbl->blockparms.env[XLscale - XXenvvar - 1];
+  eqop(&envbl->blockparms.env[XLscale - XXenvvar - 1], opr, x);
+  s = envbl->blockparms.env[XLscale - XXenvvar - 1];
   if (s == 0.0) {
-      envbl->Upr.UBLOCK.env[XLscale - XXenvvar - 1] = r;
+      envbl->blockparms.env[XLscale - XXenvvar - 1] = r;
       s = 1.0;
       markerror(870);
   }
@@ -7899,7 +7537,7 @@ resetscale(double x, int opr, primitive *envbl)
       s /= r;
   }
   for (i = XXenvvar; i < XLlastsc; i++) {
-      eqop(&envbl->Upr.UBLOCK.env[i - XXenvvar], XLmulteq, s);
+      eqop(&envbl->blockparms.env[i - XXenvvar], XLmulteq, s);
   }
 }
 
@@ -7919,23 +7557,23 @@ getscale(double xv, double yv, primitive *lp, double *sfact, double *xsc)
   if (lp != NULL) {
       if (lp->ptype == XBLOCK) {
 	  qp = findenv(lp);
-	  if (qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1] > 0.0) {
-	      *sfact = qp->Upr.UBLOCK.env[XLscale - XXenvvar - 1];
+	  if (qp->blockparms.env[XLscale - XXenvvar - 1] > 0.0) {
+	      *sfact = qp->blockparms.env[XLscale - XXenvvar - 1];
 	  }
 	  if ((east > west) &&
 	      ((east - west) / (*sfact) >
-	       qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1]) &&
-	      (qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1] > 0.0)) {
+	       qp->blockparms.env[XLmaxpswid - XXenvvar - 1]) &&
+	      (qp->blockparms.env[XLmaxpswid - XXenvvar - 1] > 0.0)) {
 	      erno = 903;
-	      gs = (east - west) / qp->Upr.UBLOCK.env[XLmaxpswid - XXenvvar - 1];
+	      gs = (east - west) / qp->blockparms.env[XLmaxpswid - XXenvvar - 1];
 	  }
 	  if ((north > south) &&
 	      ((north - south) / (*sfact) >
-	       qp->Upr.UBLOCK.env[XLmaxpsht - XXenvvar - 1]) &&
-	      (qp->Upr.UBLOCK.env[XLmaxpsht - XXenvvar - 1] > 0.0)) {
+	       qp->blockparms.env[XLmaxpsht - XXenvvar - 1]) &&
+	      (qp->blockparms.env[XLmaxpsht - XXenvvar - 1] > 0.0)) {
 	      erno = 904;
 	      gs = Max(gs,
-		  (north - south) / qp->Upr.UBLOCK.env[XLmaxpsht - XXenvvar - 1]);
+		  (north - south) / qp->blockparms.env[XLmaxpsht - XXenvvar - 1]);
 	  }
       }
   }
@@ -7967,7 +7605,7 @@ copyprim(primitive *prin, primitive **prout)
   (*prout)->shadedp = prin->shadedp;
   (*prout)->parent = prin->parent;
   (*prout)->son = prin->son;
-  (*prout)->next_ = prin->next_;
+  (*prout)->nextname = prin->nextname;
   (*prout)->aat = prin->aat;
   (*prout)->lparam = prin->lparam;
   (*prout)->lthick = prin->lthick;
@@ -7977,46 +7615,46 @@ copyprim(primitive *prin, primitive **prout)
   switch (prin->ptype) {
   case XLbox:
   case XLstring:
-    (*prout)->Upr.Ubox.boxfill = prin->Upr.Ubox.boxfill;
-    (*prout)->Upr.Ubox.boxheight = prin->Upr.Ubox.boxheight;
-    (*prout)->Upr.Ubox.boxwidth = prin->Upr.Ubox.boxwidth;
-    (*prout)->Upr.Ubox.boxradius = prin->Upr.Ubox.boxradius;
+    (*prout)->boxfill_ = prin->boxfill_;
+    (*prout)->boxheight_ = prin->boxheight_;
+    (*prout)->boxwidth_ = prin->boxwidth_;
+    (*prout)->boxradius_ = prin->boxradius_;
     break;
   case XBLOCK:
-    (*prout)->Upr.UBLOCK.blockheight = prin->Upr.UBLOCK.blockheight;
-    (*prout)->Upr.UBLOCK.blockwidth = prin->Upr.UBLOCK.blockwidth;
-    (*prout)->Upr.UBLOCK.here = prin->Upr.UBLOCK.here;
+    (*prout)->blockheight_ = prin->blockheight_;
+    (*prout)->blockwidth_ = prin->blockwidth_;
+    (*prout)->here_ = prin->here_;
     for (i = 0; i <= HASHLIM; i++) {
-	  (*prout)->Upr.UBLOCK.vars[i] = prin->Upr.UBLOCK.vars[i];
-	  (*prout)->Upr.UBLOCK.nvars[i] = prin->Upr.UBLOCK.nvars[i]; }
-    if (prin->Upr.UBLOCK.env != NULL) {
-	  (*prout)->Upr.UBLOCK.env = malloc(sizeof(envarray));
+	  (*prout)->blockparms.vars[i] = prin->blockparms.vars[i];
+	  (*prout)->blockparms.nvars[i] = prin->blockparms.nvars[i]; }
+    if (prin->blockparms.env != NULL) {
+	  (*prout)->blockparms.env = malloc(sizeof(envarray));
 	  for (i = XXenvvar; i < XLlastenv; i++) {
-	    (*prout)->Upr.UBLOCK.env[i - XXenvvar] =
-          prin->Upr.UBLOCK.env[i - XXenvvar];
+	    (*prout)->blockparms.env[i - XXenvvar] =
+          prin->blockparms.env[i - XXenvvar];
 	    }
       }
     break;
   case XLcircle:
-    (*prout)->Upr.Ucircle.cfill = prin->Upr.Ucircle.cfill;
-    (*prout)->Upr.Ucircle.radius = prin->Upr.Ucircle.radius;
+    (*prout)->circlefill_ = prin->circlefill_;
+    (*prout)->circleradius_ = prin->circleradius_;
     break;
   case XLellipse:
-    (*prout)->Upr.Uellipse.efill = prin->Upr.Uellipse.efill;
-    (*prout)->Upr.Uellipse.elheight = prin->Upr.Uellipse.elheight;
-    (*prout)->Upr.Uellipse.elwidth = prin->Upr.Uellipse.elwidth;
+    (*prout)->ellipsefill_ = prin->ellipsefill_;
+    (*prout)->ellipseheight_ = prin->ellipseheight_;
+    (*prout)->ellipsewidth_ = prin->ellipsewidth_;
     break;
   case XLline:
   case XLarrow:
   case XLmove:
   case XLarc:
   case XLspline:
-    (*prout)->Upr.Uline.endpos = prin->Upr.Uline.endpos;
-    (*prout)->Upr.Uline.height = prin->Upr.Uline.height;
-    (*prout)->Upr.Uline.width = prin->Upr.Uline.width;
-    (*prout)->Upr.Uline.lfill = prin->Upr.Uline.lfill;
-    (*prout)->Upr.Uline.aradius = prin->Upr.Uline.aradius;
-    (*prout)->Upr.Uline.atype = prin->Upr.Uline.atype;
+    (*prout)->endpos_ = prin->endpos_;
+    (*prout)->lineheight_ = prin->lineheight_;
+    (*prout)->linewidth_ = prin->linewidth_;
+    (*prout)->linefill_ = prin->linefill_;
+    (*prout)->aradius_ = prin->aradius_;
+    (*prout)->lineatype_ = prin->lineatype_;
     break;
   case XLabel:
   case XLaTeX:
@@ -8037,8 +7675,8 @@ deletestringbox(primitive **pr)
 	if ((*pr)->parent->son == (*pr)) { (*pr)->parent->son = NULL; }
 	else {
 	  prx = (*pr)->parent->son;
-	  while ((prx->next_ != NULL) && (prx->next_ != (*pr))) { prx = prx->next_;}
-	  prx->next_ = NULL; }
+	  while ((prx->nextname != NULL) && (prx->nextname != (*pr))) { prx = prx->nextname;}
+	  prx->nextname = NULL; }
     }
   deletetree(pr);
 }
@@ -8064,6 +7702,10 @@ dostart(void)
     if ((drawmode == SVG) || (drawmode == PDF) || (drawmode == PS)) {
 	  makevar("dptextratio", 11, 0.66);
 	  makevar("dpPPI", 5, 96.0);
+      }
+    else if (drawmode == xfig) {
+	  makevar("xfigres", 7, 1200);
+	  makevar("xdispres", 8, 80);
       }
 }
 
@@ -8091,25 +7733,25 @@ makevar(Char *s, int ln, double varval)
 #ifdef DDEBUG
   if (debuglevel > 1) { fprintf(log_, " vn=%d\n", ordp(vn)); }
 #endif
-  if (lastvar == NULL) { With->Upr.UBLOCK.vars[j] = vn; }
+  if (lastvar == NULL) { With->blockparms.vars[j] = vn; }
   else if (k < 0) {
-    if (With->Upr.UBLOCK.vars[j]->next_ == NULL) {
-	  With->Upr.UBLOCK.vars[j]->next_ = vn; }
+    if (With->blockparms.vars[j]->nextname == NULL) {
+	  With->blockparms.vars[j]->nextname = vn; }
     else {
-	  vn->next_ = lastvar->next_;
-	  lastvar->next_ = vn; }
+	  vn->nextname = lastvar->nextname;
+	  lastvar->nextname = vn; }
     }
-  else if (lastvar == With->Upr.UBLOCK.vars[j]) {
-    vn->next_ = With->Upr.UBLOCK.vars[j];
-    With->Upr.UBLOCK.vars[j] = vn;
+  else if (lastvar == With->blockparms.vars[j]) {
+    vn->nextname = With->blockparms.vars[j];
+    With->blockparms.vars[j] = vn;
     }
   else {
-    namptr = With->Upr.UBLOCK.vars[j];
-    while (namptr->next_ != lastvar) { namptr = namptr->next_; }
-    namptr->next_ = vn;
-    vn->next_ = lastvar;
+    namptr = With->blockparms.vars[j];
+    while (namptr->nextname != lastvar) { namptr = namptr->nextname; }
+    namptr->nextname = vn;
+    vn->nextname = lastvar;
     }
-  With->Upr.UBLOCK.nvars[j]++;
+  With->blockparms.nvars[j]++;
   vn->val = varval;
 }
 
@@ -8162,37 +7804,33 @@ donamedobj(attribute *a1)
 		  shift(a1->prim, a1->xval - dx, a1->yval - dy); }
 	    else {
 		  x1 = With2->aat.xpos +
-		     (With2->Upr.Uline.aradius * cos(With2->Upr.Uline.endpos.xpos));
+		     (With2->aradius_ * cos(With2->startangle_));
 							/* from */
 		  z1 = With2->aat.ypos +
-		     (With2->Upr.Uline.aradius * sin(With2->Upr.Uline.endpos.xpos));
+		     (With2->aradius_ * sin(With2->startangle_));
 		  if (teststflag(a1->state, XLto)) {
 							/* to X from Here|Y implied */
 		    if ((i != XEMPTY) && (i != XDc)) { markerror(858); }
-		    r = With2->aat.xpos + (With2->Upr.Uline.aradius * cos(
-			    With2->Upr.Uline.endpos.xpos + With2->Upr.Uline.endpos.ypos));
-		    s = With2->aat.ypos + (With2->Upr.Uline.aradius * sin(
-			    With2->Upr.Uline.endpos.xpos + With2->Upr.Uline.endpos.ypos));
+		    r = With2->aat.xpos + (With2->aradius_ *
+                  cos(With2->startangle_ + With2->arcangle_));
+		    s = With2->aat.ypos + (With2->aradius_ *
+                  sin(With2->startangle_ + With2->arcangle_));
 		    With2->aat.xpos = a1->xval;
 		    With2->aat.ypos = a1->yval;
-		    With2->Upr.Uline.aradius = linlen(r - With2->aat.xpos,
-						    s - With2->aat.ypos);
-		    setangles(&With2->Upr.Uline.endpos.xpos,
-			      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1, r, s);
+		    With2->aradius_ = linlen(r - With2->aat.xpos, s - With2->aat.ypos);
+		    setangles(&With2->startangle_,
+			      &With2->arcangle_, With2->aat, x1, z1, r, s);
 		    }
 		  else if (teststflag(a1->state, XLfrom)) {
 		    if ((i != XEMPTY) && (i != XDc)) { markerror(858); }
 		    With2->aat.xpos = a1->xval;
 		    With2->aat.ypos = a1->yval;
 		    t = datan(z1 - With2->aat.ypos, x1 - With2->aat.xpos);
-		    r = With2->aat.xpos + (With2->Upr.Uline.aradius * cos(
-					     t + With2->Upr.Uline.endpos.ypos));
-		    s = With2->aat.ypos + (With2->Upr.Uline.aradius * sin(
-					     t + With2->Upr.Uline.endpos.ypos));
-		    With2->Upr.Uline.aradius = linlen(x1 - With2->aat.xpos,
-						    z1 - With2->aat.ypos);
-		    setangles(&With2->Upr.Uline.endpos.xpos,
-			      &With2->Upr.Uline.endpos.ypos, With2->aat, x1, z1, r, s);
+		    r = With2->aat.xpos + (With2->aradius_ * cos(t + With2->arcangle_));
+		    s = With2->aat.ypos + (With2->aradius_ * sin(t + With2->arcangle_));
+		    With2->aradius_ = linlen(x1 - With2->aat.xpos,z1 - With2->aat.ypos);
+		    setangles(&With2->startangle_, &With2->arcangle_, With2->aat,
+               x1, z1, r, s);
 			}
 		  else { shift(a1->prim, With->xval - dx, With->yval - dy); }
 	    }
@@ -8237,12 +7875,12 @@ readfor(fbuffer *p0, int attx, fbuffer **p2, Char endch, boolean isfor)
     if ((*p2) == NULL) { fprintf(log_, "=nil"); }
     else { fprintf(log_, "<>nil"); }
     fprintf(log_, " endch=\"%c\" ch=\"%c\"\n", endch, ch);
-  }
+    }
 #endif
   if (!isfor) { inchar(); }
   while (moreinput) {
     if (p0 == NULL) { newbuf(&p); } else { p = p0; p0 = NULL; }
-    p->attrib = attx;                   /* attstack index or -(name length) */
+    p->attrib = attx;                   /* -(name length) */
     if (p1 != NULL) { p1->nextb = p; p->prevb = p1; }
     p->higherb = inbuf;
     p1 = p;
@@ -8306,11 +7944,11 @@ void
 queueprim(primitive *pr, primitive *envblk)
 { primitive *pp;
   if (envblk->son == NULL) { envblk->son = pr; }
-  else if (tail != NULL ) { tail->next_ = pr; }
+  else if (tail != NULL ) { tail->nextname = pr; }
   else {
     pp = envblk->son;
-    while (pp->next_ != NULL) { pp = pp->next_; }
-    pp->next_ = pr;
+    while (pp->nextname != NULL) { pp = pp->nextname; }
+    pp->nextname = pr;
     }
   tail = pr;
   }
@@ -8371,12 +8009,12 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
 	fprintf(log_,"sprintf nexprs=%d\n",nexprs);
 	printobject(a3->prim);
 	if (eb == NULL) { fprintf(log_, " ! sprintf_i: eb=nil\n"); }
-	else if (eb->Upr.UBLOCK.env == NULL) {
+	else if (eb->blockparms.env == NULL) {
 	    fprintf(log_, " ! sprintf_i: env=nil\n"); } }
 #endif
-  With2->Upr.Ubox.boxheight = eb->envinx(XLtextht);
-  With2->Upr.Ubox.boxwidth = eb->envinx(XLtextwid);
-  With2->Upr.Ubox.boxradius = 0.0;
+  With2->boxheight_ = eb->envinx(XLtextht);
+  With2->boxwidth_ = eb->envinx(XLtextwid);
+  With2->boxradius_ = 0.0;
   newstr(&With2->textp);
   if (tmpbuf == NULL) { tmpbuf = malloc(sizeof(chbufarray)); }
   if (tmpfmt == NULL) { tmpfmt = malloc(sizeof(chbufarray)); }
@@ -8468,17 +8106,17 @@ dosprintf( attribute *a0, attribute *a3, attribute *a5, int nexprs )
   if (nexprs > i) { markerror(864); }               /* Too many exprs */
   if (drawmode == xfig) {
 	With2 = a0->prim;
-	if (With2->Upr.Ubox.boxwidth == 0.0) {
-	  if (With2->Upr.Ubox.boxheight == 0.0) {
-		With2->Upr.Ubox.boxheight =
+	if (With2->boxwidth_ == 0.0) {
+	  if (With2->boxheight_ == 0.0) {
+		With2->boxheight_ =
 		  0.1 * eb->envinx(XLscale); }
 	  if (With2->textp != NULL) {
-		With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+		With2->boxwidth_ = With2->boxheight_ *
 					  With2->textp->len * 0.75; }
 	  }
     }
   else if ((drawmode == PDF) && (With2->textp != NULL)) {
-	  With2->Upr.Ubox.boxwidth = With2->Upr.Ubox.boxheight *
+	  With2->boxwidth_ = With2->boxheight_ *
 				      With2->textp->len * 0.6; }
   if (envblock->son == a3->prim) { envblock->son = a0->prim; }
   deletestringbox(&(a3->prim));

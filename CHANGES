@@ -1,4 +1,5 @@
 
+2020 06 01 SVG text adjustments; GCC-10 conformance.
 2020 03 01 Commas protected by brackets; zero-repetition "for" loop bugfix
            under bison.
 2019 11 30 Fix of environment variable scope, arc attribute; improved error

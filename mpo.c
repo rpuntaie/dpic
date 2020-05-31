@@ -24,7 +24,7 @@ mpowrtext (primitive * np, nametype * tp, double x, double y) {
   if (tp == NULL) {
     return;
   }
-  if (tp->next_ != NULL) {
+  if (tp->nextname != NULL) {
     printf ("label");
     printf ("(btex ");
     texstacktext (np, tp);
@@ -284,59 +284,59 @@ splinesegment (primitive * tv, int splc, int splt) {
   if (splt == 1) {
     wpos (tv->aat);
     ddash ();
-    wpos (tv->Upr.Uline.endpos);
+    wpos (tv->endpos_);
     return;
   }
-  if (ismdistmax (tv->Upr.Uline.aradius)) {
+  if (ismdistmax (tv->aradius_)) {
     if (splc == splt) {		/* 1st seg */
       wpos (tv->aat);
       ddash ();
-      wprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+      wprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
       controls ();
-      wprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 5.0, 6.0);
+      wprop (tv->aat, tv->endpos_, 1.0, 5.0, 6.0);
       return;
     }
     if (splc > 1) {		/* interior segment */
       wrand ();
-      wprop (tv->aat, tv->Upr.Uline.endpos, 5.0, 1.0, 6.0);
+      wprop (tv->aat, tv->endpos_, 5.0, 1.0, 6.0);
       ddot ();
-      wprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+      wprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
       controls ();
-      wprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 5.0, 6.0);
+      wprop (tv->aat, tv->endpos_, 1.0, 5.0, 6.0);
       return;
     }
     wrand ();
-    wprop (tv->aat, tv->Upr.Uline.endpos, 5.0, 1.0, 6.0);
+    wprop (tv->aat, tv->endpos_, 5.0, 1.0, 6.0);
     ddot ();
-    wprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+    wprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
     ddash ();
-    wpos (tv->Upr.Uline.endpos);
+    wpos (tv->endpos_);
 							    /* last segment */
     return;
   }
   if ((splc == splt) && (splc > 1)) {
     wpos (tv->aat);
     controls ();
-    wprop (tv->aat, tv->Upr.Uline.endpos, 1 - tv->Upr.Uline.aradius,
-	   tv->Upr.Uline.aradius, 1.0);
+    wprop (tv->aat, tv->endpos_, 1 - tv->aradius_,
+	   tv->aradius_, 1.0);
     return;
   }
   if (splc > 1) {
     wrand ();
-    wprop (tv->aat, tv->Upr.Uline.endpos, 1 + tv->Upr.Uline.aradius,
-	   1 - tv->Upr.Uline.aradius, 2.0);
+    wprop (tv->aat, tv->endpos_, 1 + tv->aradius_,
+	   1 - tv->aradius_, 2.0);
     ddot ();
-    wprop (tv->aat, tv->Upr.Uline.endpos, 1.0, 1.0, 2.0);
+    wprop (tv->aat, tv->endpos_, 1.0, 1.0, 2.0);
     controls ();
-    wprop (tv->aat, tv->Upr.Uline.endpos, 1 - tv->Upr.Uline.aradius,
-	   1 + tv->Upr.Uline.aradius, 2.0);
+    wprop (tv->aat, tv->endpos_, 1 - tv->aradius_,
+	   1 + tv->aradius_, 2.0);
     return;
   }
   wrand ();
-  wprop (tv->aat, tv->Upr.Uline.endpos, tv->Upr.Uline.aradius,
-	 1 - tv->Upr.Uline.aradius, 1.0);
+  wprop (tv->aat, tv->endpos_, tv->aradius_,
+	 1 - tv->aradius_, 1.0);
   ddot ();
-  wpos (tv->Upr.Uline.endpos);
+  wpos (tv->endpos_);
 }
 
 							/* node is always <> nil: */
@@ -356,18 +356,18 @@ mpodraw (primitive * node) {
   case XLbox:
   case XBLOCK:
     if (node->ptype == XLbox) {
-      if ((node->shadedp != NULL) || ((node->Upr.Ubox.boxfill >= 0.0) &&
-				      (node->Upr.Ubox.boxfill <= 1.0))) {
-	mpobox ("fill ", node->aat, node->Upr.Ubox.boxwidth / 2,
-		node->Upr.Ubox.boxheight / 2, node->Upr.Ubox.boxradius);
-	addcolor (node->shadedp, node->Upr.Ubox.boxfill);
+      if ((node->shadedp != NULL) || ((node->boxfill_ >= 0.0) &&
+				      (node->boxfill_ <= 1.0))) {
+	mpobox ("fill ", node->aat, node->boxwidth_ / 2,
+		node->boxheight_ / 2, node->boxradius_);
+	addcolor (node->shadedp, node->boxfill_);
 	printf (" X\n");
       }
       if (lsp != XLinvis) {
 	mposetthick (node->lthick);
 	mpolinecap (lsp);
-	mpobox ("drw ", node->aat, node->Upr.Ubox.boxwidth / 2,
-		node->Upr.Ubox.boxheight / 2, node->Upr.Ubox.boxradius);
+	mpobox ("drw ", node->aat, node->boxwidth_ / 2,
+		node->boxheight_ / 2, node->boxradius_);
 	mpodashdot (lsp, node->lparam, node->outlinep);
       }
     }
@@ -376,18 +376,18 @@ mpodraw (primitive * node) {
 
   case XLellipse:
     if ((node->shadedp != NULL) ||
-	((node->Upr.Uellipse.efill >= 0.0)
-	 && (node->Upr.Uellipse.efill <= 1.0))) {
-      mpoellipse ("fill ", node->aat, node->Upr.Uellipse.elwidth / 2,
-		  node->Upr.Uellipse.elheight / 2);
-      addcolor (node->shadedp, node->Upr.Uellipse.efill);
+	((node->ellipsefill_ >= 0.0)
+	 && (node->ellipsefill_ <= 1.0))) {
+      mpoellipse ("fill ", node->aat, node->ellipsewidth_ / 2,
+		  node->ellipseheight_ / 2);
+      addcolor (node->shadedp, node->ellipsefill_);
       printf (" X\n");
     }
     if (lsp != XLinvis) {
       mposetthick (node->lthick);
       mpolinecap (lsp);
-      mpoellipse ("drw ", node->aat, node->Upr.Uellipse.elwidth / 2,
-		  node->Upr.Uellipse.elheight / 2);
+      mpoellipse ("drw ", node->aat, node->ellipsewidth_ / 2,
+		  node->ellipseheight_ / 2);
       mpodashdot (lsp, node->lparam, node->outlinep);
     }
     mpowrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
@@ -395,20 +395,20 @@ mpodraw (primitive * node) {
 
   case XLcircle:
     if ((node->shadedp != NULL) ||
-	((node->Upr.Ucircle.cfill >= 0.0)
-	 && (node->Upr.Ucircle.cfill <= 1.0))) {
+	((node->circlefill_ >= 0.0)
+	 && (node->circlefill_ <= 1.0))) {
       printf ("fill fullcircle scaled ");
-      wfloat (&output, node->Upr.Ucircle.radius * 2 / fsc);
+      wfloat (&output, node->circleradius_ * 2 / fsc);
       printf (" shifted ");
       wpos (node->aat);
-      addcolor (node->shadedp, node->Upr.Ucircle.cfill);
+      addcolor (node->shadedp, node->circlefill_);
       printf (" X\n");
     }
     if (lsp != XLinvis) {
       mposetthick (node->lthick);
       mpolinecap (lsp);
       printf ("drw fullcircle scaled ");
-      wfloat (&output, node->Upr.Ucircle.radius * 2 / fsc);
+      wfloat (&output, node->circleradius_ * 2 / fsc);
       printf (" shifted ");
       wpos (node->aat);
       mpodashdot (lsp, node->lparam, node->outlinep);
@@ -424,41 +424,37 @@ mpodraw (primitive * node) {
       mposetthick (0.0);
       printf ("fill ");
       wpos (X0);
-      popgwarc (node->aat, fabs (node->Upr.Uline.aradius),
-		posangle (X0, node->aat), posangle (X1, node->aat),
-		node->Upr.Uline.endpos.ypos);
+      popgwarc(node->aat, fabs (node->aradius_),
+		posangle(X0, node->aat), posangle(X1, node->aat), node->arcangle_);
       printf (" --cycle");
       addcolor (sshade, vfill);
       printf (" X\n");
       vfill = -1.0;
       sshade = NULL;
-    }
+      }
     if (lsp != XLinvis) {
       mposetthick (lth);
-      TEMP = ahlex (node->Upr.Uline.atype);
+      TEMP = ahlex (node->lineatype_);
       if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
-	mpoarcahead (node->aat, X0, ahnum (node->Upr.Uline.atype), soutline,
-		     qenv (node, XLarrowht, node->Upr.Uline.height),
-		     qenv (node, XLarrowwid, node->Upr.Uline.width), lth,
-		     fabs (node->Upr.Uline.aradius),
-		     node->Upr.Uline.endpos.ypos, &X0);
-      }
-      TEMP = ahlex (node->Upr.Uline.atype);
+	    mpoarcahead (node->aat, X0, ahnum (node->lineatype_), soutline,
+		     qenv (node, XLarrowht, node->lineheight_),
+		     qenv (node, XLarrowwid, node->linewidth_), lth,
+		     fabs (node->aradius_), node->arcangle_, &X0);
+        }
+      TEMP = ahlex (node->lineatype_);
       if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
-	mpoarcahead (node->aat, X1, ahnum (node->Upr.Uline.atype), soutline,
-		     qenv (node, XLarrowht, node->Upr.Uline.height),
-		     qenv (node, XLarrowwid, node->Upr.Uline.width), lth,
-		     -fabs (node->Upr.Uline.aradius),
-		     node->Upr.Uline.endpos.ypos, &X1);
-      }
+	    mpoarcahead (node->aat, X1, ahnum (node->lineatype_), soutline,
+		     qenv (node, XLarrowht, node->lineheight_),
+		     qenv (node, XLarrowwid, node->linewidth_), lth,
+		     -fabs (node->aradius_), node->arcangle_, &X1);
+        }
       mpolinecap (lsp);
       printf ("drw ");
       wpos (X0);
-      popgwarc (node->aat, fabs (node->Upr.Uline.aradius),
-		posangle (X0, node->aat), posangle (X1, node->aat),
-		node->Upr.Uline.endpos.ypos);
+      popgwarc (node->aat, fabs (node->aradius_),
+		posangle (X0, node->aat), posangle (X1, node->aat), node->arcangle_);
       mpodashdot (lsp, node->lparam, node->outlinep);
-    }
+      }
     mpowrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
@@ -474,7 +470,7 @@ mpodraw (primitive * node) {
 	tx = node;
 	while (tx != NULL) {
 	  ddash ();
-	  wpos (tx->Upr.Uline.endpos);
+	  wpos (tx->endpos_);
 	  tx = tx->son;
 	}
 	printf (" --cycle");
@@ -486,19 +482,19 @@ mpodraw (primitive * node) {
       lth = qenv (node, XLlinethick, tn->lthick);
       if (lsp != XLinvis) {
 	mposetthick (lth);
-	TEMP = ahlex (tn->Upr.Uline.atype);
+	TEMP = ahlex (tn->lineatype_);
 	if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
-	  mpoahead (ahnum (tn->Upr.Uline.atype), &node->aat,
-		    node->Upr.Uline.endpos,
-		    qenv (node, XLarrowht, tn->Upr.Uline.height),
-		    qenv (node, XLarrowwid, tn->Upr.Uline.width), lth,
+	  mpoahead (ahnum (tn->lineatype_), &node->aat,
+		    node->endpos_,
+		    qenv (node, XLarrowht, tn->lineheight_),
+		    qenv (node, XLarrowwid, tn->linewidth_), lth,
 		    soutline);
 	}
-	TEMP = ahlex (tn->Upr.Uline.atype);
+	TEMP = ahlex (tn->lineatype_);
 	if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
-	  mpoahead (ahnum (tn->Upr.Uline.atype), &tn->Upr.Uline.endpos,
-		    tn->aat, qenv (node, XLarrowht, tn->Upr.Uline.height),
-		    qenv (node, XLarrowwid, tn->Upr.Uline.width), lth,
+	  mpoahead (ahnum (tn->lineatype_), &tn->endpos_,
+		    tn->aat, qenv (node, XLarrowht, tn->lineheight_),
+		    qenv (node, XLarrowwid, tn->linewidth_), lth,
 		    soutline);
 	}
 	mpolinecap (lsp);
@@ -508,7 +504,7 @@ mpodraw (primitive * node) {
     }
     if (lsp != XLinvis) {
       ddash ();
-      wpos (node->Upr.Uline.endpos);
+      wpos (node->endpos_);
       if (node->son == NULL) {
 	mpodashdot (lsp, node->lparam, node->outlinep);
       }
@@ -518,8 +514,8 @@ mpodraw (primitive * node) {
 	With1 = snode;
 	if (With1->textp != NULL) {
 	  mpowrtext (node, With1->textp,
-		     0.5 * (With1->Upr.Uline.endpos.xpos + With1->aat.xpos),
-		     0.5 * (With1->Upr.Uline.endpos.ypos + With1->aat.ypos));
+		     0.5 * (With1->endpos_.xpos + With1->aat.xpos),
+		     0.5 * (With1->endpos_.ypos + With1->aat.ypos));
 	}
 	snode = snode->son;
       }
@@ -535,8 +531,8 @@ mpodraw (primitive * node) {
 	With1 = snode;
 	if (With1->textp != NULL) {
 	  mpowrtext (node, With1->textp,
-		     0.5 * (With1->Upr.Uline.endpos.xpos + With1->aat.xpos),
-		     0.5 * (With1->Upr.Uline.endpos.ypos + With1->aat.ypos));
+		     0.5 * (With1->endpos_.xpos + With1->aat.xpos),
+		     0.5 * (With1->endpos_.ypos + With1->aat.ypos));
 	}
 	snode = snode->son;
       }
@@ -569,24 +565,24 @@ mpodraw (primitive * node) {
 	spltot = primdepth (node);
 	splcount = spltot;
 	mposetthick (lth);
-	TEMP = ahlex (tn->Upr.Uline.atype);
+	TEMP = ahlex (tn->lineatype_);
 	if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
-	  mpoahead (ahnum (tn->Upr.Uline.atype), &node->aat,
-		    node->Upr.Uline.endpos,
-		    qenv (node, XLarrowht, tn->Upr.Uline.height),
-		    qenv (node, XLarrowwid, tn->Upr.Uline.width), lth,
+	  mpoahead (ahnum (tn->lineatype_), &node->aat,
+		    node->endpos_,
+		    qenv (node, XLarrowht, tn->lineheight_),
+		    qenv (node, XLarrowwid, tn->linewidth_), lth,
 		    soutline);
 	}
-	TEMP = ahlex (tn->Upr.Uline.atype);
+	TEMP = ahlex (tn->lineatype_);
 	if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
-	  mpoahead (ahnum (tn->Upr.Uline.atype), &tn->Upr.Uline.endpos,
-		    tn->aat, qenv (node, XLarrowht, tn->Upr.Uline.height),
-		    qenv (node, XLarrowwid, tn->Upr.Uline.width), lth,
+	  mpoahead (ahnum (tn->lineatype_), &tn->endpos_,
+		    tn->aat, qenv (node, XLarrowht, tn->lineheight_),
+		    qenv (node, XLarrowwid, tn->linewidth_), lth,
 		    soutline);
 	}
 	deletename (&node->shadedp);
 	sshade = NULL;
-	node->Upr.Uline.lfill = -1.0;
+	node->linefill_ = -1.0;
 	vfill = -1.0;
 	mpolinecap (lsp);
 	printf ("drw ");
@@ -600,8 +596,8 @@ mpodraw (primitive * node) {
 	  With1 = snode;
 	  if (With1->textp != NULL) {
 	    mpowrtext (node, With1->textp,
-		       0.5 * (With1->Upr.Uline.endpos.xpos + With1->aat.xpos),
-		       0.5 * (With1->Upr.Uline.endpos.ypos +
+		       0.5 * (With1->endpos_.xpos + With1->aat.xpos),
+		       0.5 * (With1->endpos_.ypos +
 			      With1->aat.ypos));
 	  }
 	  snode = snode->son;

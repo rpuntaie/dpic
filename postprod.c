@@ -7,7 +7,7 @@ if (debuglevel > 0) {
   attribute *With;
   int p;
   p = yyn;
-  With = &(yyval);		/*&attstack[newp]; */
+  With = &(yyval);
   if (((p >= primary1) && (p <= primary11)) ||
       (p == lcompare4) ||
       (p == lcompare3) ||
@@ -30,7 +30,8 @@ if (debuglevel > 0) {
     wfloat (&log_, chbufi);
     putc ('\n', log_);
     /* prvars(envblock); */
-  } else if (((p >= place1) && (p <= place5)) ||
+    }
+  else if (((p >= place1) && (p <= place5)) ||
 	     ((p >= placename1) && (p <= placename4)) ||
 	     (p == shift3) || (p == shift2) ||
 	     (p == location2) || (p == location1) ||
@@ -39,8 +40,7 @@ if (debuglevel > 0) {
     wpair (&log_, With->xval, With->yval);
     putc ('\n', log_);
     fflush (log_);
-  }
-  /* if (yyn>8) prattstack(&yyvsp[0]); */
+    }
 /*
   if (chbufi > 0) {
     fprintf(log_,"Xchbuf(0:%d)|",chbufi);
