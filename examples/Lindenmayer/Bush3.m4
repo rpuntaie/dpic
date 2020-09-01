@@ -9,7 +9,7 @@ include(Lsys.conf)
 
   pushdef(`F',``F psh P F F pop psh M F F pop F psh M F pop psh P F pop F'')
   L_init(linelen=0.02; phi=35; linethick=0.4)
-  Bush4: [ Produce(0,5,``F'') ]
-  "Bush4" at last [].s below
+  Bush3: [ Produce(0,5,``F'') ]
+  "Bush3" at last [].s below
   popdef(`F')
 .PE

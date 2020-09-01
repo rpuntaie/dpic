@@ -31,7 +31,7 @@ pstwrtext (primitive * np, nametype * tp, double x, double y) {
   checkjust (tp, &A, &B, &L, &R);
   if (A || B || L || R) {
     printf ("\\uput{");
-    wfloat (&output, (venv (np, XLtextoffset) / scale) * 72);
+    wfloat (&output, (venv (np, Xtextoffset) / scale) * 72);
     printf ("bp}[");
     if (B) { putchar ('d'); }
     else if (A) { putchar ('u'); }
@@ -58,12 +58,12 @@ pstlineoptions (primitive * node, int lsp, Char sep) {
     wstring (&output, node->outlinep);
     sep = ',';
     }
-  if (node->ptype == XBLOCK) { lsp = XLinvis; }
-  if ((lsp == XLinvis) || (lsp == XLdotted) || (lsp == XLdashed)) {
+  if (node->ptype == Xblock) { lsp = Xinvis; }
+  if ((lsp == Xinvis) || (lsp == Xdotted) || (lsp == Xdashed)) {
     printf ("%c%%\n", sep);
     printf ("linestyle=");
     switch (lsp) {
-    case XLdashed:
+    case Xdashed:
       printf ("dashed");
       if (node->lparam >= 0) {
 	    printf (",dash=");
@@ -73,7 +73,7 @@ pstlineoptions (primitive * node, int lsp, Char sep) {
         }
       break;
 
-    case XLdotted:
+    case Xdotted:
       printf ("dotted");
       if (node->lparam >= 0) {
 	    printf (",dotsep=");
@@ -81,14 +81,14 @@ pstlineoptions (primitive * node, int lsp, Char sep) {
         }
       break;
 
-    case XLinvis:
+    case Xinvis:
       printf ("none");
       break;
     }
     sep = ',';
     }
-  if ((node->ptype == XLspline) || (node->ptype == XLline) ||
-      (node->ptype == XLarrow)) {
+  if ((node->ptype == Xspline) || (node->ptype == Xline) ||
+      (node->ptype == Xarrow)) {
     if ((ahlex (node->lineatype_) != XEMPTY) &&
 	  (ahnum (node->lineatype_) != 0) && (ahnum (node->lineatype_) != 3)) {
       printf ("%c%%\n", sep);
@@ -111,27 +111,27 @@ pstfilloptions (primitive * node, int lsp, double a) {
 
   switch (node->ptype) {
 
-  case XBLOCK:
+  case Xblock:
     /* blank case */
     break;
 
-  case XLbox:
+  case Xbox:
     fill = node->boxfill_;
     break;
 
-  case XLcircle:
+  case Xcircle:
     fill = node->circlefill_;
     break;
 
-  case XLellipse:
+  case Xellipse:
     fill = node->ellipsefill_;
     break;
 
-  case XLarc:
-  case XLline:
-  case XLarrow:
-  case XLmove:
-  case XLspline:
+  case Xarc:
+  case Xline:
+  case Xarrow:
+  case Xmove:
+  case Xspline:
     fill = node->linefill_;
     break;
   }
@@ -145,29 +145,29 @@ pstfilloptions (primitive * node, int lsp, double a) {
     }
   switch (node->ptype) {
 
-  case XLbox:
-  case XBLOCK:
+  case Xbox:
+  case Xblock:
     printf ("\\psframe");
     break;
 
-  case XLellipse:
+  case Xellipse:
     printf ("\\psellipse");
     break;
 
-  case XLcircle:
+  case Xcircle:
     printf ("\\pscircle");
     break;
 
-  case XLspline:
+  case Xspline:
     printf ("\\psbezier");
     break;
 
-  case XLline:
-  case XLarrow:
+  case Xline:
+  case Xarrow:
     printf ("\\psline");
     break;
 
-  case XLarc:
+  case Xarc:
     if (a >= 0.0) { printf ("\\psarc"); }
     else { printf ("\\psarcn"); }
     break;
@@ -186,7 +186,7 @@ pstfilloptions (primitive * node, int lsp, double a) {
     else { printf ("fillval"); }
     sep = ','; }
   else { sep = '['; }
-  if (node->ptype == XLbox) {
+  if (node->ptype == Xbox) {
     if (node->boxradius_ != 0.0) {
       printf ("%clinearc=", sep);
       wfloat (&output, node->boxradius_ / fsc);
@@ -349,14 +349,14 @@ pstdraw (primitive * node) {
 
   getlinespec (node, &lsp, &tn);
   sshade = node->shadedp;
-  lth = qenv (node, XLlinethick, tn->lthick);
+  lth = qenv (node, Xlinethick, tn->lthick);
   switch (node->ptype) {
 
-  case XLbox:
-  case XBLOCK:
+  case Xbox:
+  case Xblock:
     initnesw ();
     nesw (node);
-    if (node->ptype == XBLOCK) {
+    if (node->ptype == Xblock) {
       v = drawn (node, lsp, -1.0); }
     else { v = drawn (node, lsp, node->boxfill_); }
     if (v) {
@@ -368,7 +368,7 @@ pstdraw (primitive * node) {
     pstwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLellipse:
+  case Xellipse:
     if (drawn (node, lsp, node->ellipsefill_)) {
       pstfilloptions (node, lsp, 0.0);
       wpos (node->aat);
@@ -378,7 +378,7 @@ pstdraw (primitive * node) {
     pstwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLcircle:
+  case Xcircle:
     if (drawn (node, lsp, node->circlefill_)) {
       pstfilloptions (node, lsp, 0.0);
       wpos (node->aat);
@@ -389,7 +389,7 @@ pstdraw (primitive * node) {
     pstwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLarc:
+  case Xarc:
     if (drawn (node, lsp, node->linefill_)) {
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       if (bfill && (vfill >= 0.0)) { node->linefill_ = vfill; }
@@ -404,17 +404,17 @@ pstdraw (primitive * node) {
 	    node->lthick = s;
         }
       TEMP = ahlex (node->lineatype_);
-      if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+      if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	    pstarcahead(node->aat, X0, ahnum (node->lineatype_), soutline,
-		     qenv(node, XLarrowht, node->lineheight_),
-		     qenv(node, XLarrowwid, node->linewidth_), lth,
+		     qenv(node, Xarrowht, node->lineheight_),
+		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     fabs(node->aradius_), node->arcangle_, &X0);
         }
       TEMP = ahlex (node->lineatype_);
-      if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+      if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	    pstarcahead(node->aat, X1, ahnum (node->lineatype_), soutline,
-		     qenv(node, XLarrowht, node->lineheight_),
-		     qenv(node, XLarrowwid, node->linewidth_), lth,
+		     qenv(node, Xarrowht, node->lineheight_),
+		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     -fabs(node->aradius_), node->arcangle_, &X1);
         }
       sx = sshade;
@@ -430,8 +430,8 @@ pstdraw (primitive * node) {
     pstwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLline:
-  case XLarrow:
+  case Xline:
+  case Xarrow:
     if (firstsegment (node)) { snode = node; }
     if (drawn (node, lsp, node->linefill_)) {
       if (firstsegment (node)) {
@@ -453,19 +453,19 @@ pstdraw (primitive * node) {
 	    ahn = ahnum (tn->lineatype_);
 	    if ((ahn == 0) || (ahn == 3)) {
 	      TEMP = ahlex (tn->lineatype_);
-	      if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	      if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	        pstahead (&node->aat, node->endpos_,
-		      qenv (node, XLarrowht, tn->lineheight_),
-		      qenv (node, XLarrowwid, tn->linewidth_),
-		      qenv (node, XLlinethick, tn->lthick),
+		      qenv (node, Xarrowht, tn->lineheight_),
+		      qenv (node, Xarrowwid, tn->linewidth_),
+		      qenv (node, Xlinethick, tn->lthick),
 		      ahnum (tn->lineatype_), soutline);
 	        }
 	      TEMP = ahlex (tn->lineatype_);
-	      if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	      if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	        pstahead (&tn->endpos_, tn->aat,
-		      qenv (node, XLarrowht, tn->lineheight_),
-		      qenv (node, XLarrowwid, tn->linewidth_),
-		      qenv (node, XLlinethick, tn->lthick),
+		      qenv (node, Xarrowht, tn->lineheight_),
+		      qenv (node, Xarrowwid, tn->linewidth_),
+		      qenv (node, Xlinethick, tn->lthick),
 		      ahnum (tn->lineatype_), soutline);
 	        }
 	      }
@@ -475,13 +475,13 @@ pstdraw (primitive * node) {
 	    sshade = sx;
 	    if ((ahn != 0) && (ahn != 3)) {
 	      switch (ahlex (tn->lineatype_)) {
-	      case XLEFTHEAD:
+	      case Xlefthead:
 	        printf ("{<-}");
 	        break;
-	      case XDOUBLEHEAD:
+	      case Xdoublehead:
 	        printf ("{<->}");
 	        break;
-	      case XRIGHTHEAD:
+	      case Xrighthead:
 	        printf ("{->}");
 	        break;
 	      } }
@@ -503,7 +503,7 @@ pstdraw (primitive * node) {
       }
     break;
 
-  case XLmove:
+  case Xmove:
     if (firstsegment (node)) { snode = node; }
     if (node->son == NULL) {
       while (snode != NULL) {
@@ -517,7 +517,7 @@ pstdraw (primitive * node) {
       }
     break;
 
-  case XLspline:
+  case Xspline:
     if (firstsegment (node)) {	/* first spline */
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       if (bfill && (vfill >= 0.0)) { node->linefill_ = vfill; }
@@ -542,23 +542,23 @@ pstdraw (primitive * node) {
       ahn = ahnum (tn->lineatype_);
       if ((ahn == 0) || (ahn == 3)) {
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      pstahead (&tn->endpos_, tn->aat,
-		    qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_),
-		    qenv (node, XLlinethick, tn->lthick),
+		    qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_),
+		    qenv (node, Xlinethick, tn->lthick),
 		    ahnum (tn->lineatype_), soutline);
 	      }
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      pstahead (&node->aat, node->endpos_,
-		    qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_),
-		    qenv (node, XLlinethick, tn->lthick),
+		    qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_),
+		    qenv (node, Xlinethick, tn->lthick),
 		    ahnum (tn->lineatype_), soutline);
 	      }
         }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    sx = sshade;
 	    sshade = NULL;
 	    pstfilloptions (tn, lsp, 0.0);
@@ -566,15 +566,15 @@ pstdraw (primitive * node) {
 	    if ((ahn != 0) && (ahn != 3)) {
 	      switch (ahlex (tn->lineatype_)) {
 
-	      case XLEFTHEAD:
+	      case Xlefthead:
 	        printf ("{<-}");
 	        break;
 
-	      case XDOUBLEHEAD:
+	      case Xdoublehead:
 	        printf ("{<->}");
 	        break;
 
-	      case XRIGHTHEAD:
+	      case Xrighthead:
 	        printf ("{->}");
 	        break;
 	      }
@@ -582,11 +582,11 @@ pstdraw (primitive * node) {
 	  printf ("%%\n");
       }
     }
-    if (lsp != XLinvis) { pstsplinesegment (node, splcount, spltot); }
+    if (lsp != Xinvis) { pstsplinesegment (node, splcount, spltot); }
     splcount--;
     break;
 
-  case XLstring:
+  case Xstring:
     pstwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 

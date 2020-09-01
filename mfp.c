@@ -44,14 +44,14 @@ mfpwrtext (primitive * np, nametype * tp, double x, double y) {
   if (A) {
     printf ("\\raisebox{");
     wfloat (&output,
-	    (venv (np, XLtextoffset) / scale / 12) +
-	    (0.5 * venv (np, XLtextht)));
+	    (venv (np, Xtextoffset) / scale / 12) +
+	    (0.5 * venv (np, Xtextht)));
     printf ("ex}{"); }
   else if (B) {
     printf ("\\raisebox{");
     wfloat (&output,
-	    (venv (np, XLtextoffset) / scale / (-12)) -
-	    (0.5 * venv (np, XLtextht)));
+	    (venv (np, Xtextoffset) / scale / (-12)) -
+	    (0.5 * venv (np, Xtextht)));
     printf ("ex}{"); }
   wstring (&output, tp);
   if (A || B) { putchar ('}'); }
@@ -127,11 +127,11 @@ mfsetthick (double lthk) {
 
 void
 mfpdashdot (int lsp, double param, double lth) {
-  if (lsp == XLdashed) {
+  if (lsp == Xdashed) {
     mfpsetdash (param / fsc);
     printf ("\\dashed");
     return; }
-  if (lsp != XLdotted) { return; }
+  if (lsp != Xdotted) { return; }
   printf ("\\dotted[");
   wfloat (&output, lth);
   printf ("pt,");
@@ -388,20 +388,20 @@ mfpdraw (primitive * node) {
   primitive *With1;
 
   getlinespec (node, &lsp, &tn);
-  lth = qenv (node, XLlinethick, node->lthick);
+  lth = qenv (node, Xlinethick, node->lthick);
   switch (node->ptype) {
 
-  case XLbox:
-  case XBLOCK:
+  case Xbox:
+  case Xblock:
     initnesw ();
     nesw (node);
-    if (node->ptype == XLbox) {
+    if (node->ptype == Xbox) {
       if (((node->boxfill_ >= 0.0) && (node->boxfill_ <= 1.0))
 	  || (node->shadedp != NULL)) {
 	    mfpsetshade (node->boxfill_, node->shadedp);
 	    mfpbox (node->aat.xpos, node->aat.ypos, north, south, east, west,
 		    node->boxradius_); }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    mfplineopts (lth, node->lparam, lsp, node->outlinep);
 	    mfpbox (node->aat.xpos, node->aat.ypos, north, south, east, west,
 		    node->boxradius_);
@@ -412,12 +412,12 @@ mfpdraw (primitive * node) {
     mfpwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLellipse:
+  case Xellipse:
     if (((node->ellipsefill_ >= 0.0)
 	 && (node->ellipsefill_ <= 1.0)) || (node->shadedp != NULL)) {
       mfpsetshade (node->ellipsefill_, node->shadedp);
       mfpellipse (node->aat, node->ellipsewidth_, node->ellipseheight_); }
-    if (lsp != XLinvis) {
+    if (lsp != Xinvis) {
       mfplineopts (lth, node->lparam, lsp, node->outlinep);
       mfpellipse (node->aat, node->ellipsewidth_, node->ellipseheight_);
       if (node->outlinep != NULL) {
@@ -426,12 +426,12 @@ mfpdraw (primitive * node) {
     mfpwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLcircle:
+  case Xcircle:
     if (((node->circlefill_ >= 0.0) && (node->circlefill_ <= 1.0))
 	|| (node->shadedp != NULL)) {
       mfpsetshade (node->circlefill_, node->shadedp);
       mfpcircle (node->aat, node->circleradius_); }
-    if (lsp != XLinvis) {
+    if (lsp != Xinvis) {
       mfplineopts (lth, node->lparam, lsp, node->outlinep);
       mfpcircle (node->aat, node->circleradius_);
       if (node->outlinep != NULL) {
@@ -440,7 +440,7 @@ mfpdraw (primitive * node) {
     mfpwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLspline:
+  case Xspline:
     if (firstsegment (node)) {
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       if (bfill) {
@@ -459,36 +459,36 @@ mfpdraw (primitive * node) {
     	vfill = -1.0;
     	sshade = NULL;
         }
-      if (lsp != XLinvis) {
-	    lth = qenv (tn, XLlinethick, tn->lthick);
+      if (lsp != Xinvis) {
+	    lth = qenv (tn, Xlinethick, tn->lthick);
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      mfpahead (ahnum (tn->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (tn, XLarrowht, tn->lineheight_),
-		    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+		    qenv (tn, Xarrowht, tn->lineheight_),
+		    qenv (tn, Xarrowwid, tn->linewidth_), lth,
 		    soutline);
 	      }
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      mfpahead (ahnum (node->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (tn, XLarrowht, tn->lineheight_),
-		    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+		    tn->aat, qenv (tn, Xarrowht, tn->lineheight_),
+		    qenv (tn, Xarrowwid, tn->linewidth_), lth,
 		    soutline);
 	      }
 	    spltot = primdepth (node);
 	    splcount = spltot;
 	    mfplineopts (lth, node->lparam, lsp, soutline); }
       }
-    if (lsp != XLinvis) { mfpsplinesegment (node, splcount, spltot); }
+    if (lsp != Xinvis) { mfpsplinesegment (node, splcount, spltot); }
     splcount--;
     if ((node->son == NULL) && (node->outlinep != NULL)) {
       printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
     break;
 
-  case XLline:
-  case XLarrow:
-  case XLmove:
+  case Xline:
+  case Xarrow:
+  case Xmove:
     if (firstsegment (node)) {
       snode = node;
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
@@ -507,26 +507,26 @@ mfpdraw (primitive * node) {
     	printf ("}\n");
     	vfill = -1.0;
     	sshade = NULL; }
-      if (lsp != XLinvis) {
-	    lth = qenv (tn, XLlinethick, tn->lthick);
+      if (lsp != Xinvis) {
+	    lth = qenv (tn, Xlinethick, tn->lthick);
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      mfpahead (ahnum (tn->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_), lth,
+		    qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_), lth,
 		    soutline); }
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      mfpahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_), lth,
+		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_), lth,
 		    soutline); }
 	    mfplineopts (lth, node->lparam, lsp, soutline);
 	    printf ("\\polyline{");
 	    wpos (node->aat); }
         }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
         commacr ();
         wpos (node->endpos_);
         if (node->son == NULL) {
@@ -545,7 +545,7 @@ mfpdraw (primitive * node) {
       }
     break;
 
-  case XLarc:
+  case Xarc:
     X0 = arcstart (node);
     X1 = arcend (node);
     getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
@@ -559,18 +559,18 @@ mfpdraw (primitive * node) {
 	       posangle(X1, node->aat), node->arcangle_);
       vfill = -1.0;
       sshade = NULL; }
-    if (lsp != XLinvis) {
+    if (lsp != Xinvis) {
       TEMP = ahlex (node->lineatype_);
-      if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+      if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	    mfparcahead(node->aat, X0, ahnum(node->lineatype_), soutline,
-		     qenv(node, XLarrowht, node->lineheight_),
-		     qenv(node, XLarrowwid, node->linewidth_), lth,
+		     qenv(node, Xarrowht, node->lineheight_),
+		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     fabs(node->aradius_), node->arcangle_, &X0); }
       TEMP = ahlex (node->lineatype_);
-      if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+      if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	    mfparcahead(node->aat, X1, ahnum(node->lineatype_), soutline,
-		     qenv(node, XLarrowht, node->lineheight_),
-		     qenv(node, XLarrowwid, node->linewidth_), lth,
+		     qenv(node, Xarrowht, node->lineheight_),
+		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     -fabs(node->aradius_), node->arcangle_, &X1); }
       mfplineopts (lth, node->lparam, lsp, soutline);
       mfpwarc(node->aat, node->aradius_, posangle(X0, node->aat),
@@ -580,7 +580,7 @@ mfpdraw (primitive * node) {
     mfpwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLstring:
+  case Xstring:
     mfpwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 

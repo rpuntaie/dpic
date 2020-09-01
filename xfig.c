@@ -40,9 +40,9 @@ xfarrowline (int atype, double wid, double ht, double lth) {
 
 int
 linstyle (int i) {
-  if (i == XLsolid) { i = 0; }
-  else if (i == XLdashed) { i = 1; }
-  else if (i == XLdotted) { i = 2; }
+  if (i == Xsolid) { i = 0; }
+  else if (i == Xdashed) { i = 1; }
+  else if (i == Xdotted) { i = 2; }
   else { i = -1; }
   return i;
 }
@@ -51,28 +51,28 @@ void
 hdrline (int object_code, int sub_type, int line_style, double lth, double gfill) {	/* first 10 values object_code .. style_val */
   printf ("%d %d %d ", object_code, sub_type, linstyle (line_style));
 
-  if (line_style == XLinvis) { printf ("0 "); }
+  if (line_style == Xinvis) { printf ("0 "); }
   else { printf ("%ld ", (long) floor ((lth * xdispres / pointd) + 0.5)); }
   printf ("0 -1 0 -1 ");	/* pencolor, fillcolor, depth, penstyle */
   if (gfill == (-1.0)) { printf ("-1 "); } /* area fill */
   else { printf ("%ld ", (long) floor (((1.0 - gfill) * 20) + 0.5)); }
 
   /* style_val */
-  if (line_style == XLdashed) { wfloat (&output, 5.0 * xdispres / pointd); }
-  else if (line_style == XLdotted) { wfloat (&output, 3.0*xdispres / pointd); }
+  if (line_style == Xdashed) { wfloat (&output, 5.0 * xdispres / pointd); }
+  else if (line_style == Xdotted) { wfloat (&output, 3.0*xdispres / pointd); }
   else { putchar ('0'); }
   putchar (' ');
 }
 
 int
 fwdarrow (int i) {
-  if ((ahlex (i) == XRIGHTHEAD) | (ahlex (i) == XDOUBLEHEAD)) { return 1; }
+  if ((ahlex (i) == Xrighthead) | (ahlex (i) == Xdoublehead)) { return 1; }
   else { return 0; }
 }
 
 int
 bckarrow (int i) {
-  if ((ahlex (i) == XLEFTHEAD) | (ahlex (i) == XDOUBLEHEAD)) { return 1; }
+  if ((ahlex (i) == Xlefthead) | (ahlex (i) == Xdoublehead)) { return 1; }
   else { return 0; }
 }
 
@@ -100,7 +100,7 @@ xfigwrtext (primitive * np, nametype * tp, double bxht, double bxwid,
   nametype *p;
   int FORLIM;
 
-  if (bxht == 0.0) { bxht = venv (np, XLtextht); }
+  if (bxht == 0.0) { bxht = venv (np, Xtextht); }
   if (tp != NULL) {
     nstr = 0;
     p = tp;
@@ -123,8 +123,8 @@ xfigwrtext (primitive * np, nametype * tp, double bxht, double bxwid,
     wfigpt (bxht);
     if (bxwid == 0) { wfigpt (tp->len * bxht * 2 / 3); }
     else { wfigpt (bxwid); }
-    if (A) { ydisp = (bxht / 5) + venv (np, XLtextoffset); }
-    else if (B) { ydisp = (-bxht) - venv (np, XLtextoffset); }
+    if (A) { ydisp = (bxht / 5) + venv (np, Xtextoffset); }
+    else if (B) { ydisp = (-bxht) - venv (np, Xtextoffset); }
     else { ydisp = bxht / (-3); }
     wfigcoord (x, y + ydisp + ((((nstr + 1.0) / 2) - istr) * bxht));
     putchar (' ');
@@ -178,14 +178,14 @@ rdrawn (primitive * np) {
   boolean v;
 
   while ((rv == false) && (np != NULL)) {
-    if (np->ptype == XLbox) {
+    if (np->ptype == Xbox) {
       v = drawn (np, lspec (np->spec), np->boxfill_); }
-    else if (np->ptype == XLcircle) {
+    else if (np->ptype == Xcircle) {
       v = drawn (np, lspec (np->spec), np->circlefill_); }
-    else if (np->ptype == XLellipse) {
+    else if (np->ptype == Xellipse) {
       v = drawn (np, lspec (np->spec), np->ellipsefill_); }
-    else if ((np->ptype == XLspline) || (np->ptype == XLarrow) ||
-	       (np->ptype == XLline) || (np->ptype == XLarc)) {
+    else if ((np->ptype == Xspline) || (np->ptype == Xarrow) ||
+	       (np->ptype == Xline) || (np->ptype == Xarc)) {
       v = drawn (np, lspec (np->spec), np->linefill_); }
     else { v = false; }
     if (v || (np->textp != NULL)) {
@@ -206,10 +206,10 @@ xfigdraw (primitive * node) {
   int FORLIM;
 
   getlinespec (node, &lsp, &tn);
-  if (node->lthick < 0.0) { node->lthick = venv (node, XLlinethick); }
+  if (node->lthick < 0.0) { node->lthick = venv (node, Xlinethick); }
   switch (node->ptype) {
 
-  case XLarc:
+  case Xarc:
     if (drawn (node, lsp, node->linefill_)) {
       xfarc (5, 1, lsp, node->lthick, node->linefill_,
 	    node->lineatype_, node->aradius_, node->startangle_, node->arcangle_,
@@ -218,13 +218,13 @@ xfigdraw (primitive * node) {
     xfigwrtext (node, node->textp, 0.0, 0.0, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLline:
-  case XLarrow:
-  case XLspline:
+  case Xline:
+  case Xarrow:
+  case Xspline:
     if (drawn (node, lsp, node->linefill_)) {
       if (firstsegment (node)) {
 	    spltot = primdepth (node);
-	    if (node->ptype == XLspline) {
+	    if (node->ptype == Xspline) {
 	      polyline (3, 0, lsp, node->lthick, node->linefill_, 0.0,
 		    node->lineatype_, node->linewidth_,
 		    node->lineheight_, spltot + 1);
@@ -237,7 +237,7 @@ xfigdraw (primitive * node) {
 	    wfigcoord (node->aat.xpos, node->aat.ypos);
         }
       wfigcoord (node->endpos_.xpos, node->endpos_.ypos);
-      if ((node->son == NULL) && (node->ptype == XLspline)) {
+      if ((node->son == NULL) && (node->ptype == Xspline)) {
 	    printf ("\n%c 0.0", tabch);
 	    FORLIM = spltot;
 	    for (i = 2; i <= FORLIM; i++) { printf (" 1.0"); }
@@ -250,11 +250,11 @@ xfigdraw (primitive * node) {
 		0.5 * (node->aat.ypos + node->endpos_.ypos));
     break;
 
-  case XLbox:
-  case XBLOCK:
+  case Xbox:
+  case Xblock:
     initnesw ();
     nesw (node);
-    if ((node->ptype == XBLOCK) &
+    if ((node->ptype == Xblock) &
         ((node->textp != NULL) | drawn(node,lsp,-1.0) | rdrawn(node->son))) {
       node->direction = -1;
       printf ("6 ");
@@ -262,7 +262,7 @@ xfigdraw (primitive * node) {
       wfigcoord (east, south);
       putchar ('\n');
       }
-    if (node->ptype == XBLOCK) { fill = -1.0; }
+    if (node->ptype == Xblock) { fill = -1.0; }
     else { fill = node->boxfill_; }
     if (drawn (node, lsp, fill)) {
       polyline (2, 2, lsp, node->lthick, fill, 0.0, -1, 0.0, 0.0, 6);
@@ -278,13 +278,13 @@ xfigdraw (primitive * node) {
     xfigwrtext (node, node->textp, 0.0, 0.0, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLmove:
+  case Xmove:
     xfigwrtext (node, node->textp, 0.0, 0.0,
 		0.5 * (node->endpos_.xpos + node->aat.xpos),
 		0.5 * (node->aat.ypos + node->endpos_.ypos));
     break;
 
-  case XLellipse:
+  case Xellipse:
     if (drawn (node, lsp, node->ellipsefill_)) {
       fellipse (1, 1, lsp, node->lthick, node->ellipsefill_,
 		node->aat.xpos, node->aat.ypos,
@@ -293,7 +293,7 @@ xfigdraw (primitive * node) {
     xfigwrtext (node, node->textp, 0.0, 0.0, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLcircle:
+  case Xcircle:
     if (drawn (node, lsp, node->circlefill_)) {
       fellipse (1, 3, lsp, node->lthick, node->circlefill_,
 		node->aat.xpos, node->aat.ypos, node->circleradius_,
@@ -302,7 +302,7 @@ xfigdraw (primitive * node) {
     xfigwrtext (node, node->textp, 0.0, 0.0, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLstring:
+  case Xstring:
     xfigwrtext (node, node->textp, node->boxheight_,
 		node->boxwidth_, node->aat.xpos, node->aat.ypos);
     break;

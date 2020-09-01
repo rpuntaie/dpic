@@ -29,7 +29,6 @@ extern void snapname (Char *, chbufinx, chbufinx);
 extern void wlogfl (Char *, double, int);
 extern void wrbufaddr (fbuffer *, int);
 extern void wrbuf (fbuffer *, int, int);
-arg *currentmacro;
 #endif
 
 							/* the parser                         */
@@ -226,23 +225,23 @@ setjust (nametype * tp, int v) {
   i = (long) floor (tp->val + 0.5);
   switch (v) {
 
-  case XLrjust:
+  case Xrjust:
     tp->val = ((i >> 2) * 4.0) + 1;
     break;
 
-  case XLljust:
+  case Xljust:
     tp->val = ((i >> 2) * 4.0) + 2;
     break;
 
-  case XLbelow:
+  case Xbelow:
     tp->val = ((i >> 4) * 16.0) + (i & 3) + 4;
     break;
 
-  case XLabove:
+  case Xabove:
     tp->val = ((i >> 4) * 16.0) + (i & 3) + 8;
     break;
 
-  case XLcenter:
+  case Xcenter:
     tp->val = (i >> 4) * 16.0;
     break;
   }
@@ -310,7 +309,7 @@ consoleflush (void) {
 							/* Unrecoverable errors */
 void
 fatal (int t) {
-  if (t != 0) { fprintf (errout, " *** dpic: "); }
+  if (t != 0) { fprintf (errout, "\n*** dpic: "); }
   switch (t) {
   case 0:
 							/* blank case */
@@ -332,14 +331,9 @@ fatal (int t) {
   case 5:
     fprintf (errout, "end of file encountered on input\n");
     break;
+							/* case 6 and 7: pascal only, parse overflow */
   case 8:
     fprintf (errout, "error recovery abandoned\n");
-    break;
-  case 9:
-    fprintf (errout, "subscript out of range\n");
-    break;
-  case 10:
-    fprintf (errout, "failed to open sprintf output file\n");
     break;
   default:
     fprintf (errout, "unclassified fatal error\n");
@@ -473,9 +467,9 @@ exitmacro (void) {
       for (i = 1; i <= FORLIM; i++) { wchar (&log_, mbody->carray[i]); }
       }
     putc ('\n', log_);
-    currentmacro = NULL;
     }
 #endif
+  currentmacro = NULL;
   aa = args;
   if (args != NULL) { args = args->highera; }
   disposeargs (&aa);
@@ -519,18 +513,20 @@ nextline (Char lastchar) {
   inbuf->readx = 1;
   inbuf->savedlen = 0;
   do {
-    if (savebuf != NULL) {
+    if (inbufdepth > 0) {
+	  if (!inputeof) { lineno[inbufdepth]++; }
       readline (&copyin);
       if (inputeof) {
 	    inputeof = false;
 	    while (inbuf->prevb != NULL) { inbuf = inbuf->prevb; }
 	    disposebufs (&inbuf);
-	    inbuf = savebuf;
-	    savebuf = NULL;
+	    inbuf = higherinbuf;
+	    higherinbuf = NULL;
+        inbufdepth = 0;
         }
       }
     else {
-      if (!inputeof) { lineno++; }
+      if (!inputeof) { lineno[inbufdepth]++; }
       readline (&input);
       }
 							/* Check for .PS, .PE, and zero length */
@@ -538,7 +534,7 @@ nextline (Char lastchar) {
       if (inbuf->carray[1] == '.') {
 	    if (lexstate != 2) {
 	      if ((inbuf->savedlen >= 4) && (inbuf->carray[2] == 'P')) {
-	        if (savebuf != NULL) { inbuf->savedlen = 0;	/* skip .P* lines */ }
+	        if (higherinbuf != NULL){ inbuf->savedlen = 0; /* skip .P* lines */ }
             else if ((inbuf->carray[3] == 'F') || (inbuf->carray[3] == 'S')) {
 	          lexstate = 1;
 	          inbuf->readx = 4; }
@@ -550,7 +546,7 @@ nextline (Char lastchar) {
 	      }
         else if (lastchar != bslch) {
 	      if ((inbuf->savedlen < 4) || (inbuf->carray[2] != 'P') ||
-	          (savebuf != NULL)) { inbuf->savedlen = 0;	/* skip . lines */ }
+	          (higherinbuf != NULL)) { inbuf->savedlen = 0;	/* skip . lines */ }
           else if ((inbuf->carray[3] == 'F') || (inbuf->carray[3] == 'S')) {
 	        lexstate = 1;
 	        inbuf->readx = 4; }
@@ -782,16 +778,18 @@ pointinput (nametype * txt) {
     putc ('\n', log_);
     }
 #endif
-  if (savebuf != NULL) { markerror (853); return; }
+  if (higherinbuf != NULL) { markerror (853); return; }
   if (checkfile (infname, true) != 0) { markerror (859); return; }
   if (copyin != NULL) {
-    copyin = freopen (trimname (infname, sizeof (mstring)), "r", copyin); }
+       copyin = freopen (trimname (infname, sizeof (mstring)), "r", copyin); }
   else { copyin = fopen (trimname (infname, sizeof (mstring)), "r"); }
   if (copyin == NULL) { fatal (1); }
   backup ();
   ch = nlch;
-  savebuf = inbuf;
+  higherinbuf = inbuf;
   inbuf = NULL;
+  inbufdepth = 1;
+  lineno[1] = 0;
 }
 
 							/* Redirect output for print .. > "file" */
@@ -830,14 +828,16 @@ pointoutput (boolean create, nametype * txt, int *ier) {
   if (create) {
     if (redirect != NULL) {
       redirect= freopen (trimname (outfnam, sizeof (mstring)), "w", redirect);}
-    else { redirect = fopen (trimname (outfnam, sizeof (mstring)), "w"); }
-    if (redirect == NULL) { fatal (10); }
+    else {
+      redirect =  fopen (trimname (outfnam, sizeof (mstring)), "w"); }
+    if (redirect == NULL) { markerror(876); fatal (8); }
     return;
     }
   if (redirect != NULL) {
     redirect = freopen (trimname (outfnam, sizeof (mstring)), "a", redirect); }
-  else { redirect = fopen (trimname (outfnam, sizeof (mstring)), "a"); }
-  if (redirect == NULL) { fatal (10); }
+  else {
+    redirect =   fopen (trimname (outfnam, sizeof (mstring)), "a"); }
+  if (redirect == NULL) { markerror(876); fatal (8); }
 }
 
 #endif
@@ -960,7 +960,7 @@ readconst (Char initch) {
   if ((ch == 'e') || (ch == 'E')) { readexponent (); }
 							/* A rather odd way to allow inch units */
   if (ch == 'i') { pushch (); }
-  newsymb = XLfloat;
+  newsymb = Xfloat;
 }
 
 #ifdef DDEBUG
@@ -975,7 +975,7 @@ prlex (boolean acc) {
     for (i = oldbufi; i < FORLIM; i++) { putc (chbuf[i], log_); }
     putc ('"', log_); }
   else { fprintf (log_, "=<LaTeX>"); }
-  if (newsymb == XLfloat) { wlogfl ("value", floatvalue, 0); }
+  if (newsymb == Xfloat) { wlogfl ("value", floatvalue, 0); }
   putc (' ', log_);
   logchar (ch);
   if (!acc) { fprintf (log_, " not accepted"); }
@@ -1351,34 +1351,31 @@ ismacro (Char * chb, chbufinx obi, chbufinx chbi) {
     fprintf (log_, "]:");
     }
 #endif
-  if (oldsymb == XLdefine) {
-    skipwhite ();
-    return ism;
-    }
-  if (oldsymb == XLundefine) { return ism; }
-  mac = findmacro (macros, chb, obi, chbi - obi, &lastp);
-  if (mac == NULL) { return ism; }
-#ifdef DDEBUG
-  currentmacro = mac;
-#endif
-  ism = true;
-  if (ch == '(') { level = 0; } else { backup (); level = -1; }
-  do {
-    newarg (&ar);
-    ar->highera = args;
-    if (lastarg == NULL) { firstarg = ar; } else { lastarg->nexta = ar; }
-    if (level >= 0) {
-      inchar ();
-      defineargbody (&level, &ar->argbody);
+  if (oldsymb == Xdefine) { skipwhite (); }
+  else if (oldsymb != Xundefine) {
+    mac = findmacro (macros, chb, obi, chbi - obi, &lastp);
+    if (mac != NULL) {
+      ism = true;
+      if (ch == '(') { level = 0; } else { backup (); level = -1; }
+      do {
+        newarg (&ar);
+        ar->highera = args;
+        if (lastarg == NULL) { firstarg = ar; } else { lastarg->nexta = ar; }
+        if (level >= 0) {
+          inchar ();
+          defineargbody (&level, &ar->argbody);
+          }
+        lastarg = ar;
+      } while (level >= 0);
+      args = firstarg;
+      copyleft (mac->argbody, &inbuf, 0);
       }
-    lastarg = ar;
-  } while (level >= 0);
-  args = firstarg;
-  copyleft (mac->argbody, &inbuf, 0);
+    }
 #ifdef DDEBUG
   if (debuglevel > 0) {
     fprintf (log_, "\nismacro returning:%5s\n", ism ? "TRUE" : "FALSE"); }
 #endif
+  if (ism) { currentmacro = mac; }
   return ism;
 }
 
@@ -1432,15 +1429,10 @@ yylex (attribute * a0) {
   boolean terminalaccepted, looping;
   fbuffer *With;
 
-							/* argstruct: argp;
-     j,k: integer;
-     varptr,lastp: strptr; */
-
-							/* floatvalue = 0.0; */
   lexsymb = -1;
   do {
     terminalaccepted = true;
-    oldbufi = chbufi;		/* first char of current terminal in chbuf */
+    oldbufi = chbufi;		     /* first char of current terminal in chbuf */
     while ((ch == ' ') || (ch == tabch)) { inchar (); }
 	/* lexstate is
        0 before .PS or after .PE
@@ -1449,27 +1441,27 @@ yylex (attribute * a0) {
        3 when .PE found
        4 to process .PE */
     if (lexstate == 1) {
-      newsymb = XSTART;
+      newsymb = XDotPS;
       lexstate = 2; }
     else if (lexstate == 3) {
-      newsymb = XEND;
+      newsymb = XDotPE;
       lexstate = 4; }
     else if (lexstate == 4) {
-      newsymb = XNL;
+      newsymb = Xnewline;
       skiptoend ();
       ch = ' ';
       lexstate = 0; }
     else if (inputeof) {
       newsymb = 0; }
     else if (forbufend) {
-      newsymb = XLendfor;
+      newsymb = Xendfor;
       forbufend = false;
       ch = ' '; }
     else if (ch == nlch) {
-      newsymb = XNL;
+      newsymb = Xnewline;
       ch = ' ';
-      if ((oldsymb == XLelse) || (oldsymb == XLBRACE) ||
-	    (oldsymb == XLthen) || (oldsymb == XCOLON) || (oldsymb == XNL)) {
+      if ((oldsymb == Xelse) || (oldsymb == Xleftbrace) ||
+	    (oldsymb == Xthen) || (oldsymb == Xcolon) || (oldsymb == Xnewline)) {
 	    terminalaccepted = false; } }
     else if (isdigit (ch) != 0) {
       readconst (ch); }
@@ -1522,7 +1514,7 @@ yylex (attribute * a0) {
         else { looping = false; }
 	    }
 	  if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
-      else { newsymb = XLabel; } }
+      else { newsymb = Xlabel; } }
     else if (((isalnum (firstch) != 0) || (firstch == '_')) &&
 		   ((isalnum (ch) != 0) || (ch == '_') || (ch == '$'))) {
 							/* variable name */
@@ -1533,55 +1525,55 @@ yylex (attribute * a0) {
         else { looping = false; }
 	    }
 	  if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
-      else { newsymb = XLname; } }
-    else if (newsymb == XLstring) {
+      else { newsymb = Xname; } }
+    else if (newsymb == Xstring) {
 	  chbufi--;
 	  readstring (); }
-    else if (newsymb == XCOMMENT) {
+    else if (newsymb == Xcomment) {
 	  skiptoend ();
 	  ch = nlch;
 	  terminalaccepted = false;
 	  }
 							/* Skip after designated terminals */
-	else if ((newsymb == XNL) &&
-		 ((oldsymb == XLelse) || (oldsymb == XLBRACE) ||
-		  (oldsymb == XLthen) || (oldsymb == XCOLON) ||
-		  (oldsymb == XNL))) {
+	else if ((newsymb == Xnewline) &&
+		 ((oldsymb == Xelse) || (oldsymb == Xleftbrace) ||
+		  (oldsymb == Xthen) || (oldsymb == Xcolon) ||
+		  (oldsymb == Xnewline))) {
 	  terminalaccepted = false; }
-    else if ((newsymb == XLT) && inlogic) {
-	  lexsymb = XLcompare;
-	  newsymb = XLcompare; }
-    else if ((newsymb > XEQ) && (newsymb <= XLremeq)) {
+    else if ((newsymb == Xlt) && inlogic) {
+	  lexsymb = Xcompare;
+	  newsymb = Xcompare; }
+    else if ((newsymb > Xeq) && (newsymb <= Xremeq)) {
 	  lexsymb = newsymb;
-	  newsymb = XEQ; }
+	  newsymb = Xeq; }
 							/* Multiple-valued terminals */
-	else if (newsymb > XLcorner) {
+	else if (newsymb > Xcorner) {
 	  lexsymb = newsymb;
-	  if (newsymb > XLenvvar) { newsymb = XLenvvar; }
-      else if (newsymb > XLprimitiv) { newsymb = XLprimitiv; }
-      else if (newsymb > XLdirecton) { newsymb = XLdirecton; }
-      else if (newsymb > XLarrowhd) { newsymb = XLarrowhd; }
-      else if (newsymb > XLtextpos) { newsymb = XLtextpos; }
-      else if (newsymb > XLcolrspec) { newsymb = XLcolrspec; }
-      else if (newsymb > XLlinetype) { newsymb = XLlinetype; }
-      else if (newsymb > XLfunc2) { newsymb = XLfunc2; }
-      else if (newsymb > XLfunc1) { newsymb = XLfunc1; }
-      else if (newsymb > XLparam) { newsymb = XLparam; }
-      else if (newsymb > XLcompare) { newsymb = XLcompare; }
-      else { newsymb = XLcorner; } }
-    else if (newsymb == XLarg) {
+	  if (newsymb > Xenvvar) { newsymb = Xenvvar; }
+      else if (newsymb > Xprimitiv) { newsymb = Xprimitiv; }
+      else if (newsymb > Xdirecton) { newsymb = Xdirecton; }
+      else if (newsymb > Xarrowhd) { newsymb = Xarrowhd; }
+      else if (newsymb > Xtextpos) { newsymb = Xtextpos; }
+      else if (newsymb > Xcolrspec) { newsymb = Xcolrspec; }
+      else if (newsymb > Xlinetype) { newsymb = Xlinetype; }
+      else if (newsymb > Xfunc2) { newsymb = Xfunc2; }
+      else if (newsymb > Xfunc1) { newsymb = Xfunc1; }
+      else if (newsymb > Xparam) { newsymb = Xparam; }
+      else if (newsymb > Xcompare) { newsymb = Xcompare; }
+      else { newsymb = Xcorner; } }
+    else if (newsymb == Xarg) {
 	  if (ch == '+') {	/* $+ */
 	    floatvalue = argcount (args);
-	    newsymb = XLfloat;
+	    newsymb = Xfloat;
 	    inchar (); }
       else if (isdigit (ch) != 0) {	/* $<integer> */
 	    do { pushch (); } while (isdigit (ch) != 0);
 	    copyarg (chbuf, oldbufi, chbufi);
 	    terminalaccepted = false; }
       else { markerror (805); } }
-    else if (newsymb == XLdo) { skipwhite (); }
+    else if (newsymb == Xdo) { skipwhite (); }
 #ifdef DDEBUG
-	else if (newsymb == XAND) {
+	else if (newsymb == Xampersand) {
 	  chbufi = oldbufi;
 	  if (debuglevel > 0) { consoleflush (); }
 	  if (ch >= 'A') { /* linesignal = ch - 'A' + 1; */ }
@@ -1598,12 +1590,12 @@ yylex (attribute * a0) {
 	else if ((newsymb == 0) && (isupper (firstch) != 0)) {
 							/* Label, second possibility */
 	  if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
-      else { newsymb = XLabel; } }
+      else { newsymb = Xlabel; } }
       else if ((newsymb == 0) &&
 		   ((isalnum (firstch) != 0) || (firstch == '_'))) {
 							/* name, second possibility */
 	    if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
-        else { newsymb = XLname; } }
+        else { newsymb = Xname; } }
       else if (newsymb == 0) {	/* char not recognized */
 #ifdef DDEBUG
 	    if (debuglevel > 0) { fprintf (log_,
@@ -1621,8 +1613,8 @@ yylex (attribute * a0) {
 #ifdef DDEBUG
     prlex (terminalaccepted);
 #endif
-    if ((newsymb != XLaTeX) && (newsymb != XLstring) &&
-	  (newsymb != XLabel) && (newsymb != XLname)) { chbufi = oldbufi; }
+    if ((newsymb != XLaTeX) && (newsymb != Xstring) &&
+	  (newsymb != Xlabel) && (newsymb != Xname)) { chbufi = oldbufi; }
   } while (!terminalaccepted);
   if (lexsymb == (-1)) { lexsymb = newsymb; }
   oldsymb = newsymb;
@@ -1690,8 +1682,8 @@ deletebufs (fbuffer ** buf) {
     }
 }
 
-							/* Open required input and outputs */
-
+                            /* Get the file name from the command
+                               line argument                   */
 void
 P_sun_argv (char *s, int len, int n) {
   char *cp;
@@ -1707,17 +1699,16 @@ P_sun_argv (char *s, int len, int n) {
 
 void
 openfiles (void) {
-#ifdef DDEBUG
-  int i = 1, j = FILENAMELEN;
-#endif
-  savebuf = NULL;
-  output = stdout;
-  input = stdin;
+  int i = 1, j = FILENAMELEN+1;
+  higherinbuf = NULL;
+  output = stdout; input = stdin;
   if (argct >= P_argc) { return; }
   P_sun_argv (infname, sizeof (mstring), argct);
+  while (i < j) { if (infname[i-1] != ' ') { i++; } else { j = i; } }
+                            /* Open the main input file        */
   if (checkfile (infname, true) != 0) { fatal (1); }
   if (input != NULL) {
-    input = freopen (trimname (infname, sizeof (mstring)), "r", input); }
+       input = freopen (trimname (infname, sizeof (mstring)), "r", input); }
   else { input = fopen (trimname (infname, sizeof (mstring)), "r"); }
   if (input == NULL) { fatal (1); }
 #ifdef DDEBUG
@@ -1725,6 +1716,8 @@ openfiles (void) {
   openlogfile ();
   debuglevel = oflag;
   fprintf (log_, "Input file: ");
+  i = 1;
+  j = FILENAMELEN;
   while (j >= i) {
     if ((infname[j - 1] == ' ') || (infname[j - 1] == '\0')) { j--; }
     else { i = j + 1; }
@@ -1842,8 +1835,8 @@ main (int argc, Char * argv[]) {
 #ifdef DDEBUG
   if (debuglevel > 0) { fprintf (log_, "new(chbuf)[%d]\n", odp (chbuf)); }
 #endif
-  entrytv[ordNL] = XNL;
-  entrytv[ordCR] = XNL;		/* treat ^M as line end */
+  entrytv[ordNL] = Xnewline;
+  entrytv[ordCR] = Xnewline;		/* treat ^M as line end */
 
   errcount = 0;
 							/* change for debugging */
@@ -1855,18 +1848,16 @@ main (int argc, Char * argv[]) {
 							/* lexical initializations, see also
      							production -1 */
   ch = ' ';
-  lineno = 0;
+  inbufdepth = 0;
+  lineno[0] = 0;
   chbufi = 0;
   oldbufi = 0;
-  newsymb = XNL;
-  oldsymb = XNL;
+  newsymb = Xnewline;
+  oldsymb = Xnewline;
   lexstate = 0;
   macros = NULL;
   args = NULL;
-#ifdef DDEBUG
   currentmacro = NULL;
-#endif
-
   forbufend = false;
   instr = false;
 

@@ -7,10 +7,14 @@ s%<Label>%label%
 s%<LaTeX>%LaTeX%
 s%<string>%string%
 s%<arg>%$ argument%
-s%<START>%.PS%
-s%<END>%end of file or .PE%
-s%<END>%end of file or .PE%
+s%<DotPS>%.PS%
+s%<DotPE>%end of file or .PE%
 s%";"%"end of line or ;"%
+s%"th"%"ordinal: st or rd or nd or th"%
+s%"\.n"%".top or .n"%
+s%"\.s"%".bot or .s"%
+s%"\.e"%".right or .e"%
+s%"\.w"%".left or .w"%
 s%<endfor>%end of for {...} contents%
 s%<corner>%compass corner: .n .ne .center .end etc%
 s%<compare>%logical operator%
@@ -22,5 +26,5 @@ s%<colrspec>%color spec: colored outlined shaded%
 s%<textpos>%text position: ljust rjust above below center%
 s%<arrowhd>%arrowhead parameter: <- -> <->%
 s%<directon>%direction: up down right left%
-s%<primitiv>%drawn object: box circle etc%
-s%<envvar>%environmental variable%
+s%<primitiv>%drawn object: box circle line etc%
+s%<envvar>%environment variable%

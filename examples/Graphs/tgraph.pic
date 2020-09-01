@@ -1,0 +1,144 @@
+.PS
+if "plotlib" != "1" then { copy "plotlib.pic" }
+if "dpictools" != "1" then { copy "../sources/dpictools.pic" }
+if "Zalgebra" != "1" then { copy "../sources/Zalgebra.pic" }
+
+maxpswid = 20
+maxpsht = 200
+textht = 11/72*2/3
+textoffset = 3/72
+
+# display conveniences:
+  box invis wid maxpswid*0.999 ht maxpsht*0.999
+  [] at last box.nw+(1,-1)
+
+# Generated data
+define decay { 1 - expe(-($1)) }
+pi = atan2(1,1)*4
+ampl = 1
+wlen = 1
+omega = 2*pi/wlen
+phase = -90/360*2*pi
+n = 51
+for j = 1 to n do { t = (j-1)/10;
+  xvals[j] = t;
+  yvals[1,j] = decay(t)
+  y1[j] = yvals[1,j]
+  yvals[2,j] = expe(-t)*ampl*cos(omega*t+phase)
+  y2[j] = yvals[2,j]
+  yvals[3,j] = (t)*expe(-t)
+  P[j]: (xvals[j],yvals[2,j])
+  y3[j] = yvals[3,j]
+  }
+
+# Moore's law data
+Transistors[1]:  1971,2250
+Transistors[2]:  1972,2500
+Transistors[3]:  1974,5000
+Transistors[4]:  1978,29000
+Transistors[5]:  1982,120000
+Transistors[6]:  1985,275000
+Transistors[7]:  1989,1180000
+Transistors[8]:  1993,3100000
+Transistors[9]:  1997,7500000
+Transistors[10]: 1999,24000000
+Transistors[11]: 2000,42000000
+Transistors[12]: 2001,25000000
+Transistors[13]: 2003,221000000
+Transistors[14]: 2006,291000000
+Transistors[15]: 2009,774000000
+Transistors[16]: 2010,2.046e9
+Transistors[17]: 2012,3.1e9
+nT = 17
+
+# "4004" "8008" "8080" "8086" "286" "386" "486" "Pentium" "Pentium II"
+# "Pentium III" "Pentium 4" "Itanium" "Itanium 2" "Core 2 Duo" "Core i5"
+# "Itanium 9300" "Itanium 9500"
+
+  graphwid = 3.5
+  graphht = 2.65
+  define bp__ { /72*scale }
+
+G1: graphb( graphwid,graphht,xvals,yvals,3,n,1 ) with .Box.nw at last[].sw+(0,1)
+  {"G1" at G1.s below }
+# {box invis wid 15bp__ with .e at G1.Box.w + (-0.4,0) "G1" }
+G2: graphb( graphwid,graphht,xvals,y1,1,n,0 ) with .Box.nw at G1.Box.sw+(0,-0.5)
+  {"G2" at G2.s below }
+G3: graphb( graphwid,graphht,xvals,y2,1,n,10 ) with .Box.nw at G1.Box.ne+(0.5,0)
+  {"G3" at G3.s below }
+G4: graphb( graphwid,graphht,xvals,y3,1,n,0 ) with .Box.nw at G2.Box.ne+(0.5,0)
+  {"G4" at G4.s below }
+
+B1: grlinlin( graphwid,graphht,P,n,10 ) with .nw at G2.Box.sw+(0,-1)
+  {"B1" at B1.s below }
+B2: grlinlin( graphwid,graphht,P,n,11 ) with .Box.nw at last [].Box.ne+(0.5,0)
+  {"B2" at B2.s below }
+
+D3: grloglin( graphwid,graphht,Transistors,nT,212 ) \
+      with .Box.nw at B1.Box.sw+(0,-1)
+  {"D3" at D3.s below }
+D4: grloglin( graphwid,graphht,Transistors,nT,002 ) \
+  with .Box.nw at last [].Box.ne+(0.5,0)
+  {"D4" at D4.s below }
+
+# A Bode diagram shows the magnitude of the response in dB and the phase
+# in degrees, both with respect to the logarithm of the frequency, so
+# two separate linear vertical scales are required and a logarithmic
+# horizontal scale.
+
+# A second-order resonant system produces a suitable frequency-response test.
+# The transfer function of a canonical second-order resonance is given by
+#                     w_n^2
+#           --------------------------
+#           s^2 + 2*zeta*w_n*s + w_n^2 
+# where w_n is the natural frequency and zeta the damping ratio.
+# Let the input frequency be f Hz or w = 2*pi*f rad/s and represent
+# the input signal in the frequency domain by complex number s = 0 + j*w
+# or by the pair (0, w).  The above (complex) function is evaluated for
+# different values of s.
+
+  define SecondOrd { $2: Zprod((0,$1),(2*zeta*w_n,$1))
+                     $2: Zsum((w_n2,0),$2)
+                     $2: Zdiv((w_n2,0),$2) }
+
+  w_n = 60 * 2 * pi # 60 Hz in rad/s
+  zeta = 0.1
+  fmin=w_n/(2*pi) / 5
+  fmax=w_n/(2*pi) * 5
+
+#                           Calculate dB gain and phase responses over a set
+#                           of frequencies spaced uniformly on the log scale
+  w_n2 = w_n^2
+  logfmin = log(fmin); logfmax = log(fmax)
+  n = 100; lastph = 0
+  for i=0 to n do {
+    lf = (i/n)*(logfmax-logfmin) + logfmin
+    logfrq[i+1] = lf
+    w = exp(lf) * 2 * pi
+    SecondOrd(w,Z);
+#   Z: Zprod(Z,Z) # 4th order resonance
+    GH: ZtoB(Z)
+    dbgain[i+1] = GH.x
+    phase[i+1] = GH.y
+    if (abs(lastph) > 90) && (GH.y*lastph < 0) then {
+      phase[i+1] += sign(lastph)*360 }
+    lastph = phase[i+1]
+    }
+  npts = n+1
+
+#                           Graph sizes
+  graphwid = 5
+  graphht = 3
+
+
+#                           Plot gain and phase vs freq
+D: bodepl( graphwid,graphht,npts,logfrq,dbgain,phase ) \
+     with .Box.nw at D3.Box.sw+(0,-1)
+#                           Plot gain vs freq
+G: bodepl( graphwid,graphht,npts,logfrq,dbgain,phase,1 ) \
+     with .Box.nw at last [].Box.sw+(0,-1)
+#                           Plot phase vs freq
+P: bodepl( graphwid,graphht,npts,logfrq,dbgain,phase,2 ) \
+     with .Box.nw at last [].Box.sw+(0,-1)
+
+.PE

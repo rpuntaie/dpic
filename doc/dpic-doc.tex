@@ -232,12 +232,13 @@ further processing by the Inkscape graphics editor, for which SVG is the
 native format.
 When the SVG output is used directly in a web document,
 then any required text formatting generally must be included explicitly.
-The other possibility for SVG output is that an SVG library of elements
+One other possibility for SVG output is that an SVG library of elements
 can be drawn with dpic, and Inkscape used to place and connect copies
 of the elements.  Then Inkscape can export the graphics as eps for
 processing by \LaTeX\ or as pdf for processing by pdflatex.  Inkscape
 will also export a tex file from which labels can be formatted and
-overlaid on the imported eps or pdf.
+overlaid on the imported eps or pdf. A third possibility
+is to produce the graphic without text and then overlay the text elements.
 
 The {\tt -z} option disables the commands that access external files.
 These commands can be permanently disabled by the use of a compile-time
@@ -252,8 +253,8 @@ elements.
 
 The use of output formats meant to be processed by \LaTeX\ is quite different
 from the other formats.  If a word processor is not part of the process,
-the selection and formatting of text in a diagram 
-must be accomplished by inserting postprocessor commands into the output.
+the selection and formatting of diagram text
+requires the insertion of postprocessor commands into the output.
 Dpic knows nothing of text formatting except for SVG output, for which
 basic sizing and placement are provided.
 
@@ -279,35 +280,49 @@ process the following:
 \end{verbatim}
 
 
-\subsection{Lexical error messages}
-  Lexical error messages are generated automatically, and state the
-lexical value that was found at or immediately before the error.
-Dpic attempts to display the line containing the offending input in an
-error message, which is not possible if the line has been completely scanned.
-Adding one or two semicolons at the end of the line often assists in
-finding the error.
+\subsection{Error messages}
+%\vspace*{-\baselineskip}
+The following is an example of an error message:
+\begin{verbatim}
+*** dpic ERROR: in macro "A", file "B.pic" line 16:
+x = y
+Variable not found
+Search failure for "y"
+\end{verbatim}
+Dpic displays the input file name with the number of the line to which
+scanning has progressed.  The name of the current macro is also given
+if one is being executed.  Most often, scanning stops on or near the
+offending line, which is displayed up to where reading ceased.  However,
+the source of the problem might be a considerable distance from the
+indicated line number if the error is in a for loop or a macro.  In the above
+example, line 16 of file B.pic happens to be
+\ntt{A(5)}\\
+which invokes macro {\tt A,}
+so one has to find the definition of {\tt A} and look for the line
+\ntt{x = y}\\
+within it.
 
-\iffalse
-Some slightly less than obvious expected lexical values are:
+Syntax error messages show the offending line and state the lexical
+object that was found at or immediately before the error, together with
+expected (permissible) objects.  Other errors are signalled according
+to the circumstances.
 
-\begin{tabbing}
-\quad\=\hbox{\tt<primitiv>\ }\= \kill
-\> {\tt corner} \> a compass corner or {\tt.c}, {\tt .start}, {\tt .end} \\
-\> {\tt envvar} \> environment variable) \\
-\> {\tt primitiv} \> {\tt box}, {\tt circle}, {\tt ellipse}, {\tt arc},
-   {\tt line}, {\tt arrow}, {\tt move}, {\tt spline}
-\end{tabbing}
-\fi
 
+%\enlargethispage{\baselineskip}
 \section{Dpic programming}
+%\vspace*{-\baselineskip}
 Pic is a simple language with a good ratio of power to complexity, so
 surprisingly sophisticated diagrams can be produced in several areas of
 application.
 Arbitrary postprocessor commands can be included in the output and several
-of the postprocessors are powerful drawing languages in their own
-right, so it can be argued that dpic has all the power of these languages.
+of the postprocessors are powerful drawing languages in their own right,
+so it can be argued that dpic has all the power of these languages.
 However, if you find yourself writing extensive postprocessor code then
 you might ask why you are not programming exclusively in that language.
+Similarly, pic floating-point operations and macro facilities allow complex
+numerical computations at the price of number-crunching in an interpreted
+language, but sometimes there is convenience in calculating plotted
+values in the same source as graphing them.
 
 Pic is very suitable for line diagrams, and recent language extensions
 allow for basic color.  Elaborate fills and cropping are the domain of
@@ -511,14 +526,12 @@ define bisect {
      else { bisect($1,x_m,x_c,$4,$5) } }
   }
 \end{verbatim}
-%\iffalse
-\begin{wrapfigure}[12]{r}{0.4\textwidth}%
-  \vspace*{-\baselineskip}%
+%\begin{wrapfigure}[12]{r}{0.4\textwidth}%
+\begin{wrapfigure}[9]{r}{0.4\textwidth}%
+  \vspace*{-4\baselineskip}%
   \hspace*{1em}%
-% \parbox{0.4\textwidth}{\includegraphics{Spiral.pdf}}%
   \parbox{0.4\textwidth}{\input{Spiral.tex}}%
  \end{wrapfigure}%
-%\fi
 
 This macro repeatedly calls {\tt parabola} and then itself,
 halving the search interval until it is smaller than the
@@ -596,10 +609,6 @@ Pic has a basic if-statement of the form
  \tLB\ {\sl if-false} \tRB}\\
 but lacks a case statement.  Multiple branches
 can be defined by nested {\tt if} statements but there is another way.
-%that uses the dpic statement
-%\ntt{exec {\sl string}}\\
-%which executes the contents of {\sl string} as if it were
-%the current input line.
 The macro
 \ntt{define case \tLB\ exec sprintf("\$\%g",floor(\$1+0.5)+1); \tRB}\\
 adds 1 to its rounded first argument to determine which
@@ -612,11 +621,12 @@ For example,
 \ntt{\quad print "B")}\\
 executes the second alternative (the third argument) and prints B.
 
-Semicolons are also required in a construction such as the following:
-\ntt{if (sh "test -f fileA.pic")==0 then \tLB $\;$ copy "FileA.pic"; \tRB \tBS}
-\ntt{else \tLB $\;$ copy "fileB.pic"; \tRB}\\
-The semicolons ensure that the {\tt copy} commands complete before exiting
-the braces.
+A semicolon or newline is also required in
+the following {\tt if} test with an {\tt else} clause:
+\ntt{if (sh "test -f fileA.pic")==0 then \tLB $\;$ copy "fileA.pic"; \tRB \tBS}
+\ntt{else \tLB $\;$ copy "fileB.pic" \tRB}\\
+The semicolon ensures that the {\tt copy} command completes before exiting
+the first pair of braces.
 
 \subsection{Hiding variables}
 As mentioned in \SR{Scope:}, locations inside a block are accessible
@@ -763,7 +773,7 @@ below:
 \ntt{  m4postprocessor,svg,`{\sl SVG code}',}
 \ntt{  `{\sl default code}')}
 
-\enlargethispage{\baselineskip}
+%\enlargethispage{\baselineskip}
 \subsubsection{Extending pic: perpendiculars}
 The Circuit\_macros {\tt vperp} macro illustrates how m4 macros can extend
 the pic language.  The purpose is to generate a pair of values representing
@@ -1002,7 +1012,7 @@ identical effect with different postprocessors.
 %It is more of a challenge to design
 %macros that have identical effect with a variety of postprocessors,
 %since their syntax differs.
-\pagebreak
+%\pagebreak
 The Circuit\_macros library contains
 several routines that produce equivalent or nearly equivalent results
 for several postprocessors.  It is probably a good rule to stick with
@@ -1487,9 +1497,10 @@ relate to the use of \LaTeX\ or the other dpic output formats.
 
 \subsection{Strings} 
 % and justified text\label{Strings:}}
-Strings are arbitrary character sequences between double quotes, with double
-quotes in strings preceded by the backslash character.  Equivalently, a
-string is produced by the C-like sprintf function
+Strings are arbitrary character sequences between double quotes.
+% with double
+%quotes in strings preceded by the backslash character.
+Equivalently, a string is produced by the C-like sprintf function
 \ntt{sprintf("{\sl format}" {\rm[}, expression,~$\ldots$ {\rm]})}\\
 The C sprintf function is used for implementing this; therefore, the
 precision of default formats such as {\tt \%g} may vary by machine and compiler.
@@ -1502,6 +1513,7 @@ valid, since expressions are stored as floating-point numbers, e.g.
 is equivalent to
 \ntt{line "200" above}
 
+\enlargethispage{\baselineskip}
 Similarly,
 \ntt{command sprintf("\tBS{}pscircle(\%g,\%g)\tLB\%g\tRB",0,0,0.5)}\\
 places a line containing the formatted string without the quotes into
@@ -1531,6 +1543,9 @@ arguments can be arbitrary expressions rather than the constants shown.
   has to be generated using a macro; for example, if we write
   {\tt define charstr \tLB"\$1"\tRB} then {\tt charstr(abc\tBS)}
   evaluates to a string containing the required final backslash.
+
+  A string cannot be assigned to a varable name; the nearest equivalent
+  is to define a macro containing the string as the body.
 
   Both dpic and gpic allow logical comparison of strings.
   Put the comparison in parentheses if it is to be used in an
@@ -1938,7 +1953,7 @@ command "\makeatletter\@ifundefined{ifPst@noCurrentPoint}%
 \pdfbookmark[section]{\refname}{refs}
 \bibliographystyle{plain}
 %\addcontentsline{toc}{section}{\protect{\hspace*{1em}$\;$}References}
-\bibliography{dpic-doc}
+\bibliography{./dpic-doc}
 
 %===============================================================================
 %\iffalse

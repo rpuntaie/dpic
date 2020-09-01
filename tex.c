@@ -151,30 +151,30 @@ texdraw (primitive * node) {
   int TEMP;
 
   getlinespec (node, &lsp, &tn);
-  lth = qenv (node, XLlinethick, node->lthick);
+  lth = qenv (node, Xlinethick, node->lthick);
   switch (node->ptype) {
 
-  case XLbox:
-  case XBLOCK:
+  case Xbox:
+  case Xblock:
     if (drawn (node, lsp, -1.0) || (node->textp != NULL)) {
       initnesw ();
       nesw (node);
       if (drawmode == Pict2e) { p2setthick (lth); }
       printf ("\\put");
       wcoord (&output, west, south);
-      if (node->ptype == XBLOCK) { printf ("{\\makebox"); }
-      else if (lsp == XLsolid) { printf ("{\\framebox"); }
-      else if (lsp == XLinvis) { printf ("{\\makebox"); }
-      else if (lsp == XLdashed) {
+      if (node->ptype == Xblock) { printf ("{\\makebox"); }
+      else if (lsp == Xsolid) { printf ("{\\framebox"); }
+      else if (lsp == Xinvis) { printf ("{\\makebox"); }
+      else if (lsp == Xdashed) {
         printf ("{\\dashbox");
 	    if (!ismdistmax (node->lparam)) { wbrace (node->lparam / fsc); }
-        else { wbrace (venv (node, XLdashwid) / fsc); }
+        else { wbrace (venv (node, Xdashwid) / fsc); }
         }
-      else if (lsp == XLdotted) {
+      else if (lsp == Xdotted) {
 	    printf ("{\\dashbox");
 	    printf ("{0.01}");
         }
-      if (node->ptype == XLbox) {
+      if (node->ptype == Xbox) {
 	    wcoord (&output, node->boxwidth_, node->boxheight_); }
       else {
 	    wcoord (&output, node->blockwidth_, node->blockheight_); }
@@ -184,25 +184,25 @@ texdraw (primitive * node) {
       }
     break;
 
-  case XLline:
-  case XLarrow:
+  case Xline:
+  case Xarrow:
     if (drawn (node, lsp, -1.0)) {
       if (firstsegment (node)) {	/* first segment */
 	    if (drawmode == Pict2e) { p2setthick (lth); }
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      p2ahead (&node->aat, node->endpos_,
-		   qenv (node, XLarrowht, tn->lineheight_)); }
+		   qenv (node, Xarrowht, tn->lineheight_)); }
         }
       TEMP = ahlex (node->lineatype_);
-      if ((node->son == NULL) & ((TEMP == XDOUBLEHEAD) ||
-		 (TEMP == XRIGHTHEAD))) {
+      if ((node->son == NULL) & ((TEMP == Xdoublehead) ||
+		 (TEMP == Xrighthead))) {
 	    p2ahead (&node->endpos_, node->aat,
-		 qenv (node, XLarrowht, tn->lineheight_)); }
+		 qenv (node, Xarrowht, tn->lineheight_)); }
       lgth = linlen (node->endpos_.xpos - node->aat.xpos,
 		     node->endpos_.ypos - node->aat.ypos);
       if ((drawmode == Pict2e) ||
-	    ((lsp == XLsolid) && ((lgth > 0.18) || (drawmode == tTeX)))) {
+	    ((lsp == Xsolid) && ((lgth > 0.18) || (drawmode == tTeX)))) {
 	    if (lgth > 0) {
 	      printf ("\\put");
 	      wpos (node->aat);
@@ -212,7 +212,7 @@ texdraw (primitive * node) {
 	      printf ("}\n");
 	      }
         }
-      else if (lsp == XLsolid) {
+      else if (lsp == Xsolid) {
 	    npts = (long) floor ((lgth / 0.005) + 0.5);
 	    if (npts == 0) { npts = 1; }
 	    printf ("\\multiput");
@@ -222,17 +222,17 @@ texdraw (primitive * node) {
 		  (node->endpos_.ypos - node->aat.ypos) / npts);
 	    printf ("{%d}", npts + 1);
 	    printf ("{\\makebox(0.005555,0.00825){\\tiny .}}\n"); }
-      else if (lsp == XLdashed) {
+      else if (lsp == Xdashed) {
 	    printf ("\\put");
 	    wpos (node->aat);
 	    printf ("{\\dashline[50]");
 	    if (!ismdistmax (node->lparam)) { wbrace (node->lparam / fsc); }
-        else { wbrace (venv (node, XLdashwid) / fsc); }
+        else { wbrace (venv (node, Xdashwid) / fsc); }
 	    printf ("(0,0)");
 	    wcoord (&output, node->endpos_.xpos - node->aat.xpos,
 		  node->endpos_.ypos - node->aat.ypos);
 	    printf ("}\n"); }
-      else if (lsp == XLdotted) {
+      else if (lsp == Xdotted) {
 	    printf ("\\dottedline{");
 	    wfloat (&output, 0.05 / fsc);
 	    putchar ('}');
@@ -246,7 +246,7 @@ texdraw (primitive * node) {
 	  0.5 * (node->aat.ypos + node->endpos_.ypos));
     break;
 
-  case XLspline:
+  case Xspline:
     if ((drawmode == Pict2e) & drawn (node, lsp, -1.0)) {
       if (firstsegment (node)) {	/* first spline */
 	    spltot = primdepth (node);
@@ -254,9 +254,9 @@ texdraw (primitive * node) {
 	    tmpat = node->aat;
 	    p2setthick (lth);
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      p2ahead (&node->aat, node->endpos_,
-		   qenv (node, XLarrowht, tn->lineheight_));
+		   qenv (node, Xarrowht, tn->lineheight_));
 	      }
 	    if ((spltot > 1) & ismdistmax (node->aradius_)) {
 	      printf ("\\put");
@@ -299,10 +299,10 @@ texdraw (primitive * node) {
       if (splcount == 1) {
 	    tmpat = node->endpos_;
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      x = linlen (node->endpos_.xpos - node->aat.xpos,
 		      node->endpos_.ypos - node->aat.ypos);
-	      y = qenv (node, XLarrowht, tn->lineheight_);
+	      y = qenv (node, Xarrowht, tn->lineheight_);
 	      pprop (node->aat, &node->endpos_, y, x - y, x);
 	      }
 	    if ((spltot > 1) & ismdistmax (node->aradius_)) {
@@ -322,14 +322,14 @@ texdraw (primitive * node) {
 	      printf ("%%\n");
 	      }
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      p2ahead (&tmpat, node->aat,
-		   qenv (node, XLarrowht, tn->lineheight_)); }
+		   qenv (node, Xarrowht, tn->lineheight_)); }
         }
       splcount--; }
-    else if ((lsp == XLdotted) || (lsp == XLdashed) || (lsp == XLsolid)) {
-      if (firstsegment (node) & ((ahlex (node->lineatype_) == XDOUBLEHEAD) |
-        (ahlex (node->lineatype_) == XLEFTHEAD))) {	/* first spline */
+    else if ((lsp == Xdotted) || (lsp == Xdashed) || (lsp == Xsolid)) {
+      if (firstsegment (node) & ((ahlex (node->lineatype_) == Xdoublehead) |
+        (ahlex (node->lineatype_) == Xlefthead))) {	/* first spline */
 	    arrowhead (node->aat.xpos, node->aat.ypos,
 		   node->endpos_.xpos, node->endpos_.ypos); }
       printf ("\\spline");
@@ -338,29 +338,29 @@ texdraw (primitive * node) {
       if (node->son == NULL) { putchar ('\n'); }
       else if (node->son->son == NULL) {
 	    wpos (node->son->endpos_);
-	    if ((ahlex (node->lineatype_) == XRIGHTHEAD) |
-	        (ahlex (node->lineatype_) == XDOUBLEHEAD)) {
+	    if ((ahlex (node->lineatype_) == Xrighthead) |
+	        (ahlex (node->lineatype_) == Xdoublehead)) {
 	      arrowhead (node->son->endpos_.xpos,
 		     node->son->endpos_.ypos, node->son->aat.xpos,
 		     node->son->aat.ypos); }
-	    node->ptype = XLline;
+	    node->ptype = Xline;
 	    putchar ('\n');
 	    deletetree (&node->son); }
       else {
 	    pprop (node->son->endpos_, &node->son->aat, 1.0, 1.0, 2.0);
 	    wpos (node->son->aat);
-	    node->ptype = XLline;
+	    node->ptype = Xline;
 	    putchar ('\n'); }
       }
     break;
 
-  case XLmove:
+  case Xmove:
     texwrtext (node, node->textp,
 	       0.5 * (node->endpos_.xpos + node->aat.xpos),
 	       0.5 * (node->aat.ypos + node->endpos_.ypos));
     break;
 
-  case XLellipse:
+  case Xellipse:
     if (drawmode == Pict2e) { p2setthick (lth); }
     printf ("\\put");
     wpos (node->aat);
@@ -376,8 +376,8 @@ texdraw (primitive * node) {
     texwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLcircle:
-    if (lsp != XLinvis) {
+  case Xcircle:
+    if (lsp != Xinvis) {
       if (drawmode == Pict2e) { p2setthick (lth); }
       printf ("\\put");
       wpos (node->aat);
@@ -387,15 +387,15 @@ texdraw (primitive * node) {
     texwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLarc:
+  case Xarc:
     if ((drawmode == Pict2e) & drawn (node, lsp, -1.0)) {
       p2setthick (node->lthick);	/* p2linecap(lsp); */
       X0 = arcstart (node);
       TEMP = ahlex (node->lineatype_);
-      if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+      if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	    if (node->aradius_ == 0.0) { x = 0.0; }
         else {
-	      x = atan(qenv (node, XLarrowht, node->lineheight_) /node->aradius_); }
+	      x = atan(qenv (node, Xarrowht, node->lineheight_) /node->aradius_); }
 	    if (node->arcangle_ >= 0.0) {
 	      node->startangle_ += x;
 	      node->arcangle_ -= x; }
@@ -404,19 +404,19 @@ texdraw (primitive * node) {
 	      node->arcangle_ += x; }
 	    tmpat = X0;
 	    X0 = arcstart (node);
-	    p2ahead (&tmpat, X0, qenv (node, XLarrowht, node->lineheight_));
+	    p2ahead (&tmpat, X0, qenv (node, Xarrowht, node->lineheight_));
         }
       X3 = arcend (node);
       TEMP = ahlex (node->lineatype_);
-      if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+      if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	    if (node->aradius_ == 0.0) { x = 0.0; }
         else {
-          x = atan(qenv (node, XLarrowht, node->lineheight_)/node->aradius_); }
+          x = atan(qenv (node, Xarrowht, node->lineheight_)/node->aradius_); }
 	    if (node->arcangle_ >= 0.0) { node->arcangle_ -= x; }
         else { node->arcangle_ += x; }
 	    tmpat = X3;
 	    X3 = arcend (node);
-	    p2ahead (&tmpat, X3, qenv (node, XLarrowht, node->lineheight_)); }
+	    p2ahead (&tmpat, X3, qenv (node, Xarrowht, node->lineheight_)); }
       npts = (long) (1.0 + (fabs (node->arcangle_) / pi));
       node->arcangle_ /= npts;
       while (npts > 0) {
@@ -447,19 +447,19 @@ texdraw (primitive * node) {
       wpos (node->aat);
       printf ("{\\oval");
       wcoord (&output, 2 * node->aradius_ / fsc, 2 * node->aradius_ / fsc);
-      if ((node->direction != XLdown) && (node->direction != XLup) &&
-	  (node->direction != XLright) && (node->direction != XLleft)) {
+      if ((node->direction != Xdown) && (node->direction != Xup) &&
+	  (node->direction != Xright) && (node->direction != Xleft)) {
 	    p = findenv (node);
 	    if (p != NULL) { node->direction = p->direction; }
         }
-      if (((node->direction == XLleft) && (node->arcangle_ < 0.0)) ||
-	    ((node->direction == XLdown) && (node->arcangle_ > 0.0))) {
+      if (((node->direction == Xleft) && (node->arcangle_ < 0.0)) ||
+	    ((node->direction == Xdown) && (node->arcangle_ > 0.0))) {
 	    printf ("[bl]}\n"); }
-      else if (((node->direction == XLleft) && (node->arcangle_ > 0.0)) ||
-		((node->direction == XLup) && (node->arcangle_ < 0.0))) {
+      else if (((node->direction == Xleft) && (node->arcangle_ > 0.0)) ||
+		((node->direction == Xup) && (node->arcangle_ < 0.0))) {
 	    printf ("[tl]}\n"); }
-      else if (((node->direction == XLright) && (node->arcangle_ < 0.0)) ||
-		((node->direction == XLup) && (node->arcangle_ > 0.0))) {
+      else if (((node->direction == Xright) && (node->arcangle_ < 0.0)) ||
+		((node->direction == Xup) && (node->arcangle_ > 0.0))) {
 	    printf ("[tr]}\n"); }
       else { printf ("[br]}\n"); }
       texwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
@@ -487,12 +487,12 @@ texdraw (primitive * node) {
 	    if (fabs (x1 - x) != 0.0) { wbrace (fabs (x1 - x) / fsc); }
         else { wbrace (fabs (y1 - y) / fsc); }
 	    printf ("}\n");
-	    if ((i == 1) & ((ahlex (node->lineatype_) == XDOUBLEHEAD) |
-		  (ahlex (node->lineatype_) == XLEFTHEAD))) {
+	    if ((i == 1) & ((ahlex (node->lineatype_) == Xdoublehead) |
+		  (ahlex (node->lineatype_) == Xlefthead))) {
 	      arrowhead (node->aat.xpos + x, node->aat.ypos + y,
 		     node->aat.xpos + x1, node->aat.ypos + y1); }
-        else if ((i == npts) & ((ahlex (node->lineatype_) == XDOUBLEHEAD) |
-          (ahlex (node->lineatype_) == XRIGHTHEAD))) {
+        else if ((i == npts) & ((ahlex (node->lineatype_) == Xdoublehead) |
+          (ahlex (node->lineatype_) == Xrighthead))) {
 	      arrowhead (node->aat.xpos + x1, node->aat.ypos + y1,
 		     node->aat.xpos + x, node->aat.ypos + y); }
 	    x = x1;
@@ -502,7 +502,7 @@ texdraw (primitive * node) {
       }
     break;
 
-  case XLstring:
+  case Xstring:
     texwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 

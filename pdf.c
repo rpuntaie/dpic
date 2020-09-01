@@ -141,7 +141,7 @@ resetgs (primitive * node)
   if (gsgcolor) {
       pdfwln (" 0 g", 4, &cx);
       gsgcolor = false; }
-  x = venv (node, XLlinethick);
+  x = venv (node, Xlinethick);
   if (gslinethick != x) {
       pdfwfloat (x);
       pdfwln (" w", 2, &cx);
@@ -278,12 +278,12 @@ pdfwtext (primitive * node, nametype * tp, double x, double y)
   while (tx != NULL) {
     nstr++;
     tx = tx->nextname; }
-  textht = venv (node, XLtextht);
-  textwid = venv (node, XLtextwid);
-  if ((node->ptype == XLstring) && (nstr > 0)) {
+  textht = venv (node, Xtextht);
+  textwid = venv (node, Xtextwid);
+  if ((node->ptype == Xstring) && (nstr > 0)) {
     textht = node->boxheight_ / nstr;
     textwid = node->boxwidth_; }
-  textoff = venv (node, XLtextoffset);
+  textoff = venv (node, Xtextoffset);
   y += ((nstr / 2.0) - (4.0 / 5)) * textht;
   nstr = 1;
   do {
@@ -295,7 +295,7 @@ pdfwtext (primitive * node, nametype * tp, double x, double y)
     pdfwln (" Tf", 3, &cx);
     if (L) { dx = textoff; }
     else if (R) { dx = (-textoff) - (tp->len * textht * 0.6); }
-    else if (node->ptype == XLstring) { dx = textwid / (-2); }
+    else if (node->ptype == Xstring) { dx = textwid / (-2); }
     else { dx = (-tp->len) * textht * 0.6 / 2; }
     dy = textht / 10;
     if (A) { dy += textoff + (textht * 0.3); }
@@ -362,7 +362,7 @@ void
 pdflineopts (int lspec, double param, double thck, nametype * op)
 {
   pdfsetthick (thck);
-  if (lspec == XLdashed) {
+  if (lspec == Xdashed) {
     if (ismdistmax (param)) { param = 6 * fsc; }
     pdfstream (" [", 2, &cx);
     pdfwfloat (param * 7 / 6 / fsc);
@@ -371,7 +371,7 @@ pdflineopts (int lspec, double param, double thck, nametype * op)
     gsdashw = param;
     gsdashs = param;
     }
-  else if (lspec == XLdotted) {
+  else if (lspec == Xdotted) {
     if (ismdistmax (param)) { param = 4 * fsc; }
     pdfstream (" [", 2, &cx);
     pdfwfloat (0.0);
@@ -631,14 +631,14 @@ pdfdraw (primitive * node)
   primitive *With1;
 
   getlinespec (node, &lsp, &tn);	/* lsp = dotted, dashed ... */
-  lth = qenv (node, XLlinethick, node->lthick);	/* printobject(node); */
+  lth = qenv (node, Xlinethick, node->lthick);	/* printobject(node); */
   switch (node->ptype) {
 
-    case XBLOCK:
+    case Xblock:
       pdfwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
       break;
 
-    case XLbox:
+    case Xbox:
       if (drawn (node, lsp, node->boxfill_)) {
 	    fll = (((node->boxfill_ >= 0.0) &&
 		  (node->boxfill_ <= 1.0))
@@ -647,16 +647,16 @@ pdfdraw (primitive * node)
 	    pdflineopts (lsp, node->lparam, lth, node->outlinep);
 	    pdfbox (node->aat, node->boxwidth_ / 2,
 		  node->boxheight_ / 2, node->boxradius_);
-	    if (fll && (lsp != XLinvis)) { pdfwln (" B", 2, &cx); }
+	    if (fll && (lsp != Xinvis)) { pdfwln (" B", 2, &cx); }
 	    else if (fll) { pdfwln (" f", 2, &cx); }
 	    else { pdfwln (" S", 2, &cx); }
 	    }
       pdfwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
       break;
 
-    case XLellipse:
-    case XLcircle:
-      if (node->ptype == XLellipse) {
+    case Xellipse:
+    case Xcircle:
+      if (node->ptype == Xellipse) {
 	    x = node->ellipsewidth_;
 	    y = node->ellipseheight_;
 	    fill = node->ellipsefill_; }
@@ -669,14 +669,14 @@ pdfdraw (primitive * node)
 	    pdflinearfill (fill, node->shadedp);
 	    pdflineopts (lsp, node->lparam, lth, node->outlinep);
 	    pdfellipse (node->aat, x, y);
-	    if (fll && (lsp != XLinvis)) { pdfwln (" B", 2, &cx); }
+	    if (fll && (lsp != Xinvis)) { pdfwln (" B", 2, &cx); }
 	    else if (fll) { pdfwln (" f", 2, &cx); }
 	    else { pdfwln (" S", 2, &cx); }
 	    }
       pdfwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
       break;
 
-    case XLarc:
+    case Xarc:
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       X1 = arcstart (node);
       X2 = arcend (node);
@@ -687,16 +687,16 @@ pdfdraw (primitive * node)
 	    pdfwarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
 	    pdfwln (" f", 2, &cx);
 	    resetgs (node); }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      pdfsetcolor (soutline, true);
 	      startarc (node, X1, lth, &h, &w);
 	      pdfarcahead (node->aat, ahnum (node->lineatype_), &X1, h,
 			   w, lth, fabs (node->aradius_), node->arcangle_, soutline);
 	      resetgs (node); }
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      pdfsetcolor (soutline, true);
 	      endarc (node, X2, lth, &h, &w);
 	      pdfarcahead (node->aat, ahnum (node->lineatype_), &X2, h,
@@ -711,9 +711,9 @@ pdfdraw (primitive * node)
       pdfwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
       break;
 
-    case XLline:
-    case XLarrow:
-    case XLmove:
+    case Xline:
+    case Xarrow:
+    case Xmove:
       if (firstsegment (node)) {
 	    snode = node;
 	    getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
@@ -730,25 +730,25 @@ pdfdraw (primitive * node)
 	      pdfwln (" f", 2, &cx);
 	      resetgs (node);
 	      }
-	    lth = qenv (tn, XLlinethick, tn->lthick);
-	    if (lsp != XLinvis) {
+	    lth = qenv (tn, Xlinethick, tn->lthick);
+	    if (lsp != Xinvis) {
 	      TEMP = ahlex (tn->lineatype_);
-	      if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	      if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 		    pdfsetcolor (soutline, true);
 		    pdfahead (ahnum (tn->lineatype_), &node->aat,
 			    node->endpos_,
-			    qenv (tn, XLarrowht, tn->lineheight_),
-			    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+			    qenv (tn, Xarrowht, tn->lineheight_),
+			    qenv (tn, Xarrowwid, tn->linewidth_), lth,
 			    soutline);
 		    resetgs (node);
 		    }
 	      TEMP = ahlex (tn->lineatype_);
-	      if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	      if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 		    pdfsetcolor (soutline, true);
 		    pdfahead (ahnum (tn->lineatype_),
-			    &tn->endpos_, tn->aat, qenv (tn,XLarrowht,
+			    &tn->endpos_, tn->aat, qenv (tn,Xarrowht,
 								  tn->lineheight_),
-			    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+			    qenv (tn, Xarrowwid, tn->linewidth_), lth,
 			    soutline);
 		    resetgs (node);
 		    }
@@ -757,7 +757,7 @@ pdfdraw (primitive * node)
 	      pdfwln (" m", 2, &cx);
 	      }
 	    }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    pdfwpos (node->endpos_);
 	    pdfstream (" l", 2, &cx);
 	    if (node->son != NULL) { pdfendline (&cx); }
@@ -777,7 +777,7 @@ pdfdraw (primitive * node)
 	    }
       break;
 
-    case XLspline:
+    case Xspline:
       if (firstsegment (node)) {
 	    getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
 	    if (bfill) {
@@ -793,32 +793,32 @@ pdfdraw (primitive * node)
 	      pdfwln (" f", 2, &cx);
 	      resetgs (node);
 	      }
-	    if (lsp != XLinvis) {
+	    if (lsp != Xinvis) {
 	      spltot = primdepth (node);
 	      splcount = spltot;
-	      lth = qenv (tn, XLlinethick, tn->lthick);
+	      lth = qenv (tn, Xlinethick, tn->lthick);
 	      TEMP = ahlex (tn->lineatype_);
-	      if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	      if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 		    pdfsetcolor (soutline, true);
 		    pdfahead (ahnum (tn->lineatype_), &node->aat,
 			    node->endpos_,
-			    qenv (tn, XLarrowht, tn->lineheight_),
-			    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+			    qenv (tn, Xarrowht, tn->lineheight_),
+			    qenv (tn, Xarrowwid, tn->linewidth_), lth,
 			    soutline);
 		    resetgs (node); }
 	      TEMP = ahlex (tn->lineatype_);
-	      if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	      if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 		    pdfsetcolor (soutline, true);
 		    pdfahead (ahnum (tn->lineatype_),
-			    &tn->endpos_, tn->aat, qenv (tn,XLarrowht,
+			    &tn->endpos_, tn->aat, qenv (tn,Xarrowht,
 								  tn->lineheight_),
-			    qenv (tn, XLarrowwid, tn->linewidth_), lth,
+			    qenv (tn, Xarrowwid, tn->linewidth_), lth,
 			    soutline);
 		    resetgs (node); }
 	      pdflineopts (lsp, tn->lparam, lth, soutline);
 	      }
 	    }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    pdfsplinesegment (node, splcount, spltot);
 	    if (splcount == 1) {
 	      pdfwln (" S", 2, &cx);
@@ -827,7 +827,7 @@ pdfdraw (primitive * node)
       splcount--;
       break;
 
-    case XLstring:
+    case Xstring:
       pdfwtext (node, node->textp, node->aat.xpos, node->aat.ypos);
       break;
 

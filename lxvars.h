@@ -1,4 +1,4 @@
 #define	lxmax	456
-#define	XXenvvar	165
-#define	XLlastsc	182
-#define	XLlastenv	188
+#define	XXenvvar	163
+#define	Xlastsc	180
+#define	Xlastenv	186

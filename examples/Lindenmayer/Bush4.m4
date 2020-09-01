@@ -22,8 +22,8 @@ include(Lsys.conf)
  `define Z {}'
 
   L_init(linelen=0.1; phi=20)
-  Bush5: [ Produce(0,10,``V Z F F F'') ]
-  "Bush5" at last [].s below
+  Bush4: [ Produce(0,10,``V Z F F F'') ]
+  "Bush4" at last [].s below
   popdef(`V')
   popdef(`W')
   popdef(`X')

@@ -51,8 +51,8 @@ boolean
 drawn (primitive * node, int linesp, double fill) {
   if (node == NULL) { return false; }
   else if (node->shadedp != NULL) { return true; }
-  else if ((linesp == XLdotted) || (linesp == XLdashed) ||
-	(linesp == XLsolid) || ((fill >= 0.0) && (fill <= 1.0))) { return true; }
+  else if ((linesp == Xdotted) || (linesp == Xdashed) ||
+	(linesp == Xsolid) || ((fill >= 0.0) && (fill <= 1.0))) { return true; }
   else { return false; }
 }
 
@@ -101,8 +101,8 @@ void
 getlinespec (primitive * nd, int *lsp, primitive ** lastnd) {
   primitive *tn = nd;
 
-  if ((nd->ptype == XLarc) || (nd->ptype == XLarrow) ||
-      (nd->ptype == XLline) || (nd->ptype == XLspline)) {
+  if ((nd->ptype == Xarc) || (nd->ptype == Xarrow) ||
+      (nd->ptype == Xline) || (nd->ptype == Xspline)) {
     while (tn->son != NULL) { tn = tn->son; }
   }
   *lastnd = tn;
@@ -253,8 +253,8 @@ void
 startarc (primitive * n, postype X0, double lth, double *h, double *w) {
   double x, y;
 
-  *h = qenv (n, XLarrowht, n->lineheight_);
-  *w = qenv (n, XLarrowwid, n->linewidth_);
+  *h = qenv (n, Xarrowht, n->lineheight_);
+  *w = qenv (n, Xarrowwid, n->linewidth_);
   y = ahoffset (*h, *w, (lth / 72) * scale);
   if ((n->aradius_ * n->aradius_) - (y * y) <= 0.0) { x = 0.0; }
   else { x = 2 * atan (y / sqrt ((n->aradius_ * n->aradius_) - (y * y))); }
@@ -271,8 +271,8 @@ startarc (primitive * n, postype X0, double lth, double *h, double *w) {
 void
 endarc (primitive * n, postype X0, double lth, double *h, double *w) {
   double x, y;
-  *h = qenv (n, XLarrowht, n->lineheight_);
-  *w = qenv (n, XLarrowwid, n->linewidth_);
+  *h = qenv (n, Xarrowht, n->lineheight_);
+  *w = qenv (n, Xarrowwid, n->linewidth_);
   y = ahoffset (*h, *w, (lth / 72) * scale);
   if ((n->aradius_ * n->aradius_) - (y * y) <= 0.0) { x = 0.0; }
   else { x = 2 * atan (y / sqrt ((n->aradius_ * n->aradius_) - (y * y))); }
@@ -313,7 +313,7 @@ texstacktext (primitive * np, nametype * tp) {
   if (tx != NULL) {
     printf ("\\shortstack{");
   }
-  toff = (venv (np, XLtextoffset) / scale) * 72;
+  toff = (venv (np, Xtextoffset) / scale) * 72;
   do {
     checkjust (tp, &A, &B, &L, &R);
     if (L) {
@@ -402,7 +402,7 @@ resetgs(primitive *node)
   if (gsgcolor) {
       pdfwln(" 0 g", 4, &cx);
       gsgcolor = false; }
-  x = venv(node, XLlinethick);
+  x = venv(node, Xlinethick);
   if (gslinethick != x) {
       pdfwfloat(x);
       pdfwln(" w", 2, &cx);
@@ -470,7 +470,7 @@ treedraw (primitive * node) {
     }
     if (node->son != NULL) { treedraw (node->son); }
     if (drawmode == PDF) { resetgs (node); }
-    else if ((drawmode == xfig) && (node->ptype == XBLOCK) &&
+    else if ((drawmode == xfig) && (node->ptype == Xblock) &&
 	       (node->direction == (-1))) { printf ("-6\n"); }
     bfill = false;
     sshade = NULL;
@@ -491,7 +491,7 @@ drawtree (double n, double s, double e, double w, primitive * eb) {
   case SVG:
     fsctmp = fsc;
     fsc /= dpPPI;
-    svgprelude (n, s, e, w, (venv (eb, XLlinethick) / 72) * scale);
+    svgprelude (n, s, e, w, (venv (eb, Xlinethick) / 72) * scale);
     treedraw (eb);
     svgpostlude ();
     fsc = fsctmp;
@@ -515,7 +515,7 @@ drawtree (double n, double s, double e, double w, primitive * eb) {
   case PSfrag:
     fsctmp = fsc;
     fsc /= 72;
-    psprelude (n, s, e, w, venv (eb, XLlinethick));
+    psprelude (n, s, e, w, venv (eb, Xlinethick));
     treedraw (eb);
     pspostlude ();
     fsc = fsctmp;
@@ -523,7 +523,7 @@ drawtree (double n, double s, double e, double w, primitive * eb) {
   case PDF:
     fsctmp = fsc;
     fsc /= 72;
-    pdfprelude (n, s, e, w, venv (eb, XLlinethick));
+    pdfprelude (n, s, e, w, venv (eb, Xlinethick));
     treedraw (eb);
     pdfpostlude ();
     fsc = fsctmp;

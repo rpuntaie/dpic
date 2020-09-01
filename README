@@ -16,9 +16,9 @@ Installation:
 
 Dpic usage:
 
-   dpic [option] infile > outfile
+   dpic [options] infile > outfile
 or 
-   cat infile | dpic [option] > outfile 
+   cat infile | dpic [options] > outfile 
 
 Options:
    (none)    LaTeX picture output (limited font-based drawing capability)
@@ -74,7 +74,7 @@ Bugs:
    Other exceptions can be found in the file dpic-doc.pdf.
 
 Version:
-   The version of dpic is the date the source was created, printed as a
+   The version of dpic is the date the source was released, printed as a
    comment in dpic output.
 
 -------------------------------------------------------------------

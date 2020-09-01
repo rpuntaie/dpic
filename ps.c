@@ -158,8 +158,8 @@ pswtext (primitive * np, nametype * tp, double x, double y) {
     return;
     }
   if (tp == NULL) { return; }
-  toff = (venv (np, XLtextoffset) / scale) * 72;
-  theight = (venv (np, XLtextht) / scale) * 72;
+  toff = (venv (np, Xtextoffset) / scale) * 72;
+  theight = (venv (np, Xtextht) / scale) * 72;
   printf ("(\\\\tex[");
   checkjust (tp, &A, &B, &L, &R);
   if (L) { putchar ('l'); }
@@ -250,7 +250,7 @@ pssetcolor (nametype * op) {
 
 void
 psdashdot (int lspec, double param) {
-  if (lspec == XLdashed) {
+  if (lspec == Xdashed) {
     if (ismdistmax (param)) { param = 3 * fsc; }
     printf (" [");
     pswfloat (&output, param / fsc);
@@ -258,7 +258,7 @@ psdashdot (int lspec, double param) {
     printf (" ] 0 setdash\n");
     return;
     }
-  if (lspec != XLdotted) { return; }
+  if (lspec != Xdotted) { return; }
   if (ismdistmax (param)) { param = 5 * fsc; }
   printf (" [ 0");
   pswfloat (&output, param / fsc);
@@ -484,16 +484,16 @@ psdraw (primitive * node) {
   int TEMP;
 
   getlinespec (node, &lsp, &tn);
-  lth = qenv (node, XLlinethick, node->lthick);	/* printobject(node); */
+  lth = qenv (node, Xlinethick, node->lthick);	/* printobject(node); */
   switch (node->ptype) {
 
-  case XLbox:
+  case Xbox:
     if (((node->boxfill_ >= 0.0) && (node->boxfill_ <= 1.0))
 	  || (node->shadedp != NULL)) {
       psbox (node->aat, node->boxwidth_ / 2,
 	     node->boxheight_ / 2, node->boxradius_);
       pssetthick (lth);
-      if (lsp != XLinvis) { printf (" gsave\n"); }
+      if (lsp != Xinvis) { printf (" gsave\n"); }
       if (node->shadedp == NULL) {
 	    printf (" currentrgbcolor");
 	    pswfloat (&output, node->boxfill_);
@@ -501,14 +501,14 @@ psdraw (primitive * node) {
         }
       else { pssetcolor (node->shadedp); }
       printf (" fill");
-      if (lsp != XLinvis) { printf (" grestore\n"); } else { putchar ('\n'); }
+      if (lsp != Xinvis) { printf (" grestore\n"); } else { putchar ('\n'); }
       psdashdot (lsp, node->lparam);
       pssetcolor (node->outlinep);
       psendline (node->outlinep);
       printf (" setrgbcolor");
       printf (" setlineparms\n");
       }
-    else if (lsp != XLinvis) {
+    else if (lsp != Xinvis) {
       psbox (node->aat, node->boxwidth_ / 2,
 	     node->boxheight_ / 2, node->boxradius_);
       pssetthick (lth);
@@ -520,20 +520,20 @@ psdraw (primitive * node) {
     pswtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XBLOCK:
+  case Xblock:
     pswtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLellipse:
-  case XLcircle:
-    if (node->ptype == XLellipse) { fill = node->ellipsefill_; }
+  case Xellipse:
+  case Xcircle:
+    if (node->ptype == Xellipse) { fill = node->ellipsefill_; }
     else { fill = node->circlefill_; }
     if (((fill >= 0.0) && (fill <= 1.0)) || (node->shadedp != NULL)) {
       pssetthick (lth);
       printf (" gsave ");
       pswpos (node->aat);
       printf (" translate\n");
-      if (node->ptype == XLellipse) {
+      if (node->ptype == Xellipse) {
 	    psellipse (node->ellipsewidth_, node->ellipseheight_); }
       else { pscircle (node->circleradius_); }
       printf (" gsave ");
@@ -545,7 +545,7 @@ psdraw (primitive * node) {
 	    printf (" setrgbcolor");
         }
       printf (" fill grestore\n");
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    psdashdot (lsp, node->lparam);
 	    pssetcolor (node->outlinep);
 	    psendline (node->outlinep);
@@ -553,12 +553,12 @@ psdraw (primitive * node) {
         }
       printf (" grestore\n");
       }
-    else if (lsp != XLinvis) {
+    else if (lsp != Xinvis) {
       pssetthick (lth);
       printf (" gsave ");
       pswpos (node->aat);
       printf (" translate\n");
-      if (node->ptype == XLellipse) {
+      if (node->ptype == Xellipse) {
 	    psellipse (node->ellipsewidth_, node->ellipseheight_); }
       else { pscircle (node->circleradius_); }
       psdashdot (lsp, node->lparam);
@@ -570,15 +570,15 @@ psdraw (primitive * node) {
     pswtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLline:
-  case XLarrow:
-  case XLspline:
+  case Xline:
+  case Xarrow:
+  case Xspline:
     if (firstsegment (node)) {
       snode = node;
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       if (bfill) {
 	    psnewpath ();
-	    if (node->ptype != XLspline) {
+	    if (node->ptype != Xspline) {
 	      pswpos (node->aat);
 	      printf (" moveto\n");
 	      }
@@ -586,7 +586,7 @@ psdraw (primitive * node) {
 	    splcount = spltot;
 	    tx = node;
 	    while (tx != NULL) {
-	      if (node->ptype == XLspline) {
+	      if (node->ptype == Xspline) {
 	        pssplinesegment (tx, splcount, spltot);
 	        splcount--; }
           else {
@@ -600,36 +600,36 @@ psdraw (primitive * node) {
 	    vfill = -1.0;
 	    sshade = NULL;
         }
-      if (lsp != XLinvis) {
-	    lth = qenv (tn, XLlinethick, tn->lthick);
+      if (lsp != Xinvis) {
+	    lth = qenv (tn, Xlinethick, tn->lthick);
 	    spltot = primdepth (node);
 	    splcount = spltot;
 	    pssetthick (lth);
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      pssetcolor (soutline);
 	      psahead (ahnum (tn->lineatype_), &node->aat, node->endpos_,
-		    qenv (tn, XLarrowht, tn->lineheight_),
-		    qenv (tn, XLarrowwid, tn->linewidth_), lth);
+		    qenv (tn, Xarrowht, tn->lineheight_),
+		    qenv (tn, Xarrowwid, tn->linewidth_), lth);
 	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      pssetcolor (soutline);
 	      psahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (tn, XLarrowht, tn->lineheight_),
-		    qenv (tn, XLarrowwid, tn->linewidth_), lth);
+		    tn->aat, qenv (tn, Xarrowht, tn->lineheight_),
+		    qenv (tn, Xarrowwid, tn->linewidth_), lth);
 	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
 	      }
-	    if (node->ptype != XLspline) {
+	    if (node->ptype != Xspline) {
 	      psnewpath ();
 	      pswpos (node->aat);
 	      printf (" moveto\n");
 	      }
         }
       }
-    if (lsp != XLinvis) {
-      if (node->ptype == XLspline) { pssplinesegment (node, splcount, spltot);}
+    if (lsp != Xinvis) {
+      if (node->ptype == Xspline) { pssplinesegment (node, splcount, spltot);}
       else {
 	    pswpos (node->endpos_);
 	    printf (" lineto\n");
@@ -653,7 +653,7 @@ psdraw (primitive * node) {
       }
     break;
 
-  case XLmove:
+  case Xmove:
     if (firstsegment (node)) { snode = node; }
     if (node->son == NULL) {
       while (snode != NULL) {
@@ -667,7 +667,7 @@ psdraw (primitive * node) {
       }
     break;
 
-  case XLarc:
+  case Xarc:
     if (drawn (node, lsp, node->linefill_)) {
       pssetthick (lth);
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
@@ -683,10 +683,10 @@ psdraw (primitive * node) {
 	    sshade = NULL;
 	    printf (" setrgbcolor\n");
         }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    pssetthick (lth);
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      pssetcolor (soutline);
 	      startarc (node, X1, lth, &h, &w);
 	      psarcahead (node->aat, ahnum (node->lineatype_), &X1, h, w,
@@ -694,7 +694,7 @@ psdraw (primitive * node) {
 	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      pssetcolor (soutline);
 	      endarc (node, X2, lth, &h, &w);
 	      psarcahead (node->aat, ahnum (node->lineatype_), &X2, h, w,
@@ -712,7 +712,7 @@ psdraw (primitive * node) {
     pswtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLstring:
+  case Xstring:
     pswtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 

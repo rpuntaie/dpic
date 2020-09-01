@@ -1,0 +1,796 @@
+
+# Drawing or tuning tics and labels on a existing graph is relatively
+# easy but writing routines to produce reasonable markup automatically
+# over a wide range of inputs requires thought.  Linear axis scales
+# are the simplest but others, such as logarithmic scales, are much less
+# straightforward. The following routines are based on and translated from
+# the original Fortran and are intended for plots up to about one page
+# in size.  One can produce graphs quickly using them but customization
+# might be needed.
+
+# In all cases, font sizes are to be set externally and the dpic textht
+# parameter should be set accordingly.
+
+# grlinlin {[#( grwid,grht,Data,npts,job )
+# Graph plotter, linear scales, data in subscripted pic array
+#  grwid,grht graph box size; labels are exterior to the box
+#  Data     identifier of subscripted data array; that is,
+#           (Data[1].x, Data[1].y) contains the coordinates
+#           of the first data point, and so on
+#  npts     number of data points
+#  job = a+10*b+100*c+1000*d: default 0 = 1000*0 + 100*0 + 10*0 + 0
+#           a=0 do not add data point markers
+#             1 filled circle markers at data points
+#             2 data point square markers
+#             3 data point triangle markers
+#           b=0 fill data markers black
+#             1 fill data markers white
+#           c=0 join data points with splines
+#             1 join data points with straight lines
+#             2 do not join data points
+#             3 fit a least-squares straight line to the data
+#           d=0 box with tic marks and numerical labels
+#             1 do not draw visible box or tic marks; suitable for overlay
+#
+define grlinlin {[#( grwid,grht,Points,npts,job )
+  grwid=$1; grht=$2; npts=$4; job=$5
+  markers = int(job % 10)
+  fillv = int(job/10) % 10
+  join = int(job/100) % 10
+  decorate = (int(job/1000)==0)
+#
+#print sprintf("decorate=%g, join=%g, fillv=%g, markers=%g",\
+#  decorate,join,fillv,markers)
+#
+ Box: box invis wid grwid ht grht with .sw at (0,0)
+#                                  min and max values
+  getminmax( $3, npts, xmin,xmax,ymin,ymax ) 
+  scalop( xmin,xmax, xming,xmaxg,ix2graph,ixmin,ixmax,xdig,xpow )
+  scalop( ymin,ymax, yming,ymaxg,iy2graph,iymin,iymax,ydig,ypow )
+  define x2graph { ($1-xming)/(xmaxg-xming)*grwid }
+  define y2graph { ($1-yming)/(ymaxg-yming)*grht }
+#                                  scales
+  lt0 = linethick; linethick /= 2; txht = textht
+  tic = min(grwid/20,grht/20)
+  if decorate then {
+   vaxtics(-1, tic,txht,iymin,iymax,iy2graph,y2graph,ydig,ypow)with .S at Box.sw
+   vaxtics( 0,-tic,txht,iymin,iymax,iy2graph,y2graph,ydig,ypow)with .S at Box.se
+   haxtics(-1, tic,txht,ixmin,ixmax,ix2graph,x2graph,xdig,xpow)with .W at Box.sw
+   haxtics( 0,-tic,txht,ixmin,ixmax,ix2graph,x2graph,xdig,xpow)with .W at Box.nw
+   linethick = lt0; box wid Box.wid ht Box.ht at Box
+  }
+  sqsiz = textht/2
+  if join==0 then {
+    for i=1 to npts do { Qplotlib[i-1]: (x2graph($3[i].x),y2graph($3[i].y)) }
+    dfitcurve(Qplotlib,npts-1)
+    } \
+  else { if join==1 then {
+    P: (x2graph($3[1].x),y2graph($3[1].y))
+    line from P to P
+    for i=2 to npts do { continue to (x2graph($3[i].x),y2graph($3[i].y)) }
+    }}
+  {if markers==1 then { for i=1 to npts do {
+    plotlibcircle(sqsiz,fillv) at (x2graph($3[i].x),y2graph($3[i].y)) }
+    } \
+  else { if markers==2 then { for i=1 to npts do {
+    plotlibbox(sqsiz,fillv) at (x2graph($3[i].x),y2graph($3[i].y)) }
+    } \
+  else { if markers==3 then { for i=1 to npts do {
+    plotlibtriangle(sqsiz,fillv) at (x2graph($3[i].x),y2graph($3[i].y)) }
+    } }}}
+ ]}
+
+# vaxtics {[#( job,ticlen,charht,iymin,iymax,sky,macroname,ydig,ypow)
+# Tics and label routine for vertical axis, linear scale.
+# Tics from iymin*sky to iymax*sky with labels above or below
+#
+# job      0: no labels, -ve: labels at the left, +ve: labels at the right.
+# ticlen   tic mark length; -ve to write left
+# charht   height of scale numbers
+# iymax    max x coord integer for i=iymin to iymax { draw tic }
+# iymin    min x coord integer
+# sky      scale factor, x coord integer to x value
+# macroname input macro to convert x value to drawn value: macroname(x)
+# ydig     digits after the decimal
+# ypow     scale factor exponent for the scale labels
+#
+define vaxtics {[
+  job=$1; ticlen=$2; iymin=$4; iymax=$5; sky=$6; ydig=$8; ypow=$9
+  if "$3"== "" then { charht = textht } else { charht=$3 }
+#
+  if dpicopt==optSVG then { charwd = charht*dptextratio } \
+  else { charwd = charht*0.66 }
+  N: (0,$7(iymax*sky))
+  S: (0,$7(iymin*sky))
+# Orig: (0,$7(0))
+  for iy=iymin to iymax do {
+     y = iy * sky
+     line from (0,$7(y)) to (ticlen,$7(y))
+     if job > 0 then {
+       move to last line.e
+       if (y==0) && (ypow==0) then { "0" ljust } \
+       else { sprintf(sprintf("%%8.%gf",ydig),y*10^ypow) ljust } } \
+     else { if job < 0 then {
+       move to last line.w
+       if (y==0) && (ypow==0) then { "0" rjust } \
+       else { sprintf(sprintf("%%8.%gf",ydig),y*10^ypow) rjust } } } }
+  if( ypow!=0 && job!=0 ) then { # write exponent
+    iy = floor(iymin/4+iymax*3/4)
+    move to ( (ydig/2+7)*charwd*sign(job), $7((iy+0.4)*sky))
+    { "x 10" ht charht wid 4*charwd
+      sprintf("-%g",ypow) ht charht*2/3 at last "".e above ljust } }
+ ]}
+
+# grloglin {[#( grwid,grht,Data,npts,job )
+# Graph plotter, log-linear scales, data in subscripted pic array
+#  grwid,grht graph box size; labels are exterior to the box
+#  Data     identifier of subscripted data array; that is,
+#           (Data[1].x, Data[1].y) contains the coordinates
+#           of the first data point, and so on
+#  npts     number of data points
+#  job = a+10*b+100*c+1000*d: default 0 = 1000*0 + 100*0 + 10*0 + 0
+#           a=0 do not add data point markers
+#             1 filled circle markers at data points
+#             2 data point square markers
+#             3 data point triangle markers
+#           b=0 fill data markers black
+#             1 fill data markers white
+#           c=0 join data points with splines
+#             1 join data points with straight lines
+#             2 do not join data points
+#           d=0 box with tic marks and numerical labels
+#             1 do not draw visible box or tic marks; suitable for overlay
+#               or custom markup
+#
+define grloglin {[#( grwid,grht,Points,npts,job )
+  grwid=$1; grht=$2; npts=$4; job=$5
+  markers = int(job % 10)
+  fillv = int(job/10) % 10
+  join = int(job/100) % 10
+  decorate = (int(job/1000)==0)
+#print sprintf("
+#grloglin:
+#decorate=%g, join=%g, fillv=%g, markers=%g",\
+#  decorate,join,fillv,markers)
+#
+ Box: box invis wid grwid ht grht with .sw at (0,0)
+#                                  min and max values
+  xmin = $3[1].x; xmax = xmin; yminl = log($3[1].y); ymaxl = yminl
+  for j=2 to npts do { 
+    yminl=min(yminl,log($3[j].y)); ymaxl=max(ymaxl,log($3[j].y)) }
+#print sprintf("yminl=%g, ymaxl=%g",yminl,ymaxl)
+  getminmax( $3, npts, xmin,xmax,ymin,ymax ) 
+#print sprintf("xmin=%g, xmax=%g",xmin,xmax)
+#print sprintf("ymin=%g, ymax=%g",ymin,ymax)
+  scalop( xmin,xmax, xming,xmaxg,ix2graph,ixmin,ixmax,xdig,xpow )
+  scalop( yminl,ymaxl, yming,ymaxg,iy2graph,iymin,iymax,ydig,ypow )
+  define x2graph { ($1-xming)/(xmaxg-xming)*grwid }
+  define y2graph { ($1-yming)/(ymaxg-yming)*grht }
+#                                  scales
+  tic = min(grwid/20,grht/20)
+  if decorate then {
+    lt0 = linethick; linethick /= 2; txht = textht
+    vlgtics(-1,yminl,ymaxl,0,grwid ) with .Orig at (0,0)
+    haxtics(-1, tic,txht,ixmin,ixmax,ix2graph,x2graph,xdig,xpow) \
+      with .W at Box.sw
+    haxtics( 0,-tic,txht,ixmin,ixmax,ix2graph,x2graph,xdig,xpow) \
+      with .W at Box.nw
+    linethick = lt0; box wid Box.wid ht Box.ht at Box
+    }
+  sqsiz = textht/2
+  if join==0 then {
+    for i=1 to npts do {
+      Qplotlib[i-1]: (x2graph($3[i].x),y2graph(log($3[i].y))) }
+    dfitcurve(Qplotlib,npts-1)
+    } \
+  else { if join==1 then {
+    P: (x2graph($3[1].x),y2graph(log($3[1].y)))
+    line from P to P
+    for i=2 to npts do { continue to (x2graph($3[i].x),y2graph(log($3[i].y))) }
+    }}
+  {if markers==1 then { for i=1 to npts do {
+    plotlibcircle(sqsiz,fillv) at (x2graph($3[i].x),y2graph(log($3[i].y))) }
+    } \
+  else { if markers==2 then { for i=1 to npts do {
+    plotlibbox(sqsiz,fillv) at (x2graph($3[i].x),y2graph(log($3[i].y))) }
+    } \
+  else { if markers==3 then { for i=1 to npts do {
+    plotlibtriangle(sqsiz,fillv) at (x2graph($3[i].x),y2graph(log($3[i].y))) }
+    } }}}
+ ]}
+
+
+# vlgtics {[#( job,fminl,fmaxl,xmin,xmax )
+#                               horizontal logarithmic tics,labels below
+# job      0: no labels, -ve: labels at the left, +ve: labels at the right.
+# fminl,fmaxl   logarithms of the min and max vert values
+# xmin,xmax     min and max values of the horiz scale.
+vlgticsminlabels = 2
+vlgticsmintics = 10
+#
+define vlgtics {[#( job,fminl,fmaxl,xmin,xmax )
+  job=$1; fminl=$2; fmaxl=$3; xmin=$4; xmax=$5
+#
+Orig: 0,0
+#
+#print sprintf("
+#vlgtics(fminl=%g, fmaxl=%g, xmin=%g, xmax=%g):",fminl,fmaxl,xmin,xmax)
+#
+  ifming =  floor( fminl )
+  ifmaxg = -floor(-fmaxl )
+  x = (fmaxl-fminl)*1e-6
+  fmine  = 10^(fminl-x)   # values just less than min and just greater than max
+  fmaxe  = 10^(fmaxl+x)
+#print sprintf("fmine=%g, fmaxe=%g, ifming=%g, ifmaxg=%g",\
+#  fmine,fmaxe,ifming,ifmaxg)
+#                               set plevel for at least 2 horiz. labels
+  if (fmaxl-fminl) > 1 then { plevel = -2 } else { plevel = -1 }
+  for brk=0 to 1 do {
+    labelcount = 0
+    plevel += 1
+    ticlev = plevel
+    vlscan(labelcount,plevel,ticlev,ifming,ifmaxg,fmine,fmaxe,xmin,xmax,0 )
+    brk = (labelcount >= vlgticsminlabels)
+    }
+#                               set ticlev for at least 10 minor tics
+  for brk=0 to 1 do {
+    ticcount = 0
+    ticlev += 1
+    vlscan( ticcount,plevel,ticlev,ifming,ifmaxg,fmine,fmaxe,xmin,xmax,0 )
+    brk = (ticcount >= vlgticsmintics)
+    }
+#                               write the lines, tics and labels
+  if max(abs(fmine),abs(fmaxe))>1e6 then { fl = 2 } else { fl = 1 }
+  vlscan( labelcount,plevel,ticlev,
+    ifming,ifmaxg,fmine,fmaxe,xmin,xmax,fl ) with .Orig at Orig
+  ]}
+ 
+define vlscan {[#( count,plevel,ticlev,
+#        ifming,ifmaxg,fmine,fmaxe,xmin,xmax,prtflag )
+  sccount=0; scplev=$2; sctlev=$3;
+  ifming=$4; ifmaxg=$5; fmine=$6; fmaxe=$7; xmin=$8; xmax=$9; prtflag=$10
+#
+  Orig: (0,0)
+#
+#print sprintf("
+#vlscan(count, plevel=%g, ticlev=%g,
+# ifming=%g, ifmaxg=%g, fmine=%g, fmaxe=%g, xmin=%g, xmax=%g, prtflag=%g):",\
+#  $2,$3,ifming, ifmaxg, fmine, fmaxe, xmin, xmax, prtflag )
+#
+  iy = ifming
+  for outer = 0 to 1 do {
+    l = 10^iy
+#   if (iy==ifming || iy==ifmaxg || scplev < 0) then {
+    if (iy==ifming || scplev < 0) && (l>=fmine) && (l<=fmaxe) then {
+      vlgmrk( iy,l,xmin,xmax,scplev,scplev,sctlev,sccount,0,prtflag ) \
+        with .Orig at Orig
+      }
+    if iy >= ifmaxg then { outer = 1 } else { outer = 0
+      stkx := 0
+      hvlgpush( l,l,0,1 )
+      for inner = 0 to 1 do {
+        if stkx <= 0  then { inner = 1 } else { inner = 0
+          hvlgpop( l,dl,lv,i )
+          r = l+dl*i
+          if (r>=fmine) && (r<=fmaxe) then {
+            vlgmrk( log(r),r,xmin,xmax,lv,scplev,sctlev,sccount,i,prtflag )\
+              with .Orig at Orig
+            }
+#                                         stack next interval this level
+          if (r < fmaxe) && (i <= 8 || ((lv > 0) && (i <= 9))) then {
+            hvlgpush( l,dl,lv,i+1 ) }
+#                                         stack first interval next level
+          if (lv < max(scplev,sctlev)) && (l < fmaxe) && (r > fmine) then {
+            hvlgpush( l+dl*(i-1),dl/10,lv+1,1 ) }
+          }
+        }
+      iy += 1
+      }}
+  $1 := sccount; $2 := scplev; $3 := sctlev
+  ]}
+#
+define vlgmrk {[#( yl,y,xmin,xmax,lv,plevel,ticlev,count,i,prtflag )
+  yl=$1; y=$2; xmin=$3; xmax=$4; lv=$5; plevel=$6; ticlev=$7;
+  mrcount = $8; i=$9; prtflag=$10
+#
+Orig: (0,0)
+#
+#print sprintf("
+#vlgmrk( yl=%g, y=%g, xmin=%g, xmax=%g, lv=%g, plevel=%g, ticlev=%g,
+# count,
+#i=%g, prtflag=%g ):",\
+#yl, y, xmin, xmax, lv, plevel, ticlev, i, prtflag)
+#
+  herey = y2graph(yl)
+  icvsiz = textht
+  ichsiz = icvsiz*0.66
+                                    # horizontal line and label
+  if ((plevel<0) && (i==0)) || (lv==plevel)  then {{
+    iy = floor( yl+0.00001 ) - max(lv,0)
+    if iy < -6 || iy > 6 then { iy = -7 }
+    if iy > 0 && iy < 7 then { iy = 0 }
+    digits = abs(-iy); if digits==-0 then { digits = 0 }
+    field = floor(log(abs(y)))+digits+1
+    if prtflag!=0 then {{
+      move to (xmin,herey)
+      { line right xmax-xmin }
+      if prtflag==1 then { sprintf(sprintf("%%%g.%gg",field,digits),y) rjust }\
+      else { if prtflag==2 then {
+        "10" wid 2*ichsiz at Here-(3*ichsiz+textoffset,0)
+        sprintf("%g",yl) ht icvsiz*3/4 at last "".ne ljust } \
+      else {                     # f format
+        sprintf(sprintf("%%%g.%gf",field,digits),x) rjust }}
+      }}
+    mrcount += 1
+    }} \
+  else { if lv==ticlev  then {# draw tics left and right
+    if prtflag!=0  then {
+      line from (xmin,herey) right icvsiz 
+      line from (xmax,herey) left icvsiz }
+    mrcount += 1 }
+    }
+ $8 := mrcount
+#print sprintf("     count=%g",$8)
+ ]}
+
+define plotlibbox { box wid $1 ht $1 fill $2 }
+
+define plotlibcircle { circle diam $1 fill $2 }
+
+define plotlibtriangle { [line right $1 then up $1*sqrt(3) left $1 \
+       then down $1*sqrt(3) left $1 then to Here fill $2] }
+
+define getminmax {#( Array, npts, xmin,xmax,ymin,ymax ) 
+  $3 = $1[1].x; $4 = $3; $5 = $1[1].y; $6 = $5
+  for j=2 to npts do { $3=min($3,$1[j].x); $4=max($4,$1[j].x)
+                       $5=min($5,$1[j].y); $6=max($6,$1[j].y) }
+  }
+
+# graphb {[#( grwid,grht,xvals,yvals,ncurvs,npts,mode )
+# Multiple graph plotter, linear scales.
+#     grwid,grht    graph box size; labels are exterior to the box
+#     xvals         array containing x coordinates xvals[i]...xvals[npts]
+#     yvals         matrix containing ncurvs rows of y coordinates
+#                   with each curve corresponding to a row
+#                   If ncurvs = 1 this is just a 1-subscript array.
+#     ncurvs        Number of curves in rows 1, ... ncurves
+#     npts          number of points per curve; i.e. number of columns of yvals.
+#     mode = a*10+b    b=0: no curve label numbers; b=1: curve label numbers;
+#                      a=0: draw curves, box, tics, and tic values
+#                      a=1: draw curves only (for overlay)
+define graphb {[#( grwid,grht,xvals,yvals,ncurvs,npts,mode )
+  grwid=$1; grht=$2; ncurvs=$5; npts=$6; mode=$7
+#                                  min and max values
+  xmin = $3[1]; xmax = xmin
+  for j=2 to npts do { xmin=min(xmin,$3[j]); xmax=max(xmax,$3[j]); }
+  ymin = 1e100; ymax = -ymin
+  for i=1 to ncurvs do {
+    if ncurvs==1 then {
+      for j = 1 to npts do { ymin=min(ymin,$4[j]); ymax=max(ymax,$4[j]) } } \
+    else {
+      for j = 1 to npts do { ymin=min(ymin,$4[i,j]); ymax=max(ymax,$4[i,j]) }}}
+#                                  scale factors, formats and tic intervals.
+  scalop( xmin,xmax,xming,xmaxg,skx,ixmin,ixmax,xdig,xpow )
+  scalop( ymin,ymax,yming,ymaxg,sky,iymin,iymax,ydig,ypow )
+#
+#print " scalop( ymin,ymax,yming,ymaxg,sky,iymin,iymax,ydig,ypow )"
+#print sprintf("       %g, %g, %g, %g, %g, %g, %g, %g, %g", \
+# ymin,ymax,yming,ymaxg,sky,iymin,iymax,ydig,ypow )
+#
+  
+#                                  invis outer box
+  Box: box invis wid grwid ht grht with .sw at (0,0)
+
+define x2graph { ($1-xming)/(xmaxg-xming)*grwid }
+define y2graph { ($1-yming)/(ymaxg-yming)*grht }
+#                                  plot curves
+  if ncurvs==1 then {
+    P0: ( x2graph($3[1]), y2graph($4[1]) )
+    spline 0.55 from P0 to P0
+    for j = 2 to npts do { continue to (x2graph($3[j]),y2graph($4[j])) } } \
+  else {
+    for i = 1 to ncurvs do {
+      P0: ( x2graph($3[1]), y2graph($4[i,1]) )
+      spline 0.55 from P0 to P0
+      for j = 2 to npts do { continue to (x2graph($3[j]),y2graph($4[i,j])) } }
+      }
+#                                  scale at left & bottom
+  if int(mode/10+0.5)==0 then {
+    lt0 = linethick; linethick /= 2; txht = textht
+    tic = min(grwid/20,grht/20)
+    vaxtics(-1, tic,txht,iymin,iymax,sky,y2graph,ydig,ypow) with .S at Box.sw
+    vaxtics( 0,-tic,txht,iymin,iymax,sky,y2graph,ydig,ypow) with .S at Box.se
+    haxtics(-1, tic,txht,ixmin,ixmax,skx,x2graph,xdig,xpow) with .W at Box.sw
+    haxtics( 0,-tic,txht,ixmin,ixmax,skx,x2graph,xdig,xpow) with .W at Box.nw
+    }
+#                                  write symbols on curves
+  if pmod(mode,10) == 1 then {
+    kmver = textht; kmhor = kmver/2
+    dpiflatex( command "{\scriptsize";, tx0=textht; textht *= 2/3; )
+    markincr = int(1.5+npts/min(ixmax-ixmin,iymax-iymin))
+    ulim = Box.n.y-textoffset-textht/2
+    blim = Box.s.y+textoffset+textht/2
+    rlim = Box.e.x-textoffset-textht/2
+    flim = Box.w.x+textoffset+textht/2
+    for i = 1 to ncurvs do {
+      j = markincr+i-1
+      for lp=1 to 2 do {
+        x = max(min(x2graph($3[j]),rlim),flim)
+        if ncurvs==1 then { y = max(min(y2graph($4[j]),ulim),blim) } \
+        else { y = max(min(y2graph($4[i,j]),ulim),blim) }
+        sprintf("%g",i) at (x,y)
+        j += markincr
+        if j < npts then {lp=1}}
+      }
+    dpiflatex( command "}";, textht = tx0; )
+    }
+  if int(mode/10+0.5)==0 then { box wid grwid ht grht at Box; linethick = lt0; }
+  ]}
+
+# dpiflatex(latexcommands,rawcommands)
+define dpiflatex { if dpicopt == optPGF || dpicopt == optPSTricks \
+  || dpicopt == optPSfrag || dpicopt == optTeX then { $1 } else { $2 } }
+
+
+# scalop {[ #( xmin,xmax, xming,xmaxg,sfact,ixmin,ixmax,digits,power )
+# Optimal scale factors and output format for linear graph scaling.
+# A maximum of 6 printed significant digits is assumed, and at least
+# five but not more than 11 tic-marks on the axis are assumed.
+
+#     xmin, xmax   input min and max values of the data.
+
+#     xming,xmaxg  output min and max graph window values,
+#                  where xming <= xmin, and xmaxg >= xmax .
+#     sfact        output integer-to-graph scale factor: 
+#                     xming = sfact*ixmin and xmaxg = sfact*ixmax
+#     ixmin,ixmax  output integers for drawing tic marks.
+#     digits       output number n of digits after the decimal in %8.nf for tics
+#     power        data values = scale values * 10^power , so if
+#                  power != 0 then both the tic values and this
+#                  factor should be written on the graph scale.
+mntics = 5         # minimum number of tics
+#
+define scalop {
+$3=0; $4=0; $5=0; $6=0; $7=0; $8=0; $9=0;
+[
+#                               input values
+  xmin = $1; xmax = $2
+#
+  xmaxg_ = -1;  xming_ = 1
+  if xmax<xmin then { tmp = xmax; xmax = xmin; xmin = tmp }
+#                               check zero effective graph range.
+  xfact = max( abs(xmax),abs(xmin) )
+  xming_ = xfact + (xmax-xmin)
+  if xming_ != xfact then { xmaxt = xmax; xmint = xmin } \
+  else { if xmax > 0 then { xmaxt = xmax+xmax; xmint = 0. } \
+  else { if xmin !=0 then { xmaxt = 0; xmint = xmin+xmin } \
+  else { xmaxt = 1; xmint = -1 }}}
+
+#                               integer part of log(range)
+  kx = floor(log(xmaxt-xmint))
+#                               scale factor to make 1 < range < 10
+  xfact = exp(-kx)
+#print sprintf(" xmaxt=%g, xmint=%g, kx=%g, xfact=%g",xmaxt,xmint,kx,xfact)
+#                               scaled max and min for 1 < range < 10
+  xmaxg_ = xmaxt*xfact
+  xming_ = xmint*xfact
+#print sprintf(" xmaxg_=%g, xming_=%g",xmaxg_,xming_)
+
+  sk[0] = 2; sk[1] = 1; sk[2] = 0.5; sk[3] = 0.2
+#                               sfact_ = factor to ensure at least 5 tics
+#                               ixmax_ >= scaled maximum plotted value,
+#                               ixmin_ <= scaled minimum plotted value.
+  for i=1 to 3 do {
+    sfact_ = sk[i]
+    ixmax_ = -floor(-xmaxg_/sfact_)
+    ixmin_ =  floor( xming_/sfact_)
+    if ixmax_-ixmin_ >= mntics then {i=3}
+    }
+#                               digits_ = sig figs after the decimal.
+  digits_ = -kx
+  if sfact_!=1 then {digits_ = digits_+1}
+  power_ = 0
+#                               final scale factor graph vals to data.
+  sfact_ = sfact_*exp(kx)
+  xming_ = ixmin_*sfact_
+  xmaxg_ = ixmax_*sfact_
+#                               largest written value:
+  xwm = max(abs(xmaxg_),abs(xming_))
+  xkl = log(xwm)
+#                               make sure values will fit.
+  if  (digits_ == 6 && xming_ < 0) || (digits_ >= 7) then {
+    power_ = -floor(xkl)
+    digits_ = -kx-power_+1 }
+  force = 1
+  if digits_ < 0 then {
+    digits_ = 0
+    xpmax = 1.0e6
+    if xwm < xpmax then { force = 0 } \
+    else { power_ = -floor(xkl); digits_ = -power_-kx+1 }
+    }
+#                               force fit
+  if force then {
+    for i=1 to 2 do { xpmax = exp(6-digits_)
+      if xwm*exp(power_) >= xpmax then { digits_ = digits_-1
+        if digits_ > 0 then { i = 1 } else { i = 2 } } } 
+    }
+  $3 := xming_; $4 := xmaxg_;
+  $5 := sfact_; $6 := ixmin_; $7 := ixmax_; $8 := abs(digits_); $9 := power_;
+  ]}
+
+# haxtics {[#( job,ticlen,charht,ixmin,ixmax,skx,macroname,xdig,xpow)
+# Horizontal tics and label routine, linear scale.
+# Vertical tics from ixmin*skx to ixmax*skx with labels above or below
+#
+# job      0: no labels, +ve: labels above, -ve: labels below.
+# ticlen   tic mark length; -ve to write down
+# charht   height of scale numbers
+# ixmax    max x coord integer for i=ixmax to ixmin { draw tic }
+# ixmin    min x coord integer
+# skx      scale factor, x coord integer to x value
+# macroname input macro to convert x value to drawn value: macroname(x)
+# xdig     digits after the decimal
+# xpow  xpow is the exponent for the scales
+#
+define haxtics {[
+  job=$1; ticlen=$2; charht=$3; ixmin=$4; ixmax=$5; skx=$6;
+  xdig=$8; xpow=$9
+#
+  W: ($7(ixmin*skx),0)
+  E: ($7(ixmax*skx),0)
+  Orig: ($7(0),0)
+  m2 = 0
+  for ix=ixmin to ixmax do {
+     x = ix * skx
+     line from ($7(x),0) to ($7(x),ticlen)
+     if job < 0 then { move to last line.s } else { move to last line.n } 
+     if( job!=0 ) then {
+       if x==0 then { field = 1 } \
+       else {
+         field = floor(log(abs(x*10^xpow)))+xdig+1
+         if x<0 then {field+=1} }
+       vjog = (field > 50/(ixmax-ixmin))
+       if m2 && vjog then { move to Here + (0,charht*1.5*sign(job)) } 
+       move to Here+(0,(charht+textoffset)*sign(job))
+       if (x==0) && (xpow==0) then { "0" } else { 
+         { sprintf(sprintf("%%%g.%gf",field,xdig),x*exp(xpow)) }
+         }
+       m2 = !m2
+       } }
+  if( xpow!=0 && job!=0 ) then { # write exponent
+    move to (W.x/4+E.x*3/4,3*charht*sign(job))
+    if vjog then { move to Here + (0,charht*1.5*sign(job)) } 
+    { "X 10" ht charht wid 4*charht*0.66
+      sprintf("-%g",xpow) at last "".e above ljust }
+    }
+ ]}
+
+# bodepl ( xsiz,ysiz, npts,logf,dbgain,phase, job )
+#
+# xsiz,ysiz plot box width and height
+# npts   the number of frequency values plotted on horiz log scale
+# logf   vector of length npts containing values of log(freq)
+#
+# dbgain vector containing npts magnitudes to be plotted
+#
+# phase  array containing npts columns of phases to be plotted
+# job blank or 0 = plot dB gain and phase on the same graph
+#     1     = plot the gain graph
+#     2     = plot the phase graph
+#
+define bodepl {[
+#              ( xsiz,ysiz, npts,logf,dbgain,phase,job )
+  xsiz=$1; ysiz=$2; npts=$3
+  if "$7"=="" then { job = 0 } else { job = $7 }
+  ltt = linethick; linethick *= 0.5
+#
+Box: box invis wid xsiz ht ysiz with .sw at (0,0)
+#                           find the min and max values
+  fminl = $4[1]; fmaxl = fminl
+  gmin = $5[1]; gmax = gmin
+  pmin = $6[1]; pmax = pmin
+  for j = 1 to npts do {
+    fminl = min(fminl,$4[j]); fmaxl = max(fmaxl,$4[j])
+    gmin = min(gmin,$5[j]); gmax = max(gmax,$5[j])
+    pmin = min(pmin,$6[j]); pmax = max(pmax,$6[j]) }
+#                           gain and phase scale factors and formats
+  scalop( gmin,gmax, gming,gmaxg,skg,igmin,igmax,gdigits,gpower )
+  scalop( pmin,pmax, pming,pmaxg,skp,ipmin,ipmax,pdigits,ppower )
+  if job != 0 then { xf = 1 } else { xf = (ipmax-ipmin)/(igmax-igmin) }
+  if xf > 1 then { ysizg = ysiz/xf } else { ysizg = ysiz }
+  if xf < 1 then { ysizp = ysiz*xf } else { ysizp = ysiz }
+#
+  define f2graph { ($1-fminl)/(fmaxl-fminl)*xsiz }
+  define y2graph { ($1-gming)/(gmaxg-gming)*ysiz }
+  define g2graph { ($1-gming)/(gmaxg-gming)*ysizg }
+  define p2graph { ($1-pming)/(pmaxg-pming)*ysizp }
+#                           gain curves and labels
+  if (job==0) || (job==1) then {
+    move to (f2graph($4[1]),g2graph($5[1]))
+    spline 0.55 thick ltt from Here to Here
+    for j=2 to npts do { continue to (f2graph($4[j]),g2graph($5[j])) }
+#
+    if xf<=1 then { tic = xsiz } else { tic = 0 }
+    vaxtics(-1,tic,0.06,igmin,igmax,skg,g2graph,gdigits,gpower) with .S at Box.sw
+    iy = floor((igmax+igmin)/2)+0.5
+    "(dB)" at (-30/72*scale,g2graph(iy*skg))
+    }
+#                           phase curves and labels
+  if (job==0) || (job==2) then {
+    move to (f2graph($4[1]),p2graph($6[1]))
+    spline 0.55 thick ltt from Here to Here
+    for j=2 to npts do { continue to (f2graph($4[j]),p2graph($6[j])) }
+    }
+  if job==0 then {#         labels on right
+    if xf > 1 then { tic = xsiz } else { tic = 0 }
+    vaxtics( 1,-tic,0.06,ipmin,ipmax,skp,p2graph,pdigits,ppower) \
+      with .S at Box.se
+    iy = floor((ipmax+ipmin)/2)+0.5
+    "(deg)" at ( Box.e.x+40/72*scale,p2graph(iy*skp))
+    } \
+  else { if job==2 then {#  labels on left
+    vaxtics(-1,xsiz,0.06,ipmin,ipmax,skp,p2graph,pdigits,ppower) \
+      with .S at Box.sw
+    iy = floor((ipmax+ipmin)/2)+0.5
+    "(deg)" at ( Box.w.x-40/72*scale,p2graph(iy*skp))
+    }}
+#                           horizontal log scale
+  hlgtics( fminl,fmaxl,0,ysiz ) with .Orig at (0,0)
+  "Frequency" at (f2graph((fminl+fmaxl)/2),-30/72*scale)
+#
+  box wid Box.wid ht Box.ht at Box
+  ]}
+
+# hlgtics {[#( fminl,fmaxl,ymin,ymax )
+#                               horizontal logarithmic tics,labels below
+# fminl,fmaxl   logarithms of the min and max horizontal values
+# ymin,ymax     min and max values of the ordinate.
+hlgticsminlabels = 2
+hlgticsmintics = 10
+#
+define hlgtics {[#( fminl,fmaxl,ymin,ymax )
+  fminl=$1; fmaxl=$2; ymin=$3; ymax=$4
+#
+Orig: 0,0
+#
+  ifming =  floor( fminl )
+  ifmaxg = -floor(-fmaxl )
+  x = (fmaxl-fminl)*1e-6
+  fmine  = 10^(fminl-x)   # values just less than min and just greater than max
+  fmaxe  = 10^(fmaxl+x)
+#                               set plevel for at least 2 horiz. labels
+  if (fmaxl-fminl) > 1 then { plevel = -2 } else { plevel = -1 }
+  for brk=0 to 1 do {
+    labelcount = 0
+    plevel += 1
+    ticlev = plevel
+    hlscan(labelcount,plevel,ticlev, ifming,ifmaxg,fmine,fmaxe,ymin,ymax,0 )
+    brk = (labelcount >= hlgticsminlabels)
+    }
+#                               set ticlev for at least 10 minor tics
+  for brk=0 to 1 do {
+    ticcount = 0
+    ticlev += 1
+    hlscan( ticcount,plevel,ticlev, ifming,ifmaxg,fmine,fmaxe,ymin,ymax,0 )
+    brk = (ticcount >= hlgticsmintics)
+    }
+#                               write the lines, tics and labels
+  hlscan( labelcount,plevel,ticlev,\
+    ifming,ifmaxg,fmine,fmaxe,ymin,ymax,1 ) with .Orig at Orig
+  ]}
+
+define hvlgpush {
+  hlgstk[stkx+1] := $1
+  hlgstk[stkx+2] := $2
+  hlgstk[stkx+3] := $3
+  hlgstk[stkx+4] := $4
+  stkx +=4 }
+
+define hvlgpop { stkx -=4 
+  $4 = hlgstk[stkx+4]
+  $3 = hlgstk[stkx+3]
+  $2 = hlgstk[stkx+2]
+  $1 = hlgstk[stkx+1] }
+for i=1 to 4*15 do { hlgstk[i] = 0 }
+stkx = 0
+
+# recursive scan of the horiz plot interval to level ticlev
+define hlscan {[#( count,plevel,ticlev,
+#        ifming,ifmaxg,fmine,fmaxe,ymin,ymax,flag )
+  sccount=0; scplev=$2; sctlev=$3;
+  ifming=$4; ifmaxg=$5; fmine=$6; fmaxe=$7; ymin=$8; ymax=$9; flag=$10
+#
+  Orig: (0,0)
+#                               horizontal coord of last written label
+  lastx[1] = -1e6; lastx[2] = -1e6 
+  ix = ifming
+  for outer = 0 to 1 do {
+    l = 10^ix
+    if (ix==ifming || scplev < 0) && (l>=fmine) && (l<=fmaxe) then {
+      hlgmrk( ix,l,ymin,ymax,scplev,scplev,sctlev,lastx,sccount,0,flag ) \
+        with .Orig at Orig
+      }
+    if ix >= ifmaxg then { outer = 1 } else { outer = 0
+      stkx := 0
+      hvlgpush( l,l,0,1 )
+      for inner = 0 to 1 do {
+        if stkx <= 0  then { inner = 1 } else { inner = 0
+          hvlgpop( l,dl,lv,i )
+          r = l+dl*i
+          if (r>=fmine) && (r<=fmaxe) then {
+            hlgmrk( log(r),r,ymin,ymax,lv,scplev,sctlev,lastx,sccount,i,flag )\
+              with .Orig at Orig
+            }
+#                                         stack next interval this level
+          if (r < fmaxe) && (i <= 8 || ((lv > 0) && (i <= 9))) then {
+            hvlgpush( l,dl,lv,i+1 ) }
+#                                         stack interval next level
+          if (lv < max(scplev,sctlev)) && (l < fmaxe) && (r > fmine) then {
+            hvlgpush( l+dl*(i-1),dl/10,lv+1,1 ) }
+          }
+        }
+      ix += 1
+      }}
+  $1 := sccount; $2 := scplev; $3 := sctlev
+  ]}
+#
+define hlgmrk {[#( xl,x,ymin,ymax,lv,plevel,ticlev,lastx,count,i,prtflag )
+  xl=$1; x=$2; ymin=$3; ymax=$4; lv=$5; plevel=$6; ticlev=$7;
+  mrcount = $9; i=$10; prtflag=$11
+#
+# Count numerical labels and optionally draw tics and labels
+#
+Orig: (0,0)
+#
+#print sprintf("hlgmrk(%g, %g, %g, %g, %g, %g, %g, lastx, count, %g, %g)",\
+#    xl,x,ymin,ymax,lv,plevel,ticlev,i,prtflag)
+#
+  herex = f2graph(xl)
+  icvsiz = textht
+  ichsiz = icvsiz*0.66
+  if prtflag!=0 then { move to (herex,ymin) }
+                                    # vertical line and label
+  if ((plevel<0) && (i==0)) || (lv==plevel)  then {{
+    if prtflag!=0 then { { line up ymax-ymin } }
+    ix = floor( xl+0.00001 ) - max(lv,0)
+    if ix < -6 || ix > 6 then { ix = -7 }
+    if ix > 0 && ix < 7 then { ix = 0 }
+    digits = -ix; if digits==-0 then { digits = 0 }
+    field = floor(log(abs(x)))+digits+1
+                                    # shift scale number down if overlapped
+    labeloffset = 1
+    if (field+digits > 7) && (lv == plevel) then { labeldig = 4 } \
+    else { labeldig = field+3 }
+    if herex-labeldig/2*ichsiz < $8[1] then {
+       if prtflag!=0 then { move down icvsiz*1.3 }
+       labeloffset = 2
+       if herex-labeldig/2*ichsiz < $8[2] then {
+          if prtflag!=0 then { move down icvsiz*1.3 }
+          labeloffset = 3 } }
+    if labeloffset < 3 then {
+       if prtflag!=0 then {
+         if field+digits > 7 then {
+           if lv==plevel then {{
+             "10" wid 2*ichsiz at Here+(0,-icvsiz/4-textoffset) below
+             sprintf("%g",xl) ht icvsiz*3/4 at last "".ne ljust }} \
+           else {{
+             sprintf(sprintf("%%%g.%gg",field,digits),x) \
+               at Here+(0,-icvsiz/4) below }}
+           } \
+         else {{                     # f format
+           sprintf(sprintf("%%%g.%gf",field,digits),x) \
+            at Here+(0,-icvsiz/4) below} }}
+       mrcount += 1
+       $8[labeloffset] := herex+(labeldig-1)*ichsiz/2
+       }
+    }} \
+  else { if lv==ticlev  then {# draw tics top and bottom
+    if prtflag!=0  then {
+      line up icvsiz
+      line from (herex,ymax) down icvsiz }
+    mrcount += 1 }
+    }
+ $9 := mrcount
+ ]}
+
+define plotlib {1}

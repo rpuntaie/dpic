@@ -27,45 +27,36 @@ pgfwrtext (primitive * np, nametype * tp, double x, double y) {
   printf ("\\draw ");
   wcoord (&output, x, y);
   printf (" node");
-  if ((np->ptype == XLstring) && (np->name != NULL)) {
+  if ((np->ptype == Xstring) && (np->name != NULL)) {
     putchar ('(');
     wstring (&output, np->name);
     putchar (')');
-  }
+    }
   if (tp->nextname != NULL) {
     putchar ('{');
-    texstacktext (np, tp);
-  } else {
+    texstacktext (np, tp); }
+  else {
     checkjust (tp, &A, &B, &L, &R);
     if (A || B || L || R) {
       putchar ('[');
-      if (A && L) {
-	printf ("above right");
-      } else if (A && R) {
-	printf ("above left");
-      } else if (B && L) {
-	printf ("below right");
-      } else if (B && R) {
-	printf ("below left");
-      } else if (A) {
-	printf ("above");
-      } else if (B) {
-	printf ("below");
-      } else if (L) {
-	printf ("right");
-      } else if (R) {
-	printf ("left");
-      }
+      if (A && L) { printf ("above right"); }
+      else if (A && R) { printf ("above left"); }
+      else if (B && L) { printf ("below right"); }
+      else if (B && R) { printf ("below left"); }
+      else if (A) { printf ("above"); }
+      else if (B) { printf ("below"); }
+      else if (L) { printf ("right"); }
+      else if (R) { printf ("left"); }
       putchar ('=');
       /* Assume pgf built-in text offset = 4 bp */
-      wfloat (&output, ((venv (np, XLtextoffset) * 72 / scale) - 4.0) / fsc);
+      wfloat (&output, ((venv (np, Xtextoffset) * 72 / scale) - 4.0) / fsc);
       printf ("bp]");
-    }
+      }
     putchar ('{');
     wstring (&output, tp);
-  }
+    }
   printf ("};\n");
-}
+  }
 
 void
 pgfendpath (void) {
@@ -75,15 +66,10 @@ pgfendpath (void) {
 void
 pgfsetthick (double lthick) {
   if (ismdistmax (lthick)) {
-    if (!ismdistmax (gslinethick)) {
-      lthick = gslinethick;
-    } else {
-      lthick = 0.8;
-    }
+    if (!ismdistmax (gslinethick)) { lthick = gslinethick; }
+    else { lthick = 0.8; }
   }
-  if ((lthick < 0.0) || (lthick == gslinethick)) {
-    return;
-  }
+  if ((lthick < 0.0) || (lthick == gslinethick)) { return; }
   printf ("\\dpiclw=");
   wfloat (&output, lthick);
   printf ("bp\n");
@@ -100,7 +86,7 @@ pgfbox (postype ctr, double halfwid, double halfht, double rad) {
     wcoord (&output, ctr.xpos + halfwid, ctr.ypos + halfht);
     pgfendpath ();
     return;
-  }
+    }
   r = Min (Min (rad, halfht), halfwid);
   h = halfwid - r;
   v = halfht - r;
@@ -127,7 +113,8 @@ pgfahead (int atyp, postype * point, postype shaft, double ht, double wid,
     ddash ();
     wprop (P, R, x - y, y, x);
     putchar ('\n');
-  } else if (atyp == 3) {
+    }
+  else if (atyp == 3) {
     wpos (Px);
     ddash ();
     wpos (Rx);
@@ -137,14 +124,15 @@ pgfahead (int atyp, postype * point, postype shaft, double ht, double wid,
     wpos (Lx);
     printf (" --cycle");
     /* wprop(P,L,x-y,y,x); ddash; wpos(P); ddash; wprop(P,R,x-y,y,x) */
-  } else {
+    }
+  else {
     wpos (Rx);
     ddash ();
     wpos (*point);
     ddash ();
     wpos (Lx);
     printf (" --cycle");
-  }
+    }
   pgfendpath ();
   *point = P;
 }
@@ -154,37 +142,36 @@ pgfstartdraw (int initial, primitive * node, int lsp) {
   Char sep;
   double fill = -1.0;
 
-  if (lsp == XLinvis) { printf ("\\fill"); }
+  if (lsp == Xinvis) { printf ("\\fill"); }
   else if (initial == 0) { printf ("\\dpicdraw"); }
   else { printf ("\\filldraw");
     /* initial = 1 or 3 for filled arrowheads */
     }
   switch (node->ptype) {
 
-  case XBLOCK:
+  case Xblock:
     /* blank case */
     break;
 
-  case XLbox:
+  case Xbox:
     fill = node->boxfill_;
     break;
 
-  case XLcircle:
+  case Xcircle:
     fill = node->circlefill_;
     break;
 
-  case XLellipse:
+  case Xellipse:
     fill = node->ellipsefill_;
     break;
 
-  case XLarc:
-  case XLline:
-  case XLarrow:
-  case XLmove:
-  case XLspline:
+  case Xarc:
+  case Xline:
+  case Xarrow:
+  case Xmove:
+  case Xspline:
     fill = node->linefill_;
-    break;
-  }
+    break; }
   fill = ((long) floor ((fill * 1000000L) + 0.5)) / 1000000.0;
   if ((node->shadedp != NULL) || (sshade != NULL)) {
     printf ("[fill=");
@@ -214,7 +201,7 @@ pgfstartdraw (int initial, primitive * node, int lsp) {
     printf ("bp");
     sep = ',';
     }
-  if (((node->outlinep != NULL) || (soutline != NULL)) && (lsp != XLinvis)) {
+  if (((node->outlinep != NULL) || (soutline != NULL)) && (lsp != Xinvis)) {
     printf ("%cdraw=", sep);
     if (node->outlinep != NULL) { wstring (&output, node->outlinep); }
     else { wstring (&output, soutline); }
@@ -225,7 +212,7 @@ pgfstartdraw (int initial, primitive * node, int lsp) {
       }
     sep = ',';
     }
-  if ((lsp == XLdashed) && (initial != 1) && (initial != 3)) {
+  if ((lsp == Xdashed) && (initial != 1) && (initial != 3)) {
     if (node->lparam <= 0) { printf ("%cdashed", sep); }
     else {
       printf ("%cdash pattern=on ", sep);
@@ -234,8 +221,9 @@ pgfstartdraw (int initial, primitive * node, int lsp) {
       wfloat (&output, node->lparam / fsc);
       printf ("in");
       }
-    sep = ','; }
-  else if (lsp == XLdotted) {
+    sep = ',';
+    }
+  else if (lsp == Xdotted) {
     if (node->lparam <= 0) { printf ("%cdotted", sep); }
     else {
       printf ("%ccap=round,dash pattern=on ", sep);
@@ -310,12 +298,12 @@ pgfdraw (primitive * node) {
   int TEMP;
 
   getlinespec (node, &lsp, &tn);
-  lth = qenv (node, XLlinethick, node->lthick);
+  lth = qenv (node, Xlinethick, node->lthick);
   switch (node->ptype) {
 
-  case XLbox:
-  case XBLOCK:
-    if (node->ptype == XBLOCK) { v = drawn (node, lsp, -1.0); }
+  case Xbox:
+  case Xblock:
+    if (node->ptype == Xblock) { v = drawn (node, lsp, -1.0); }
     else { v = drawn (node, lsp, node->boxfill_); }
     if (v) {
       pgfstartdraw (0, node, lsp);
@@ -325,7 +313,7 @@ pgfdraw (primitive * node) {
     pgfwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLellipse:
+  case Xellipse:
     if (drawn (node, lsp, node->ellipsefill_)) {
       pgfstartdraw (0, node, lsp);
       wpos (node->aat);
@@ -339,7 +327,7 @@ pgfdraw (primitive * node) {
     pgfwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLcircle:
+  case Xcircle:
     if (drawn (node, lsp, node->circlefill_)) {
       pgfstartdraw (0, node, lsp);
       wpos (node->aat);
@@ -351,7 +339,7 @@ pgfdraw (primitive * node) {
     pgfwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLarc:
+  case Xarc:
     if (drawn (node, lsp, -1.0)) {
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       if (bfill && (vfill >= 0.0)) { node->linefill_ = vfill; }
@@ -360,7 +348,7 @@ pgfdraw (primitive * node) {
       if (bfill) {
 	    s = node->lthick;
 	    node->lthick = 0.0;
-	    pgfstartdraw (0, node, XLinvis);
+	    pgfstartdraw (0, node, Xinvis);
 	    node->lthick = s;
 	    wpos (X0);
 	    popgwarc (node->aat, fabs (node->aradius_),
@@ -368,31 +356,31 @@ pgfdraw (primitive * node) {
 	    printf ("--cycle\n");
 	    pgfendpath ();
         }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
 	      sg = sshade;
 	      sshade = soutline;
 	      pgfarcahead(node->aat, X0, ahnum (node->lineatype_),
 		       soutline,
-		       qenv(node, XLarrowht, node->lineheight_),
-		       qenv(node, XLarrowwid, node->linewidth_), lth,
+		       qenv(node, Xarrowht, node->lineheight_),
+		       qenv(node, Xarrowwid, node->linewidth_), lth,
 		       fabs(node->aradius_), node->arcangle_, &X0);
 	      node->shadedp = sf;
 	      sshade = sg;
 	      }
 	    TEMP = ahlex (node->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
 	      sg = sshade;
 	      sshade = soutline;
 	      pgfarcahead(node->aat, X1, ahnum (node->lineatype_),
 		       soutline,
-		       qenv(node, XLarrowht, node->lineheight_),
-		       qenv(node, XLarrowwid, node->linewidth_), lth,
+		       qenv(node, Xarrowht, node->lineheight_),
+		       qenv(node, Xarrowwid, node->linewidth_), lth,
 		       -fabs(node->aradius_), node->arcangle_, &X1);
 	      node->shadedp = sf;
 	      sshade = sg;
@@ -416,17 +404,17 @@ pgfdraw (primitive * node) {
     pgfwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 
-  case XLline:
-  case XLarrow:
-  case XLmove:
+  case Xline:
+  case Xarrow:
+  case Xmove:
     if (firstsegment (node)) {
       snode = node;
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      lth = qenv (node, XLlinethick, tn->lthick);
+      lth = qenv (node, Xlinethick, tn->lthick);
       if (bfill) {
 	    s = node->lthick;
 	    node->lthick = 0.0;
-	    pgfstartdraw (0, node, XLinvis);
+	    pgfstartdraw (0, node, Xinvis);
 	    node->lthick = s;
 	    wpos (node->aat);
 	    tx = node;
@@ -438,9 +426,9 @@ pgfdraw (primitive * node) {
 	    printf ("--cycle\n");
 	    pgfendpath ();
         }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
 	      sg = sshade;
@@ -448,21 +436,21 @@ pgfdraw (primitive * node) {
 	      pgfstartdraw (ahnum (node->lineatype_), node, lsp);
 	      pgfahead (ahnum (tn->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_), lth);
+		    qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_), lth);
 	      node->shadedp = sf;
 	      sshade = sg;
 	      }
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
 	      sg = sshade;
 	      sshade = soutline;
 	      pgfstartdraw (ahnum (node->lineatype_), node, lsp);
 	      pgfahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_), lth);
+		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_), lth);
 	      node->shadedp = sf;
 	      sshade = sg;
 	      }
@@ -482,7 +470,7 @@ pgfdraw (primitive * node) {
 	    wpos (node->aat);
         }
       }
-    if (lsp != XLinvis) {
+    if (lsp != Xinvis) {
       ddash ();
       wpos (node->endpos_);
       if (node->son == NULL) { pgfendpath (); }
@@ -499,7 +487,7 @@ pgfdraw (primitive * node) {
       }
     break;
 
-  case XLspline:
+  case Xspline:
     if (firstsegment (node)) {
       getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
       node->lparam = tn->lparam;
@@ -509,7 +497,7 @@ pgfdraw (primitive * node) {
 	    node->lthick = 0.0;
 	    sg = soutline;
 	    soutline = sshade;
-	    pgfstartdraw (0, node, XLinvis);
+	    pgfstartdraw (0, node, Xinvis);
 	    node->lthick = c;
 	    soutline = sg;
 	    spltot = primdepth (node);
@@ -523,11 +511,11 @@ pgfdraw (primitive * node) {
 	    printf (" --cycle");
 	    pgfendpath ();
         }
-      if (lsp != XLinvis) {
+      if (lsp != Xinvis) {
 	    spltot = primdepth (node);
 	    splcount = spltot;
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XLEFTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
 	      sg = sshade;
@@ -535,23 +523,23 @@ pgfdraw (primitive * node) {
 	      pgfstartdraw (ahnum (tn->lineatype_), node, lsp);
 	      pgfahead (ahnum (tn->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_),
-		    qenv (node, XLlinethick, tn->lthick));
+		    qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_),
+		    qenv (node, Xlinethick, tn->lthick));
 	      node->shadedp = sf;
 	      sshade = sg;
 	      }
 	    TEMP = ahlex (tn->lineatype_);
-	    if ((TEMP == XDOUBLEHEAD) || (TEMP == XRIGHTHEAD)) {
+	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      sf = tn->shadedp;
 	      tn->shadedp = NULL;
 	      sg = sshade;
 	      sshade = soutline;
 	      pgfstartdraw (ahnum (tn->lineatype_), tn, lsp);
 	      pgfahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, XLarrowht, tn->lineheight_),
-		    qenv (node, XLarrowwid, tn->linewidth_),
-		    qenv (node, XLlinethick, tn->lthick));
+		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
+		    qenv (node, Xarrowwid, tn->linewidth_),
+		    qenv (node, Xlinethick, tn->lthick));
 	      tn->shadedp = sf;
 	      sshade = sg;
 	      }
@@ -562,14 +550,14 @@ pgfdraw (primitive * node) {
 	    pgfstartdraw (0, node, lsp);
         }
       }
-    if (lsp != XLinvis) {
+    if (lsp != Xinvis) {
       splinesegment (node, splcount, spltot);
       if (splcount == 1) { pgfendpath (); }
       }
     splcount--;
     break;
 
-  case XLstring:
+  case Xstring:
     pgfwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;
 

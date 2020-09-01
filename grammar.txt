@@ -1,238 +1,238 @@
 
-$accept: input $end
+$accept: input "end of file"
 
 input: %empty
      | input picture NL
 
-picture: start NL elementlist optnl XEND
+picture: start NL elementlist optnl "end of file or .PE"
 
-NL: XNL
+NL: "end of line or ;"
   | error
 
-start: XSTART
-     | XSTART term
-     | XSTART term term
+start: ".PS"
+     | ".PS" term
+     | ".PS" term term
 
 elementlist: %empty
            | element
            | elementlist NL element
 
 term: factor
-    | term Xmult factor
-    | term Xdiv factor
-    | term Xpercent factor
+    | term "*" factor
+    | term "/" factor
+    | term "%" factor
 
 element: namedobj
-       | XLabel suffix XCOLON position
+       | "label" suffix ":" position
        | assignlist
-       | XLdirecton
-       | XLaTeX
+       | "direction: up down right left"
+       | "LaTeX"
        | command
-       | lbrace elementlist optnl XRBRACE
+       | lbrace elementlist optnl "}"
        | ifpart
-       | elsehead elementlist optnl XRBRACE
-       | for XRBRACE
-       | XLcommand stringexpr
-       | XLexec stringexpr
+       | elsehead elementlist optnl "}"
+       | for "}"
+       | "command" stringexpr
+       | "exec" stringexpr
 
-lbrace: XLBRACE
+lbrace: "{"
 
 namedobj: object
-        | XLabel suffix XCOLON object
+        | "label" suffix ":" object
 
 suffix: %empty
-      | XBRACKETL expression XBRACKETR
-      | XBRACKETL position XBRACKETR
+      | "[" expression "]"
+      | "[" position "]"
 
 position: pair
-        | expression XLbetween position XLand position
-        | expression XLof XLthe XLway XLbetween position XLand position
-        | expression XLT position Xcomma position XLcompare shift
+        | expression "between" position "and" position
+        | expression "of" "the" "way" "between" position "and" position
+        | expression "<" position "," position "logical operator" shift
 
 assignlist: assignment
-          | assignlist Xcomma assignment
+          | assignlist "," assignment
 
-command: XLprint expression redirect
-       | XLprint position redirect
-       | XLprint stringexpr redirect
-       | XLreset
-       | XLreset resetlist
+command: "print" expression redirect
+       | "print" position redirect
+       | "print" stringexpr redirect
+       | "reset"
+       | "reset" resetlist
        | systemcmd
-       | XLcopy stringexpr
-       | XLdefine XLname
-       | XLdefine XLabel
-       | XLundefine XLname
-       | XLundefine XLabel
+       | "copy" stringexpr
+       | "define" "identifier"
+       | "define" "label"
+       | "undef" "identifier"
+       | "undef" "label"
 
 optnl: %empty
      | NL
 
-ifpart: ifhead elementlist optnl XRBRACE
+ifpart: ifhead elementlist optnl "}"
 
-elsehead: ifpart XLelse XLBRACE
+elsehead: ifpart "else" "{"
 
 for: forhead elementlist optnl
    | for forincr elementlist optnl
 
 stringexpr: string
-          | stringexpr Xplus string
+          | stringexpr "+" string
 
-string: XLstring
-      | sprintf Xrparen
+string: "string"
+      | sprintf ")"
 
-assignment: XLname suffix XEQ assignrhs
-          | XLenvvar XEQ assignrhs
+assignment: "identifier" suffix "=" assignrhs
+          | "environment variable" "=" assignrhs
 
 assignrhs: expression
          | assignment
 
 expression: term
-          | Xplus term
-          | Xminus term
-          | expression Xplus term
-          | expression Xminus term
+          | "+" term
+          | "-" term
+          | expression "+" term
+          | expression "-" term
 
-ifhead: setlogic logexpr XLthen XLBRACE
+ifhead: setlogic logexpr "then" "{"
 
-setlogic: XLif
+setlogic: "if"
 
 logexpr: logprod
-       | logexpr XOROR logprod
+       | logexpr "||" logprod
 
-forhead: XFOR assignlist XLto expression do XLBRACE
+forhead: "for" assignlist "to" expression do "{"
 
-forincr: XLendfor
+forincr: "end of for {...} contents"
 
-do: XLdo
-  | by expression XLdo
+do: "do"
+  | by expression "do"
 
-by: XLby
-  | XLby Xmult
+by: "by"
+  | "by" "*"
 
 redirect: %empty
-        | XLcompare stringexpr
-        | XLcompare XLcompare stringexpr
+        | "logical operator" stringexpr
+        | "logical operator" "logical operator" stringexpr
 
-resetlist: XLenvvar
-         | resetlist Xcomma XLenvvar
+resetlist: "environment variable"
+         | resetlist "," "environment variable"
 
-systemcmd: XLsh stringexpr
+systemcmd: "sh" stringexpr
 
-sprintf: XLsprintf Xlparen stringexpr
-       | XLsprintf Xlparen stringexpr Xcomma exprlist
+sprintf: "sprintf" "(" stringexpr
+       | "sprintf" "(" stringexpr "," exprlist
 
 exprlist: expression
-        | expression Xcomma exprlist
+        | expression "," exprlist
 
 object: block
-      | object XLht expression
-      | object XLwid expression
-      | object XLrad expression
-      | object XLdiam expression
-      | object XLthick expression
-      | object XLscaled expression
-      | object XLdirecton optexp
-      | object XLlinetype optexp
-      | object XLchop optexp
-      | object XLfill optexp
-      | object XLarrowhd optexp
-      | object XLthen
-      | object XLcw
-      | object XLccw
-      | object XLsame
+      | object "ht" expression
+      | object "wid" expression
+      | object "rad" expression
+      | object "diam" expression
+      | object "thick" expression
+      | object "scaled" expression
+      | object "direction: up down right left" optexp
+      | object "line type: dotted etc" optexp
+      | object "chop" optexp
+      | object "fill" optexp
+      | object "arrowhead parameter: <- -> <->" optexp
+      | object "then"
+      | object "cw"
+      | object "ccw"
+      | object "same"
       | object stringexpr
-      | object XLby position
-      | object XLfrom position
-      | object XLto position
-      | object XLat position
-      | object XLtextpos
-      | object XLcolrspec stringexpr
-      | objectwith XLat position
-      | objectwith XLcorner XLat position
-      | objectwith pair XLat position
-      | XLcontinue
+      | object "by" position
+      | object "from" position
+      | object "to" position
+      | object "at" position
+      | object "text position: ljust rjust above below center"
+      | object "color spec: colored outlined shaded" stringexpr
+      | objectwith "at" position
+      | objectwith "compass corner: .n .ne .center .end etc" "at" position
+      | objectwith pair "at" position
+      | "continue"
 
-openblock: XBRACKETL
+openblock: "["
 
-block: XLprimitiv optexp
+block: "drawn object: box circle line etc" optexp
      | stringexpr
-     | openblock closeblock XBRACKETR
-     | XBLOCK
+     | openblock closeblock "]"
+     | "[]"
 
 optexp: %empty
       | expression
 
 closeblock: elementlist optnl
 
-objectwith: object XLwith
-          | objectwith Xdot XLabel suffix
-          | objectwith Xdot nth primobj
+objectwith: object "with"
+          | objectwith "." "label" suffix
+          | objectwith "." nth primobj
 
-pair: expression Xcomma expression
+pair: expression "," expression
     | location shift
 
-nth: ncount XLnth
-   | ncount XLnth XLlast
-   | XLlast
+nth: ncount "ordinal: st or rd or nd or th"
+   | ncount "ordinal: st or rd or nd or th" "last"
+   | "last"
 
-primobj: XLprimitiv
-       | XBLOCK
-       | XLstring
-       | XBRACKETL XBRACKETR
+primobj: "drawn object: box circle line etc"
+       | "[]"
+       | "string"
+       | "[" "]"
 
 shift: %empty
-     | shift Xplus location
-     | shift Xminus location
+     | shift "+" location
+     | shift "-" location
 
-location: Xlparen position Xrparen
-        | Xlparen position Xcomma position Xrparen
+location: "(" position ")"
+        | "(" position "," position ")"
         | place
-        | location Xmult factor
-        | location Xdiv factor
+        | location "*" factor
+        | location "/" factor
 
 place: placename
-     | placename XLcorner
-     | XLcorner placename
-     | XLcorner XLof placename
-     | XLHere
+     | placename "compass corner: .n .ne .center .end etc"
+     | "compass corner: .n .ne .center .end etc" placename
+     | "compass corner: .n .ne .center .end etc" "of" placename
+     | "Here"
 
 factor: primary
-      | XNOT primary
-      | primary Xcaret factor
+      | "!" primary
+      | primary "^" factor
 
-placename: XLabel suffix
+placename: "label" suffix
          | nth primobj
-         | placename Xdot XLabel suffix
-         | placename Xdot nth primobj
+         | placename "." "label" suffix
+         | placename "." nth primobj
 
-ncount: XLfloat
-      | XSLQ expression XSRQ
-      | XLBRACE expression XRBRACE
+ncount: "number"
+      | "`" expression "'"
+      | "{" expression "}"
 
 logprod: logval
-       | logprod XANDAND logval
+       | logprod "&&" logval
 
 logval: lcompare
-      | stringexpr XLT stringexpr
-      | expression XLT expression
+      | stringexpr "<" stringexpr
+      | expression "<" expression
 
 lcompare: expression
         | stringexpr
-        | lcompare XLcompare expression
-        | lcompare XLcompare stringexpr
+        | lcompare "logical operator" expression
+        | lcompare "logical operator" stringexpr
 
-primary: XLenvvar
-       | XLname suffix
-       | XLfloat
-       | Xlparen logexpr Xrparen
-       | location XLdx
-       | location XLdy
-       | placename XLparam
-       | XLrand Xlparen Xrparen
-       | XLrand Xlparen expression Xrparen
-       | XLfunc1 Xlparen expression Xrparen
-       | XLfunc2 Xlparen expression Xcomma expression Xrparen
-       | Xlparen assignlist Xrparen
-       | Xlparen systemcmd Xrparen
+primary: "environment variable"
+       | "identifier" suffix
+       | "number"
+       | "(" logexpr ")"
+       | location ".x"
+       | location ".y"
+       | placename "attribute .ht .wid etc"
+       | "rand" "(" ")"
+       | "rand" "(" expression ")"
+       | "function (1 arg)" "(" expression ")"
+       | "function (2 args)" "(" expression "," expression ")"
+       | "(" assignlist ")"
+       | "(" systemcmd ")"
 
 

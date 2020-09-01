@@ -130,9 +130,9 @@ do { c="";
 #                           Special constants
    print "lxvars.h"
    print sprintf("#define	lxmax	%d",lxmax) > "lxvars.h"
-   print sprintf("#define	XXenvvar	%d",labeltv["XLenvvar"]) >> "lxvars.h"
-   print sprintf("#define	XLlastsc	%d",labeltv["XLtextwid"]) >> "lxvars.h"
-   print sprintf("#define	XLlastenv	%d",labeltv["XLscale"]) >> "lxvars.h"
+   print sprintf("#define	XXenvvar	%d",labeltv["Xenvvar"]) >> "lxvars.h"
+   print sprintf("#define	Xlastsc	%d",labeltv["Xtextwid"]) >> "lxvars.h"
+   print sprintf("#define	Xlastenv	%d",labeltv["Xscale"]) >> "lxvars.h"
 
    print "lxcst.h"
    print "" > "lxcst.h"
@@ -140,16 +140,20 @@ do { c="";
      print sprintf("#define	%s	%d",label[i],labeltv[label[i]]) >> "lxcst.h" }
      }
 
-   print "terminals"
-   print "" > "terminals"
-   for (i=1; i<ntv; i++) {
-     print sprintf("\"%s\",",tvtoken[i]) >> "terminals"
-     }
-   print sprintf("\"%s\"",tvtoken[ntv]) >> "terminals"
+#  print "terminals"
+#  print "" > "terminals"
+#  for (i=1; i<ntv; i++) {
+#    print sprintf("\"%s\",",tvtoken[i]) >> "terminals"
+#    }
+#  print sprintf("\"%s\"",tvtoken[ntv]) >> "terminals"
 
    print "tokens.y"
    print "" > "tokens.y"
    for (i=1; i<=nlabels; i++) {
-    print sprintf("%%token	%s %d",label[i],labeltv[label[i]]) >> "tokens.y" }
+     tk = tvtoken[labeltv[label[i]]]
+     if (label[i] == "Xstring") { tk = "<string>" }
+     print sprintf("%%token	%s %d \"%s\"",
+       label[i],labeltv[label[i]],tk ) >> "tokens.y"
+     }
 
 } # END

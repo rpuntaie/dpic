@@ -12,7 +12,7 @@ if (debuglevel > 0) {
   newp = 1 - yylen;
 
   fprintf (log_, "\nProduction(newp=%d", newp);
-  if ((p >= 0) && (yyvsp[newp].lexval <= XLlastenv)) {
+  if ((p >= 0) && (yyvsp[newp].lexval <= Xlastenv)) {
     fprintf (log_, ",lexval=%d", yyvsp[newp].lexval);
     }
   fprintf (log_, ",p=%d)", p);

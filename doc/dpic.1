@@ -31,7 +31,7 @@
 .\" Use \(ts instead of ".
 .tr \(ts"
 .\"
-.TH DPIC 1 "2020.06.01"
+.TH DPIC 1 "2020.09.01"
 .SH NAME
 dpic \(hy convert pic\(hylanguage input to LaTeX\(hycompatible and other formats
 .SH SYNOPSIS
@@ -945,6 +945,31 @@ has value
 if the
 .B \-z
 option has been selected or dpic has been compiled in safe mode.
+.P
+If the specified option is one of
+.B \-v
+(SVG),
+.B \-d
+(PDF), or
+.B \-r
+(raw postscript), then
+the variable
+.B dptextratio
+is defined, with default value 0.66, together with the variable
+.B dpPPI
+with default value 0.96.  The latter is the assumed pixel density per inch
+and the former is the ratio of text height to nominal point size.
+These variables are used by the output routines and can be
+changed by assignment.
+.P
+If the
+.B \-x
+(xfig) option has been specified,
+then the following two variables are predefined:
+.B xfigres
+(default value 1200), and
+.B xdispres
+(default 80).
 .SS Predefined environment variables
 A set of environment variables establishes the default values of drawing
 parameters within the scope of the current block.
@@ -1013,9 +1038,9 @@ Drawing units are thereby changed but the default physical sizes of
 drawn objects remain unchanged since dimensions are divided by the outermost
 .B scale
 value on output.
-In addition when
+The following are unaffected by
 .B scale
-is changed, the following are unchanged:
+changes:
 .P
 .B "   arrowhead    1   "
 arrowhead shape

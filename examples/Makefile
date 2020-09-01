@@ -101,11 +101,13 @@ MANSRC = arcs.pic arrowheads.pic arrows.pic basictests.pic
 man:
 	cp sources/man.tex sources/mode.tex .
 	for file in $(MANSRC) `(cd sources; ls man*.pic )` ; do \
-      dpic -p sources/$$file > `basename $$file .pic`.tex ; done
-	latex --quiet man
-	dvips man
+      dpic -g sources/$$file > `basename $$file .pic`.tex ; done
+	pdflatex --quiet man
+#	dvips man
 
 clean:
 	rm -f *.ps *.eps *.dvi *.log *.mp *.1 mpxerr* *pk *gf *.mpx *.dim *.mf
 	rm -f *.tfm *.aux *.pfg tst.tex diag.pic diag.tex *.trace *.fig *.pdf *.svg
 	rm -f man* *.pic arcs.* arrowheads.* arrows.* basictests* mode.tex
+	(cd Lindenmayer && make clean)
+	(cd Graphs && make clean)

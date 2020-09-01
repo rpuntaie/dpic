@@ -45,6 +45,8 @@ CFLAGS += $(DEBUG) $(SAFEMODE) $(DEFS) -O
 LDFLAGS += $(LIBS)
 CPPFLAGS +=
 
+BISON = bison
+
 #DATE = `date +%Y.%m.%d`
 DATE=@VERSION@
 
@@ -67,12 +69,12 @@ main.o: main.c dpic.h $(TABLES) dpic.tab.h dpic.tab.c
 backend.o: backend.c ps.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c backend.c
 
-parser.o: parscst.h lxerr.h dpic.tab.c
+parser.o: parscst.h dpic.tab.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o parser.o dpic.tab.c
 
 dpic.tab.c dpic.tab.h: dpic.y
-	bison -d dpic.y
-#	bison -d --debug --verbose dpic.y
+	$(BISON) -d dpic.y
+#	$(BISON) -d --debug --verbose dpic.y
 	if test "$(DEBUG)" != "" ; then sed -f produce.sed dpic.tab.c > xxx ; \
       mv xxx dpic.tab.c ; fi
 
@@ -82,7 +84,7 @@ dpic.y: $(TABLES) parser.w
 	sed -e '1,/start tokens/d' parser.w >> dpic.y
 
 parscst.h: dpic.y
-	bison --verbose dpic.y
+	$(BISON) --verbose dpic.y
 	sed -e '1,/^Grammar/d' dpic.output | \
       sed -e '1,3d' -e '/^Terminals/,$$d' | awk -f mkparscst.awk > parscst.h
 	sed -e '1,/^Grammar/d' dpic.output | \
@@ -96,8 +98,7 @@ test/bisonlog.sed: parscst.h
 
 $(TABLES): dpic.toks
 	awk -f lextables.awk dpic.toks
-	sed -f lexerr.sed terminals | $(CMPRS) > lxerr.h
-	rm -f terminals
+	sed -f lexerr.sed tokens.y > xxx; mv xxx tokens.y
 
 install: installdpic installdocs
 
@@ -127,7 +128,7 @@ clean:
 
 veryclean: clean
 	rm -f entr* *.list lxch.h lxcst.h lxhp.h lxmax.h lxnp.h lxtv.h lxvars.h
-	rm -f lxcst.p lxerr.h
+	rm -f lxcst.p
 	rm -f Grammar.src parscst.h
 	rm -f tabletoks tokens tokens.y tvterminals sortedtoks
 	rm -f *.tab.c *.tab.h dpic.y errors

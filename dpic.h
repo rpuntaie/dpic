@@ -73,12 +73,8 @@ typedef unsigned char boolean;
 
                                 /* Lexical types                      */
 typedef short chbufinx;
-
 typedef int symbol;
-
 typedef short lxinx;
-
-typedef uchar production;
 
 typedef Char chbufarray[CHBUFSIZ + 1];
 typedef Char mstring[FILENAMELEN];
@@ -158,37 +154,37 @@ typedef struct primitive {
   } parms;
 } primitive;
 
-typedef struct XLboxprimitive {
+typedef struct Xboxprimitive {
   PRIMbase;
   union {
     PRIMbox;
   } parms;
-} XLboxprimitive;
+} Xboxprimitive;
 
-typedef struct XLcircleprimitive {
+typedef struct Xcircleprimitive {
   PRIMbase;
   union {
     PRIMcircle;
   } parms;
-} XLcircleprimitive;
+} Xcircleprimitive;
 
-typedef struct XLellipseprimitive {
+typedef struct Xellipseprimitive {
   PRIMbase;
   union {
     PRIMellipse;
   } parms;
-} XLellipseprimitive;
+} Xellipseprimitive;
 
-typedef struct XLlineprimitive {
+typedef struct Xlineprimitive {
   PRIMbase;
   union {
     PRIMline;
   } parms;
-} XLlineprimitive;
+} Xlineprimitive;
 
-typedef struct XLabelprimitive {
+typedef struct Xlabelprimitive {
   PRIMbase;
-} XLabelprimitive;
+} Xlabelprimitive;
 
                                 /* Abbreviations for readability.  These
                                    help somewhat but the code still retains
@@ -241,7 +237,6 @@ EXTRN FILE *input, *output, *errout, *copyin, *redirect;
 #ifdef DDEBUG
 EXTRN FILE *log_;
 EXTRN int oflag, debuglevel;   /* debug level and open logfile flag  */
-EXTRN arg *currentmacro;       /* last-found macro                   */
 #endif
 
 EXTRN mstring infname;         /* name of current input file         */
@@ -265,14 +260,16 @@ EXTRN int lexstate;            /* 0..4: <.PS; .PS; in pic; .PE; >.PE */
 EXTRN boolean inlogic;         /* set < to <compare> in context      */
 EXTRN boolean instr;           /* set while reading a string         */
 EXTRN double floatvalue;       /* numerical value of float read      */
-EXTRN fbuffer *inbuf, *savebuf, *freeinbuf, *topbuf;
+EXTRN fbuffer *inbuf, *higherinbuf, *freeinbuf, *topbuf;
+EXTRN int inbufdepth;          /* input buffer depth index           */
+EXTRN int lineno[2];           /* current input line number          */
 
 EXTRN int oldsymb;             /* last lexical symbol                */
 EXTRN arg *macros, *args, *freearg; /* lists of macros and args      */
+EXTRN arg *currentmacro;       /* last-found macro                   */
 
                                /* Error handling                     */
 EXTRN int errcount;            /* becomes nonzero when errors found  */
-EXTRN int lineno;              /* current input line number          */
 EXTRN int currprod;            /* current production for error msgs  */
 
                                /* Production variables               */

@@ -1,189 +1,187 @@
 
-%token	XEOF 1
-%token	XEMPTY 2
-%token	XERROR 3
-%token	XLT 4
-%token	XLcw 5
-%token	XLccw 6
-%token	Xlparen 7
-%token	Xrparen 8
-%token	Xmult 9
-%token	Xplus 10
-%token	Xminus 11
-%token	Xdiv 12
-%token	Xpercent 13
-%token	XNL 14
-%token	Xcaret 15
-%token	XNOT 16
-%token	XANDAND 17
-%token	XOROR 18
-%token	Xcomma 19
-%token	XCOLON 20
-%token	XBRACKETL 21
-%token	XBRACKETR 22
-%token	XLBRACE 23
-%token	XRBRACE 24
-%token	Xdot 25
-%token	XBLOCK 26
-%token	XSLQ 27
-%token	XSRQ 28
-%token	XEQ 29
-%token	XLcoloneq 30
-%token	XLpluseq 31
-%token	XLminuseq 32
-%token	XLmulteq 33
-%token	XLdiveq 34
-%token	XLremeq 35
-%token	XAND 36
-%token	XLfloat 37
-%token	XLname 38
-%token	XLabel 39
-%token	XLaTeX 40
-%token	XLstring 41
-%token	XCOMMENT 42
-%token	XLarg 43
-%token	XSTART 44
-%token	XEND 45
-%token	XLht 46
-%token	XLwid 47
-%token	XLrad 48
-%token	XLdiam 49
-%token	XLthick 50
-%token	XLscaled 51
-%token	XLfrom 52
-%token	XLto 53
-%token	XLat 54
-%token	XLwith 55
-%token	XLby 56
-%token	XLthen 57
-%token	XLcontinue 58
-%token	XLchop 59
-%token	XLsame 60
-%token	XLof 61
-%token	XLthe 62
-%token	XLway 63
-%token	XLbetween 64
-%token	XLand 65
-%token	XLHere 66
-%token	XLnth 67
-%token	XLlast 68
-%token	XLfill 69
-%token	XLdx 70
-%token	XLdy 71
-%token	XLprint 72
-%token	XLcopy 73
-%token	XLreset 74
-%token	XLexec 75
-%token	XLsh 76
-%token	XLcommand 77
-%token	XLdefine 78
-%token	XLundefine 79
-%token	XLrand 80
-%token	XLif 81
-%token	XLelse 82
-%token	XFOR 83
-%token	XLdo 84
-%token	XLendfor 85
-%token	XLsprintf 86
-%token	XLcorner 87
-%token	XDne 88
-%token	XDse 89
-%token	XDnw 90
-%token	XDsw 91
-%token	XDn 92
-%token	XDs 93
-%token	XDe 94
-%token	XDw 95
-%token	XDstart 96
-%token	XDend 97
-%token	XDc 98
-%token	XLcompare 99
-%token	XEQEQ 100
-%token	XNEQ 101
-%token	XGE 102
-%token	XLE 103
-%token	XGT 104
-%token	XLparam 105
-%token	XLheight 106
-%token	XLwidth 107
-%token	XLradius 108
-%token	XLdiameter 109
-%token	XLthickness 110
-%token	XLlength 111
-%token	XLfunc1 112
-%token	XLabs 113
-%token	XLacos 114
-%token	XLasin 115
-%token	XLcos 116
-%token	XLexp 117
-%token	XLexpe 118
-%token	XLint 119
-%token	XLlog 120
-%token	XLloge 121
-%token	XLsign 122
-%token	XLsin 123
-%token	XLsqrt 124
-%token	XLtan 125
-%token	XLfloor 126
-%token	XLfunc2 127
-%token	XLatan2 128
-%token	XLmax 129
-%token	XLmin 130
-%token	XLpmod 131
-%token	XLlinetype 132
-%token	XLsolid 133
-%token	XLdotted 134
-%token	XLdashed 135
-%token	XLinvis 136
-%token	XLcolrspec 137
-%token	XLcolour 138
-%token	XLoutlined 139
-%token	XLshaded 140
-%token	XLtextpos 141
-%token	XLcenter 142
-%token	XLljust 143
-%token	XLrjust 144
-%token	XLabove 145
-%token	XLbelow 146
-%token	XLarrowhd 147
-%token	XLEFTHEAD 148
-%token	XRIGHTHEAD 149
-%token	XDOUBLEHEAD 150
-%token	XLdirecton 151
-%token	XLup 152
-%token	XLdown 153
-%token	XLright 154
-%token	XLleft 155
-%token	XLprimitiv 156
-%token	XLbox 157
-%token	XLcircle 158
-%token	XLellipse 159
-%token	XLarc 160
-%token	XLline 161
-%token	XLarrow 162
-%token	XLmove 163
-%token	XLspline 164
-%token	XLenvvar 165
-%token	XLarcrad 166
-%token	XLarrowht 167
-%token	XLarrowwid 168
-%token	XLboxht 169
-%token	XLboxrad 170
-%token	XLboxwid 171
-%token	XLcirclerad 172
-%token	XLdashwid 173
-%token	XLellipseht 174
-%token	XLellipsewid 175
-%token	XLlineht 176
-%token	XLlinewid 177
-%token	XLmoveht 178
-%token	XLmovewid 179
-%token	XLtextht 180
-%token	XLtextoffset 181
-%token	XLtextwid 182
-%token	XLarrowhead 183
-%token	XLfillval 184
-%token	XLlinethick 185
-%token	XLmaxpsht 186
-%token	XLmaxpswid 187
-%token	XLscale 188
+%token	XEMPTY 1 "blank"
+%token	Xlt 2 "<"
+%token	Xcw 3 "cw"
+%token	Xccw 4 "ccw"
+%token	Xlparen 5 "("
+%token	Xrparen 6 ")"
+%token	Xmult 7 "*"
+%token	Xplus 8 "+"
+%token	Xminus 9 "-"
+%token	Xdiv 10 "/"
+%token	Xpercent 11 "%"
+%token	Xnewline 12 "end of line or ;"
+%token	Xcaret 13 "^"
+%token	Xnot 14 "!"
+%token	Xandand 15 "&&"
+%token	Xoror 16 "||"
+%token	Xcomma 17 ","
+%token	Xcolon 18 ":"
+%token	Xleftbrack 19 "["
+%token	Xrightbrack 20 "]"
+%token	Xleftbrace 21 "{"
+%token	Xrightbrace 22 "}"
+%token	Xdot 23 "."
+%token	Xblock 24 "[]"
+%token	Xleftquote 25 "`"
+%token	Xrightquote 26 "'"
+%token	Xeq 27 "="
+%token	Xcoloneq 28 ":="
+%token	Xpluseq 29 "+="
+%token	Xminuseq 30 "-="
+%token	Xmulteq 31 "*="
+%token	Xdiveq 32 "/="
+%token	Xremeq 33 "%="
+%token	Xampersand 34 "&"
+%token	Xfloat 35 "number"
+%token	Xname 36 "identifier"
+%token	Xlabel 37 "label"
+%token	XLaTeX 38 "LaTeX"
+%token	Xstring 39 "string"
+%token	Xcomment 40 "#"
+%token	Xarg 41 "$ argument"
+%token	XDotPS 42 ".PS"
+%token	XDotPE 43 "end of file or .PE"
+%token	Xht 44 "ht"
+%token	Xwid 45 "wid"
+%token	Xrad 46 "rad"
+%token	Xdiam 47 "diam"
+%token	Xthick 48 "thick"
+%token	Xscaled 49 "scaled"
+%token	Xfrom 50 "from"
+%token	Xto 51 "to"
+%token	Xat 52 "at"
+%token	Xwith 53 "with"
+%token	Xby 54 "by"
+%token	Xthen 55 "then"
+%token	Xcontinue 56 "continue"
+%token	Xchop 57 "chop"
+%token	Xsame 58 "same"
+%token	Xof 59 "of"
+%token	Xthe 60 "the"
+%token	Xway 61 "way"
+%token	Xbetween 62 "between"
+%token	Xand 63 "and"
+%token	XHere 64 "Here"
+%token	Xnth 65 "ordinal: st or rd or nd or th"
+%token	Xlast 66 "last"
+%token	Xfill 67 "fill"
+%token	XDotx 68 ".x"
+%token	XDoty 69 ".y"
+%token	Xprint 70 "print"
+%token	Xcopy 71 "copy"
+%token	Xreset 72 "reset"
+%token	Xexec 73 "exec"
+%token	Xsh 74 "sh"
+%token	Xcommand 75 "command"
+%token	Xdefine 76 "define"
+%token	Xundefine 77 "undef"
+%token	Xrand 78 "rand"
+%token	Xif 79 "if"
+%token	Xelse 80 "else"
+%token	Xfor 81 "for"
+%token	Xdo 82 "do"
+%token	Xendfor 83 "end of for {...} contents"
+%token	Xsprintf 84 "sprintf"
+%token	Xcorner 85 "compass corner: .n .ne .center .end etc"
+%token	XDotne 86 ".ne"
+%token	XDotse 87 ".se"
+%token	XDotnw 88 ".nw"
+%token	XDotsw 89 ".sw"
+%token	XDotn 90 ".top or .n"
+%token	XDots 91 ".bot or .s"
+%token	XDote 92 ".right or .e"
+%token	XDotw 93 ".left or .w"
+%token	XDotstart 94 "start"
+%token	XDotend 95 "end"
+%token	XDotc 96 ".c"
+%token	Xcompare 97 "logical operator"
+%token	Xeqeq 98 "=="
+%token	Xneq 99 "!="
+%token	Xge 100 ">="
+%token	Xle 101 "<="
+%token	Xgt 102 ">"
+%token	Xparam 103 "attribute .ht .wid etc"
+%token	Xheight 104 ".ht"
+%token	Xwidth 105 ".wid"
+%token	Xradius 106 ".rad"
+%token	Xdiameter 107 ".diam"
+%token	Xthickness 108 ".thick"
+%token	Xlength 109 ".len"
+%token	Xfunc1 110 "function (1 arg)"
+%token	Xabs 111 "abs"
+%token	Xacos 112 "acos"
+%token	Xasin 113 "asin"
+%token	Xcos 114 "cos"
+%token	Xexp 115 "exp"
+%token	Xexpe 116 "expe"
+%token	Xint 117 "int"
+%token	Xlog 118 "log"
+%token	Xloge 119 "loge"
+%token	Xsign 120 "sign"
+%token	Xsin 121 "sin"
+%token	Xsqrt 122 "sqrt"
+%token	Xtan 123 "tan"
+%token	Xfloor 124 "floor"
+%token	Xfunc2 125 "function (2 args)"
+%token	Xatan2 126 "atan2"
+%token	Xmax 127 "max"
+%token	Xmin 128 "min"
+%token	Xpmod 129 "pmod"
+%token	Xlinetype 130 "line type: dotted etc"
+%token	Xsolid 131 "solid"
+%token	Xdotted 132 "dotted"
+%token	Xdashed 133 "dashed"
+%token	Xinvis 134 "invisible"
+%token	Xcolrspec 135 "color spec: colored outlined shaded"
+%token	Xcolour 136 "coloured"
+%token	Xoutlined 137 "outlined"
+%token	Xshaded 138 "shaded"
+%token	Xtextpos 139 "text position: ljust rjust above below center"
+%token	Xcenter 140 "center"
+%token	Xljust 141 "ljust"
+%token	Xrjust 142 "rjust"
+%token	Xabove 143 "above"
+%token	Xbelow 144 "below"
+%token	Xarrowhd 145 "arrowhead parameter: <- -> <->"
+%token	Xlefthead 146 "<-"
+%token	Xrighthead 147 "->"
+%token	Xdoublehead 148 "<->"
+%token	Xdirecton 149 "direction: up down right left"
+%token	Xup 150 "up"
+%token	Xdown 151 "down"
+%token	Xright 152 "right"
+%token	Xleft 153 "left"
+%token	Xprimitiv 154 "drawn object: box circle line etc"
+%token	Xbox 155 "box"
+%token	Xcircle 156 "circle"
+%token	Xellipse 157 "ellipse"
+%token	Xarc 158 "arc"
+%token	Xline 159 "line"
+%token	Xarrow 160 "arrow"
+%token	Xmove 161 "move"
+%token	Xspline 162 "spline"
+%token	Xenvvar 163 "environment variable"
+%token	Xarcrad 164 "arcrad"
+%token	Xarrowht 165 "arrowht"
+%token	Xarrowwid 166 "arrowwid"
+%token	Xboxht 167 "boxht"
+%token	Xboxrad 168 "boxrad"
+%token	Xboxwid 169 "boxwid"
+%token	Xcirclerad 170 "circlerad"
+%token	Xdashwid 171 "dashwid"
+%token	Xellipseht 172 "ellipseht"
+%token	Xellipsewid 173 "ellipsewid"
+%token	Xlineht 174 "lineht"
+%token	Xlinewid 175 "linewid"
+%token	Xmoveht 176 "moveht"
+%token	Xmovewid 177 "movewid"
+%token	Xtextht 178 "textht"
+%token	Xtextoffset 179 "textoffset"
+%token	Xtextwid 180 "textwid"
+%token	Xarrowhead 181 "arrowhead"
+%token	Xfillval 182 "fillval"
+%token	Xlinethick 183 "linethick"
+%token	Xmaxpsht 184 "maxpsht"
+%token	Xmaxpswid 185 "maxpswid"
+%token	Xscale 186 "scale"

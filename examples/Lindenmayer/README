@@ -3,7 +3,7 @@ Fun with Lindenmayer systems
 Lindenmayer systems (L-systems) produce fractal pictures using recursion to
 rewrite a string of symbols, together with a drawing mechanism to convert
 symbols to drawing elements. M4 is a natural choice for recursion,
-and dpic macros can control drawing actions.
+and dpic macros are suitable for controlling drawing actions.
 
 The number of picture elements can be quite large and can overflow
 the capacity of LaTeX, so the capabilities of dpic to produce diagrams
