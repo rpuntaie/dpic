@@ -21,7 +21,8 @@ DPIC = dpic
 CCTSVG = \
   Algae1.svg Algae2.svg Bush1.svg Bush2.svg Bush3.svg Bush4.svg Bush5.svg \
   Cantor.svg Dragon.svg FractalPlant.svg HexagonalGosper.svg \
-  Koch.svg Leaf.svg Levycurve.svg OL.svg SierpinskiArrowhead.svg Sticks.svg \
+  KochCurve.svg KochSnowflake.svg \
+  Leaf.svg Levycurve.svg OL.svg SierpinskiArrowhead.svg Sticks.svg \
   Tiles1.svg Weed.svg
 
 examples.html: examples.htmx

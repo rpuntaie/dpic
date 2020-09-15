@@ -5620,7 +5620,7 @@ donamedobj(attribute *a1)
 		    setangles(&With2->startangle_, &With2->arcangle_, With2->aat,
                x1, z1, r, s);
 			}
-		  else { shift(a1->prim, With->xval - dx, With->yval - dy); }
+		  else { shift(a1->prim, a1->xval - dx, a1->yval - dy); }
 	    }
 	  }
     }

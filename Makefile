@@ -48,7 +48,7 @@ CPPFLAGS +=
 BISON = bison
 
 #DATE = `date +%Y.%m.%d`
-DATE=2020.09.01
+DATE=2020.09.15
 
 #-----------------------------------------------------------------------
 
@@ -85,7 +85,7 @@ dpic.y: $(TABLES) parser.w
 
 parscst.h: dpic.y
 	$(BISON) --verbose dpic.y
-	sed -e '1,/^Grammar/d' dpic.output | \
+	sed -e '1,/^Grammar/d' -e 's/://' dpic.output | \
       sed -e '1,3d' -e '/^Terminals/,$$d' | awk -f mkparscst.awk > parscst.h
 	sed -e '1,/^Grammar/d' dpic.output | \
       sed -e '/^Terminals/,$$d' | sed -e 's/^......//' > grammar.txt
