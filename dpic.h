@@ -188,7 +188,7 @@ typedef struct Xlabelprimitive {
 
                                 /* Abbreviations for readability.  These
                                    help somewhat but the code still retains
-                                   p2c idioms (FORLIM, With, etc)      */
+                                   p2c idioms (FORLIM, etc)      */
 #define blockparms	parms.blockstr
 #define boxparms	parms.boxstr
 #define lineparms	parms.linestr
@@ -218,8 +218,8 @@ typedef struct Xlabelprimitive {
 #define aradius_	lineparms.aradius
 #define lineatype_	lineparms.atype
                                 /* arcs use the line structure        */
-#define startangle_	lineparms.endpos.xpos
-#define arcangle_	lineparms.endpos.ypos
+#define startangle_	endpos_.xpos
+#define arcangle_	endpos_.ypos
 
                                 /* Parse stack production attributes  */
 typedef struct attribute {
@@ -285,15 +285,14 @@ EXTRN double north, south, east, west;
 EXTRN double xfheight;         /* for calculating xfig and svg coords*/
 EXTRN Char *freeseg;           /* segment open to store strings      */
 EXTRN short freex;             /* next free location                 */
-EXTRN Char *tmpbuf;            /* buffer for snprintf                */
-EXTRN Char *tmpfmt;            /* snprintf, findvar buffer           */
 EXTRN double scale, fsc;       /* scale factor and final scale factor*/
 EXTRN int splcount, spltot;    /* spline depth counter               */
 EXTRN int pdfobjcount;         /* pdf objects                        */
 EXTRN primitive *snode;        /* temporary node storage             */
-EXTRN boolean bfill;           /* fill flag for linear objects       */
-EXTRN double vfill;            /* fill value */
-EXTRN nametype *sshade, *soutline; /* temp values for linear objects */
+EXTRN boolean isdrawn;         /* temporary drawn flag               */
+EXTRN boolean hasfill;         /* fill flag for linear objects       */
+EXTRN double fillfrac;         /* 0 <= fill value <= 1               */
+EXTRN nametype *shadestr, *outlinestr; /* for linear objects         */
 EXTRN double lastfillval;      /* last-used fill density             */
 EXTRN int printstate;          /* for passing output state info      */
                                /* graphics state parameters          */
@@ -305,4 +304,4 @@ EXTRN double gsdashw, gsdashs; /* line dash and space lengths        */
 EXTRN nametype *stream, *cx;   /* pdf stream storage and current seg */
 EXTRN int pdfoffs[8];          /* pdf output byte counts             */
 
-EXTRN attribute *pyylval;      /* production stack element           */
+EXTRN attribute *pyylval;      /* bison production stack element     */

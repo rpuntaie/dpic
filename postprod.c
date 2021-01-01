@@ -4,10 +4,10 @@ extern void prvars (primitive *);
 
 /* #include "parscst.h" */
 if (debuglevel > 0) {
-  attribute *With;
+  attribute *attp;
   int p;
   p = yyn;
-  With = &(yyval);
+  attp = &(yyval);
   if (((p >= primary1) && (p <= primary11)) ||
       (p == lcompare4) ||
       (p == lcompare3) ||
@@ -23,9 +23,9 @@ if (debuglevel > 0) {
       ((p >= assignment1) && (p <= assignment2))) {
     fprintf (log_, "(After prod p=%d)", p);
     fprintf (log_, " value=");
-    wfloat (&log_, With->xval);
+    wfloat (&log_, attp->xval);
     fprintf (log_, " chbufx=");
-    wfloat (&log_, With->chbufx);
+    wfloat (&log_, attp->chbufx);
     fprintf (log_, " chbufi=");
     wfloat (&log_, chbufi);
     putc ('\n', log_);
@@ -37,7 +37,7 @@ if (debuglevel > 0) {
 	     (p == location2) || (p == location1) ||
 	     ((p >= position1) && (p <= position3))) {
     fprintf (log_, "\n location:");
-    wpair (&log_, With->xval, With->yval);
+    wpair (&log_, attp->xval, attp->yval);
     putc ('\n', log_);
     fflush (log_);
     }

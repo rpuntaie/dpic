@@ -11,11 +11,11 @@ if (debuglevel > 0) {
   p = yyn;
   newp = 1 - yylen;
 
-  fprintf (log_, "\nProduction(newp=%d", newp);
+  fprintf (log_, "\nProduction( ");
   if ((p >= 0) && (yyvsp[newp].lexval <= Xlastenv)) {
-    fprintf (log_, ",lexval=%d", yyvsp[newp].lexval);
+    fprintf (log_, "lexval=%d, ", yyvsp[newp].lexval);
     }
-  fprintf (log_, ",p=%d)", p);
+  fprintf (log_, "p=%d )", p);
 
   switch (p) {
   case primary4:

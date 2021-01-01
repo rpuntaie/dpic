@@ -2,7 +2,7 @@
 
 void
 pgfprelude (void) {
-  printf ("\\begin{tikzpicture}[scale=2.54]\n");
+  printf ("\\begin{tikzpicture}[scale=2.54]%%\n");
   printf ("%% dpic version %s option -g for TikZ and PGF 1.01\n",VERSIONDATE);
   printf ("\\ifx\\dpiclw\\undefined\\newdimen\\dpiclw\\fi\n");
   printf ("\\global\\def\\dpicdraw{\\draw[line width=\\dpiclw]}\n");
@@ -12,7 +12,7 @@ pgfprelude (void) {
 
 void
 pgfpostlude (void) {
-  printf ("\\end{tikzpicture}\n");
+  printf ("\\end{tikzpicture}%%\n");
 }
 
 /* output substring */
@@ -173,10 +173,10 @@ pgfstartdraw (int initial, primitive * node, int lsp) {
     fill = node->linefill_;
     break; }
   fill = ((long) floor ((fill * 1000000L) + 0.5)) / 1000000.0;
-  if ((node->shadedp != NULL) || (sshade != NULL)) {
+  if ((node->shadedp != NULL) || (shadestr != NULL)) {
     printf ("[fill=");
     if (node->shadedp != NULL) { wstring (&output, node->shadedp); }
-    else { wstring (&output, sshade); }
+    else { wstring (&output, shadestr); }
     sep = ','; }
   else if ((fill >= 0.0) && (fill <= 1.0)) {
     printf ("[fill=");
@@ -201,14 +201,14 @@ pgfstartdraw (int initial, primitive * node, int lsp) {
     printf ("bp");
     sep = ',';
     }
-  if (((node->outlinep != NULL) || (soutline != NULL)) && (lsp != Xinvis)) {
+  if (((node->outlinep != NULL) || (outlinestr != NULL)) && (lsp != Xinvis)) {
     printf ("%cdraw=", sep);
     if (node->outlinep != NULL) { wstring (&output, node->outlinep); }
-    else { wstring (&output, soutline); }
+    else { wstring (&output, outlinestr); }
     if ((initial == 1) || (initial == 3)) {
       printf (",fill=");
       if (node->outlinep != NULL) { wstring (&output, node->outlinep); }
-      else { wstring (&output, soutline); }
+      else { wstring (&output, outlinestr); }
       }
     sep = ',';
     }
@@ -251,9 +251,9 @@ pgfarcahead (postype C, postype point, int atyp, nametype * sou, double ht,
   printf ("\\filldraw[line width=0bp");
   if (sou != NULL) {
     printf (",draw=");
-    wstring (&output, soutline);
+    wstring (&output, outlinestr);
     printf (",fill=");
-    wstring (&output, soutline);
+    wstring (&output, outlinestr);
     }
   putchar (']');
   /* Trace arrowhead outline */
@@ -291,13 +291,13 @@ void
 pgfdraw (primitive * node) {
   int lsp;
   postype X0, X1;
-  primitive *tn, *tx;
+  primitive *lastseg, *tx;
   double s, c, lth;
   boolean v;
   nametype *sf, *sg;
   int TEMP;
 
-  getlinespec (node, &lsp, &tn);
+  getlinespec (node, &lsp, &lastseg);
   lth = qenv (node, Xlinethick, node->lthick);
   switch (node->ptype) {
 
@@ -341,11 +341,11 @@ pgfdraw (primitive * node) {
 
   case Xarc:
     if (drawn (node, lsp, -1.0)) {
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill && (vfill >= 0.0)) { node->linefill_ = vfill; }
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill && (fillfrac >= 0.0)) { node->linefill_ = fillfrac; }
       X0 = arcstart (node);
       X1 = arcend (node);
-      if (bfill) {
+      if (hasfill) {
 	    s = node->lthick;
 	    node->lthick = 0.0;
 	    pgfstartdraw (0, node, Xinvis);
@@ -361,34 +361,34 @@ pgfdraw (primitive * node) {
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
-	      sg = sshade;
-	      sshade = soutline;
+	      sg = shadestr;
+	      shadestr = outlinestr;
 	      pgfarcahead(node->aat, X0, ahnum (node->lineatype_),
-		       soutline,
+		       outlinestr,
 		       qenv(node, Xarrowht, node->lineheight_),
 		       qenv(node, Xarrowwid, node->linewidth_), lth,
 		       fabs(node->aradius_), node->arcangle_, &X0);
 	      node->shadedp = sf;
-	      sshade = sg;
+	      shadestr = sg;
 	      }
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
-	      sg = sshade;
-	      sshade = soutline;
+	      sg = shadestr;
+	      shadestr = outlinestr;
 	      pgfarcahead(node->aat, X1, ahnum (node->lineatype_),
-		       soutline,
+		       outlinestr,
 		       qenv(node, Xarrowht, node->lineheight_),
 		       qenv(node, Xarrowwid, node->linewidth_), lth,
 		       -fabs(node->aradius_), node->arcangle_, &X1);
 	      node->shadedp = sf;
-	      sshade = sg;
+	      shadestr = sg;
 	      }
 	    sf = node->shadedp;
 	    node->shadedp = NULL;
-	    sg = sshade;
-	    sshade = NULL;
+	    sg = shadestr;
+	    shadestr = NULL;
 	    c = node->linefill_;
 	    node->linefill_ = -1.0;
 	    pgfstartdraw (0, node, lsp);
@@ -396,7 +396,7 @@ pgfdraw (primitive * node) {
 	    popgwarc(node->aat, fabs (node->aradius_),
 		  posangle(X0, node->aat), posangle(X1, node->aat), node->arcangle_);
 	    node->shadedp = sf;
-	    sshade = sg;
+	    shadestr = sg;
 	    node->linefill_ = c;
 	    pgfendpath ();
         }
@@ -409,9 +409,9 @@ pgfdraw (primitive * node) {
   case Xmove:
     if (firstsegment (node)) {
       snode = node;
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      lth = qenv (node, Xlinethick, tn->lthick);
-      if (bfill) {
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      lth = qenv (node, Xlinethick, lastseg->lthick);
+      if (hasfill) {
 	    s = node->lthick;
 	    node->lthick = 0.0;
 	    pgfstartdraw (0, node, Xinvis);
@@ -427,46 +427,46 @@ pgfdraw (primitive * node) {
 	    pgfendpath ();
         }
       if (lsp != Xinvis) {
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
-	      sg = sshade;
-	      sshade = soutline;
+	      sg = shadestr;
+	      shadestr = outlinestr;
 	      pgfstartdraw (ahnum (node->lineatype_), node, lsp);
-	      pgfahead (ahnum (tn->lineatype_), &node->aat,
+	      pgfahead (ahnum (lastseg->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth);
+		    qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth);
 	      node->shadedp = sf;
-	      sshade = sg;
+	      shadestr = sg;
 	      }
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
-	      sg = sshade;
-	      sshade = soutline;
+	      sg = shadestr;
+	      shadestr = outlinestr;
 	      pgfstartdraw (ahnum (node->lineatype_), node, lsp);
-	      pgfahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth);
+	      pgfahead (ahnum (lastseg->lineatype_), &lastseg->endpos_,
+		    lastseg->aat, qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth);
 	      node->shadedp = sf;
-	      sshade = sg;
+	      shadestr = sg;
 	      }
 	    sf = node->shadedp;
 	    node->shadedp = NULL;
-	    sg = sshade;
-	    sshade = NULL;
+	    sg = shadestr;
+	    shadestr = NULL;
 	    s = node->linefill_;
 	    node->linefill_ = -1.0;
-	    c = vfill;
-	    vfill = -1.0;
+	    c = fillfrac;
+	    fillfrac = -1.0;
 	    pgfstartdraw (0, node, lsp);
 	    node->shadedp = sf;
-	    sshade = sg;
+	    shadestr = sg;
 	    node->linefill_ = s;
-	    vfill = c;
+	    fillfrac = c;
 	    wpos (node->aat);
         }
       }
@@ -489,17 +489,17 @@ pgfdraw (primitive * node) {
 
   case Xspline:
     if (firstsegment (node)) {
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      node->lparam = tn->lparam;
-      node->lthick = tn->lthick;
-      if (bfill) {
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      node->lparam = lastseg->lparam;
+      node->lthick = lastseg->lthick;
+      if (hasfill) {
 	    c = node->lthick;
 	    node->lthick = 0.0;
-	    sg = soutline;
-	    soutline = sshade;
+	    sg = outlinestr;
+	    outlinestr = shadestr;
 	    pgfstartdraw (0, node, Xinvis);
 	    node->lthick = c;
-	    soutline = sg;
+	    outlinestr = sg;
 	    spltot = primdepth (node);
 	    splcount = spltot;
 	    tx = node;
@@ -514,39 +514,39 @@ pgfdraw (primitive * node) {
       if (lsp != Xinvis) {
 	    spltot = primdepth (node);
 	    splcount = spltot;
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      sf = node->shadedp;
 	      node->shadedp = NULL;
-	      sg = sshade;
-	      sshade = soutline;
-	      pgfstartdraw (ahnum (tn->lineatype_), node, lsp);
-	      pgfahead (ahnum (tn->lineatype_), &node->aat,
+	      sg = shadestr;
+	      shadestr = outlinestr;
+	      pgfstartdraw (ahnum (lastseg->lineatype_), node, lsp);
+	      pgfahead (ahnum (lastseg->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_),
-		    qenv (node, Xlinethick, tn->lthick));
+		    qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_),
+		    qenv (node, Xlinethick, lastseg->lthick));
 	      node->shadedp = sf;
-	      sshade = sg;
+	      shadestr = sg;
 	      }
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	      sf = tn->shadedp;
-	      tn->shadedp = NULL;
-	      sg = sshade;
-	      sshade = soutline;
-	      pgfstartdraw (ahnum (tn->lineatype_), tn, lsp);
-	      pgfahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_),
-		    qenv (node, Xlinethick, tn->lthick));
-	      tn->shadedp = sf;
-	      sshade = sg;
+	      sf = lastseg->shadedp;
+	      lastseg->shadedp = NULL;
+	      sg = shadestr;
+	      shadestr = outlinestr;
+	      pgfstartdraw (ahnum (lastseg->lineatype_), lastseg, lsp);
+	      pgfahead (ahnum (lastseg->lineatype_), &lastseg->endpos_,
+		    lastseg->aat, qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_),
+		    qenv (node, Xlinethick, lastseg->lthick));
+	      lastseg->shadedp = sf;
+	      shadestr = sg;
 	      }
 	    deletename (&node->shadedp);
-	    sshade = NULL;
+	    shadestr = NULL;
 	    node->linefill_ = -1.0;
-	    vfill = -1.0;
+	    fillfrac = -1.0;
 	    pgfstartdraw (0, node, lsp);
         }
       }

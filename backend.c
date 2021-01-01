@@ -36,6 +36,9 @@ extern void newstr (nametype **);
 extern void nesw (primitive *);
 extern void wrand (void);
 extern void wstring (FILE **, nametype *);
+#ifdef DDEBUG
+extern int ordp(void *);
+#endif
 
 extern primitive *(findenv (primitive *));
 
@@ -46,38 +49,78 @@ firstsegment (primitive * pr) {
   else { return (((pr->spec >> 3) & 1) == 0); }
 }
 
+#ifdef DDEBUG
+void
+logpos(Char *lbl, postype P)
+{ fprintf(log_, "\n %s:(", lbl);
+  wfloat(&log_, P.xpos);
+  putc(',', log_);
+  wfloat(&log_, P.ypos);
+  putc(')', log_);
+}
+
+void
+logspec(int sp)
+{ switch (sp & 7) {
+  case 1: fprintf(log_, "solid"); break;
+  case 2: fprintf(log_, "dotted"); break;
+  case 3: fprintf(log_, "dashed"); break;
+  case 4: fprintf(log_, "invis"); break;
+  }
+}
+#endif
+
 							/* Test shaded, filled, dashed, dotted, solid */
 boolean
-drawn (primitive * node, int linesp, double fill) {
-  if (node == NULL) { return false; }
-  else if (node->shadedp != NULL) { return true; }
-  else if ((linesp == Xdotted) || (linesp == Xdashed) ||
-	(linesp == Xsolid) || ((fill >= 0.0) && (fill <= 1.0))) { return true; }
-  else { return false; }
+drawn (primitive * node, int linesp, double fill)
+{ boolean dr;
+  if (((fill >= 0.0) && (fill <= 1.0)) || (linesp == Xdotted) ||
+      (linesp == Xdashed) || (linesp == Xsolid)) { dr = true; }
+  else { dr = false;
+    if ((node->ptype == Xarrow) || (node->ptype == Xline) ||
+	  (node->ptype == Xspline)) {
+	  while (node != NULL) {
+	    if (node->shadedp != NULL) { dr = true; node = NULL; }
+	    else { node = node->son; }
+	    }
+      }
+    else { dr = (node->shadedp != NULL); }
+    }
+#ifdef DDEBUG
+  if (debuglevel > 0) {
+    fprintf(log_, " drawn(%d,%d(", ordp(node), linesp);
+    logspec(linesp - Xlinetype);
+    fprintf(log_, "),");
+    wfloat(&log_, fill);
+    fprintf(log_, ")=%s\n", dr ? " TRUE" : "FALSE");
+    }
+#endif
+  return dr;
 }
 
 							/* Shading parameters for linear objects */
 void
-getlinshade (primitive * nod, primitive ** tn, nametype ** ss, nametype ** so,
-	     double *fillval, boolean * hshade) {
-  primitive *With;
+getlinshade (primitive *nod,
+             primitive **tn, nametype **ss, nametype **so,
+	         double *fillval, boolean *hshade) {
+  primitive *primp;
   *tn = nod;
   *ss = NULL;
   *so = NULL;
   *fillval = -1.0;
   while ((*tn) != NULL) {
-    With = *tn;
-    if (With->outlinep != NULL) { *so = With->outlinep; }
+    primp = *tn;
+    if (primp->outlinep != NULL) { *so = primp->outlinep; }
     *tn = (*tn)->son;
   }
   *tn = nod;
   if (*hshade) { *hshade = false; }
   else {
     while (nod != NULL) {
-      With = nod;
-      if (With->shadedp != NULL) { *ss = With->shadedp; }
-      if ((With->linefill_ >= 0.0) && (With->linefill_ <= 1.0)) {
-	    *fillval = With->linefill_; }
+      primp = nod;
+      if (primp->shadedp != NULL) { *ss = primp->shadedp; }
+      if ((primp->linefill_ >= 0.0) && (primp->linefill_ <= 1.0)) {
+	    *fillval = primp->linefill_; }
       *tn = nod;
       nod = nod->son;
     }
@@ -112,20 +155,36 @@ getlinespec (primitive * nd, int *lsp, primitive ** lastnd) {
 							/* Distance to P control point */
 double
 ahoffset (double ht, double wid, double lti) {
-  if (wid == 0.0) {
-    return 0.0;
-  } else {
-    return (lti * sqrt ((ht * ht) + (wid * wid / 4)) / wid);
-  }
+  if (wid == 0.0) { return 0.0; }
+  else { return (lti * sqrt ((ht * ht) + (wid * wid / 4)) / wid); }
 }
 
 							/* Arrowhead control points */
 void
-dahead (postype point, postype shaft, double ht, double wid, double ltu, postype * P, postype * L, postype * R, postype * Px, postype * Lx, postype * Rx, postype * C, double *x, double *y) {	/* arrowhead ht and wid, user units */
+dahead (postype point, postype shaft,
+    double ht, double wid, double ltu,
+    postype * P, postype * L, postype * R, postype * Px, postype * Lx,
+    postype * Rx, postype * C,
+    double *x, double *y) {	/* arrowhead ht and wid, user units */
 							/* line thickness in diagram units */
 							/* adj point, left, right pts, dir cosines */
   double h, v, po, t;
-
+#ifdef DDEBUG
+  if (debuglevel > 0) {
+      fprintf(log_, " dahead input:\n");
+      fprintf(log_, " ht=");
+      wfloat(&log_, ht);
+      fprintf(log_, ";wid=");
+      wfloat(&log_, wid);
+      fprintf(log_, ";ltu=");
+      wfloat(&log_, ltu);
+      fprintf(log_, ";fsc=");
+      wfloat(&log_, fsc);
+      logpos("point", point);
+      logpos("shaft", shaft);
+      putc('\n', log_);
+  }
+#endif
   *C = affang (shaft, point);	/* shaft direction cosines */
   po = ahoffset (ht, wid, ltu);
   if (po > ht) { po = ht; }
@@ -146,21 +205,38 @@ dahead (postype point, postype shaft, double ht, double wid, double ltu, postype
   Px->ypos = (point.ypos + Lx->ypos + Rx->ypos) / 3;
   if (ht == 0.0) { *y = 0.0; }
   else { *y = ht - po + (ltu * wid / ht / 4); }
+#ifdef DDEBUG
+  if (debuglevel > 0) {
+  fprintf(log_, " dahead out: po=");
+  wfloat(&log_, po);
+  logpos("P", *P);
+  logpos("L", *L);
+  logpos("R", *R);
+  logpos("C", *C);
+  logpos("Px", *Px);
+  logpos("Lx", *Lx);
+  logpos("Rx", *Rx);
+  fprintf(log_, "\n x=");
+  wfloat(&log_, *x);
+  fprintf(log_, " y=");
+  wfloat(&log_, *y);
+  putc('\n', log_);
+  }
+#endif
 }
 
 							/* Parameters and positions for traced arrows*/
 void
-arcahead (postype C, postype point, int atyp, double ht, double wid,
-	  double lth, double radius, double angle, postype * P, postype * Co,
-	  postype * Ci, postype * Px, postype * Cox, postype * Cix,
-	  postype * Ao, postype * Ai, double *ccw, double *lwi,
-	  boolean * startarrow) {
+arcahead (postype C, postype point,
+    int atyp, double ht, double wid, double lth, double radius, double angle,
+    postype * P, postype * Co, postype * Ci, postype * Px, postype * Cox,
+    postype * Cix, postype * Ao, postype * Ai,
+    double *ccw, double *lwi, boolean * startarrow) {
   double lw, aa, bb, cc, s, v, d, b, t;
   postype Q;
   double TEMP, TEMP1;
 
-  if (radius * angle > 0) { *ccw = 1.0; }
-  else { *ccw = -1.0; }
+  if (radius * angle > 0) { *ccw = 1.0; } else { *ccw = -1.0; }
   *startarrow = (radius >= 0);
   ht = fabs (ht);
   wid = fabs (wid);
@@ -248,7 +324,8 @@ arcahead (postype C, postype point, int atyp, double ht, double wid,
     ((Px->ypos + Ai->ypos) / 2) + ((*ccw) * (Ai->xpos - Px->xpos) * s);
 }
 
-							/* Start of arc when there is an initial arrowhead */
+							/* Start of arc when there is an initial
+                               arrowhead */
 void
 startarc (primitive * n, postype X0, double lth, double *h, double *w) {
   double x, y;
@@ -306,40 +383,27 @@ texstacktext (primitive * np, nametype * tp) {
   boolean A, B, L, R;
   double toff;
 
-  if (tp == NULL) {
-    return;
-  }
+  if (tp == NULL) { return; }
   tx = tp->nextname;
-  if (tx != NULL) {
-    printf ("\\shortstack{");
-  }
+  if (tx != NULL) { printf ("\\shortstack{"); }
   toff = (venv (np, Xtextoffset) / scale) * 72;
   do {
     checkjust (tp, &A, &B, &L, &R);
     if (L) {
       printf ("\\rlap{\\hbox to ");
       wfloat (&output, toff);
-      printf ("bp{}");
-    } else if (R) {
-      printf ("\\llap{");
-    }
+      printf ("bp{}"); }
+    else if (R) { printf ("\\llap{"); }
     wstring (&output, tp);
     if (R) {
       printf ("\\hbox to ");
       wfloat (&output, toff);
-      printf ("bp{}");
-    }
-    if (L || R) {
-      putchar ('}');
-    }
+      printf ("bp{}"); }
+    if (L || R) { putchar ('}'); }
     tp = tp->nextname;
-    if (tp != NULL) {
-      printf ("\\\\%%\n");
-    }
+    if (tp != NULL) { printf ("\\\\%%\n"); }
   } while (tp != NULL);
-  if (tx != NULL) {
-    putchar ('}');
-  }
+  if (tx != NULL) { putchar ('}'); }
 }
 
 							/* Output leftbrace x rightbrace */
@@ -472,9 +536,9 @@ treedraw (primitive * node) {
     if (drawmode == PDF) { resetgs (node); }
     else if ((drawmode == xfig) && (node->ptype == Xblock) &&
 	       (node->direction == (-1))) { printf ("-6\n"); }
-    bfill = false;
-    sshade = NULL;
-    soutline = NULL;
+    hasfill = false;
+    shadestr = NULL;
+    outlinestr = NULL;
     node = node->nextname;
   }
 }
@@ -484,9 +548,9 @@ void
 drawtree (double n, double s, double e, double w, primitive * eb) {
   double fsctmp;
 
-  bfill = false;
-  sshade = NULL;
-  soutline = NULL;
+  hasfill = false;
+  shadestr = NULL;
+  outlinestr = NULL;
   switch (drawmode) {
   case SVG:
     fsctmp = fsc;

@@ -172,9 +172,9 @@ pstfilloptions (primitive * node, int lsp, double a) {
     else { printf ("\\psarcn"); }
     break;
   }
-  if (sshade != NULL) {
+  if (shadestr != NULL) {
     printf ("[fillstyle=solid,fillcolor=");
-    wstring (&output, sshade);
+    wstring (&output, shadestr);
     sep = ','; }
   else if ((fill >= 0.0) && (fill <= 1.0)) {
     printf ("[fillstyle=solid,fillcolor=");
@@ -242,6 +242,21 @@ pstwarc (postype C, double r, double startangle, double endangle, double ccw) {
   wbrace ((180.0 / pi) * startangle);
   wbrace ((180.0 / pi) * endangle);
   putchar ('\n');
+#ifdef DDEBUG
+  if (debuglevel > 0) {
+  fprintf(log_, " pstwarc:");
+  logpos(" C", C);
+  fprintf(log_, " r=");
+  wfloat(&log_, r);
+  fprintf(log_, " startangle=");
+  wfloat(&log_, startangle * 180 / pi);
+  fprintf(log_, " endangle=");
+  wfloat(&log_, endangle * 180 / pi);
+  fprintf(log_, " ccw=");
+  wfloat(&log_, ccw);
+  putc('\n', log_);
+  }
+#endif
 }
 
 void
@@ -343,13 +358,13 @@ pstdraw (primitive * node) {
   postype X0, X1;
   boolean v;
   double s, c, lth;
-  primitive *tn, *tx;
+  primitive *lastseg, *tx;
   nametype *sx;
   int TEMP;
 
-  getlinespec (node, &lsp, &tn);
-  sshade = node->shadedp;
-  lth = qenv (node, Xlinethick, tn->lthick);
+  getlinespec (node, &lsp, &lastseg);
+  shadestr = node->shadedp;
+  lth = qenv (node, Xlinethick, lastseg->lthick);
   switch (node->ptype) {
 
   case Xbox:
@@ -391,11 +406,11 @@ pstdraw (primitive * node) {
 
   case Xarc:
     if (drawn (node, lsp, node->linefill_)) {
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill && (vfill >= 0.0)) { node->linefill_ = vfill; }
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill && (fillfrac >= 0.0)) { node->linefill_ = fillfrac; }
       X0 = arcstart (node);
       X1 = arcend (node);
-      if (bfill) {
+      if (hasfill) {
 	    s = node->lthick;
 	    node->lthick = 0.0;
 	    pstfilloptions (node, lsp, node->arcangle_);
@@ -405,24 +420,24 @@ pstdraw (primitive * node) {
         }
       TEMP = ahlex (node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	    pstarcahead(node->aat, X0, ahnum (node->lineatype_), soutline,
+	    pstarcahead(node->aat, X0, ahnum (node->lineatype_), outlinestr,
 		     qenv(node, Xarrowht, node->lineheight_),
 		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     fabs(node->aradius_), node->arcangle_, &X0);
         }
       TEMP = ahlex (node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	    pstarcahead(node->aat, X1, ahnum (node->lineatype_), soutline,
+	    pstarcahead(node->aat, X1, ahnum (node->lineatype_), outlinestr,
 		     qenv(node, Xarrowht, node->lineheight_),
 		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     -fabs(node->aradius_), node->arcangle_, &X1);
         }
-      sx = sshade;
-      sshade = NULL;
+      sx = shadestr;
+      shadestr = NULL;
       c = node->linefill_;
       node->linefill_ = -1.0;
       pstfilloptions (node, lsp, node->arcangle_);
-      sshade = sx;
+      shadestr = sx;
       node->linefill_ = c;
       pstwarc (node->aat, fabs (node->aradius_),
 	       posangle (X0, node->aat), posangle (X1, node->aat), node->arcangle_);
@@ -432,16 +447,18 @@ pstdraw (primitive * node) {
 
   case Xline:
   case Xarrow:
-    if (firstsegment (node)) { snode = node; }
-    if (drawn (node, lsp, node->linefill_)) {
+    if (firstsegment(node)) {
+	  snode = node;
+	  isdrawn = drawn(node, lsp, node->linefill_); }
+    if (isdrawn) {
       if (firstsegment (node)) {
-	    getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-	    if (bfill && (vfill >= 0.0)) { node->linefill_ = vfill; }
-	    if (bfill) {
-	      s = tn->lthick;
-	      tn->lthick = 0.0;
-	      pstfilloptions (tn, lsp, 0.0);
-	      tn->lthick = s;
+	    getlinshade (node, &lastseg,&shadestr,&outlinestr,&fillfrac,&hasfill);
+	    if (hasfill && (fillfrac >= 0.0)) { node->linefill_ = fillfrac; }
+	    if (hasfill) {
+	      s = lastseg->lthick;
+	      lastseg->lthick = 0.0;
+	      pstfilloptions (lastseg, lsp, 0.0);
+	      lastseg->lthick = s;
 	      wpos (node->aat);
 	      tx = node;
 	      while (tx != NULL) {
@@ -450,31 +467,31 @@ pstdraw (primitive * node) {
 	        tx = tx->son;
 	        }
 	      }
-	    ahn = ahnum (tn->lineatype_);
+	    ahn = ahnum (lastseg->lineatype_);
 	    if ((ahn == 0) || (ahn == 3)) {
-	      TEMP = ahlex (tn->lineatype_);
+	      TEMP = ahlex (lastseg->lineatype_);
 	      if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	        pstahead (&node->aat, node->endpos_,
-		      qenv (node, Xarrowht, tn->lineheight_),
-		      qenv (node, Xarrowwid, tn->linewidth_),
-		      qenv (node, Xlinethick, tn->lthick),
-		      ahnum (tn->lineatype_), soutline);
+		      qenv (node, Xarrowht, lastseg->lineheight_),
+		      qenv (node, Xarrowwid, lastseg->linewidth_),
+		      qenv (node, Xlinethick, lastseg->lthick),
+		      ahnum (lastseg->lineatype_), outlinestr);
 	        }
-	      TEMP = ahlex (tn->lineatype_);
+	      TEMP = ahlex (lastseg->lineatype_);
 	      if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	        pstahead (&tn->endpos_, tn->aat,
-		      qenv (node, Xarrowht, tn->lineheight_),
-		      qenv (node, Xarrowwid, tn->linewidth_),
-		      qenv (node, Xlinethick, tn->lthick),
-		      ahnum (tn->lineatype_), soutline);
+	        pstahead (&lastseg->endpos_, lastseg->aat,
+		      qenv (node, Xarrowht, lastseg->lineheight_),
+		      qenv (node, Xarrowwid, lastseg->linewidth_),
+		      qenv (node, Xlinethick, lastseg->lthick),
+		      ahnum (lastseg->lineatype_), outlinestr);
 	        }
 	      }
-	    sx = sshade;
-	    sshade = NULL;
-	    pstfilloptions (tn, lsp, 0.0);
-	    sshade = sx;
+	    sx = shadestr;
+	    shadestr = NULL;
+	    pstfilloptions (lastseg, lsp, 0.0);
+	    shadestr = sx;
 	    if ((ahn != 0) && (ahn != 3)) {
-	      switch (ahlex (tn->lineatype_)) {
+	      switch (ahlex (lastseg->lineatype_)) {
 	      case Xlefthead:
 	        printf ("{<-}");
 	        break;
@@ -485,7 +502,7 @@ pstdraw (primitive * node) {
 	        printf ("{->}");
 	        break;
 	      } }
-	    bfill = false;
+	    hasfill = false;
 	    wpos (node->aat);
         }
       wpos (node->endpos_);
@@ -519,13 +536,13 @@ pstdraw (primitive * node) {
 
   case Xspline:
     if (firstsegment (node)) {	/* first spline */
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill && (vfill >= 0.0)) { node->linefill_ = vfill; }
-      if (bfill) {
-	    s = tn->lthick;
-	    tn->lthick = 0.0;
-	    pstfilloptions (tn, lsp, 0.0);
-	    tn->lthick = s;
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill && (fillfrac >= 0.0)) { node->linefill_ = fillfrac; }
+      if (hasfill) {
+	    s = lastseg->lthick;
+	    lastseg->lthick = 0.0;
+	    pstfilloptions (lastseg, lsp, 0.0);
+	    lastseg->lthick = s;
 	    spltot = primdepth (node);
 	    splcount = spltot;
 	    printf ("%%\n");
@@ -535,36 +552,36 @@ pstdraw (primitive * node) {
 	      splcount--;
 	      tx = tx->son;
 	      }
-	    bfill = false;
+	    hasfill = false;
         }
       spltot = primdepth (node);
       splcount = spltot;
-      ahn = ahnum (tn->lineatype_);
+      ahn = ahnum (lastseg->lineatype_);
       if ((ahn == 0) || (ahn == 3)) {
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	      pstahead (&tn->endpos_, tn->aat,
-		    qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_),
-		    qenv (node, Xlinethick, tn->lthick),
-		    ahnum (tn->lineatype_), soutline);
+	      pstahead (&lastseg->endpos_, lastseg->aat,
+		    qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_),
+		    qenv (node, Xlinethick, lastseg->lthick),
+		    ahnum (lastseg->lineatype_), outlinestr);
 	      }
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      pstahead (&node->aat, node->endpos_,
-		    qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_),
-		    qenv (node, Xlinethick, tn->lthick),
-		    ahnum (tn->lineatype_), soutline);
+		    qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_),
+		    qenv (node, Xlinethick, lastseg->lthick),
+		    ahnum (lastseg->lineatype_), outlinestr);
 	      }
         }
       if (lsp != Xinvis) {
-	    sx = sshade;
-	    sshade = NULL;
-	    pstfilloptions (tn, lsp, 0.0);
-	    sshade = sx;
+	    sx = shadestr;
+	    shadestr = NULL;
+	    pstfilloptions (lastseg, lsp, 0.0);
+	    shadestr = sx;
 	    if ((ahn != 0) && (ahn != 3)) {
-	      switch (ahlex (tn->lineatype_)) {
+	      switch (ahlex (lastseg->lineatype_)) {
 
 	      case Xlefthead:
 	        printf ("{<-}");

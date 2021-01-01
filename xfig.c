@@ -202,10 +202,10 @@ void
 xfigdraw (primitive * node) {
   int i, lsp;
   double fill;
-  primitive *tn;
+  primitive *lastseg;
   int FORLIM;
 
-  getlinespec (node, &lsp, &tn);
+  getlinespec (node, &lsp, &lastseg);
   if (node->lthick < 0.0) { node->lthick = venv (node, Xlinethick); }
   switch (node->ptype) {
 
@@ -221,7 +221,9 @@ xfigdraw (primitive * node) {
   case Xline:
   case Xarrow:
   case Xspline:
-    if (drawn (node, lsp, node->linefill_)) {
+    if (firstsegment(node)) {
+	  isdrawn = drawn(node, lsp, node->linefill_); }
+    if (isdrawn) {
       if (firstsegment (node)) {
 	    spltot = primdepth (node);
 	    if (node->ptype == Xspline) {

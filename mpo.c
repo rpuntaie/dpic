@@ -303,12 +303,11 @@ void
 mpodraw (primitive * node) {
   int lsp;
   postype X0, X1;
-  primitive *tn, *tx;
+  primitive *lastseg, *tx, *primp;
   double lth;
   int TEMP;
-  primitive *With1;
 
-  getlinespec (node, &lsp, &tn);
+  getlinespec (node, &lsp, &lastseg);
   lth = qenv (node, Xlinethick, node->lthick);
   switch (node->ptype) {
 
@@ -378,31 +377,31 @@ mpodraw (primitive * node) {
   case Xarc:
     X0 = arcstart (node);
     X1 = arcend (node);
-    getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-    if (bfill) {
+    getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+    if (hasfill) {
       mposetthick (0.0);
       printf ("fill ");
       wpos (X0);
       popgwarc(node->aat, fabs (node->aradius_),
 		posangle(X0, node->aat), posangle(X1, node->aat), node->arcangle_);
       printf (" --cycle");
-      addcolor (sshade, vfill);
+      addcolor (shadestr, fillfrac);
       printf (" X\n");
-      vfill = -1.0;
-      sshade = NULL;
+      fillfrac = -1.0;
+      shadestr = NULL;
       }
     if (lsp != Xinvis) {
       mposetthick (lth);
       TEMP = ahlex (node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	    mpoarcahead (node->aat, X0, ahnum (node->lineatype_), soutline,
+	    mpoarcahead (node->aat, X0, ahnum (node->lineatype_), outlinestr,
 		     qenv (node, Xarrowht, node->lineheight_),
 		     qenv (node, Xarrowwid, node->linewidth_), lth,
 		     fabs (node->aradius_), node->arcangle_, &X0);
         }
       TEMP = ahlex (node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	    mpoarcahead (node->aat, X1, ahnum (node->lineatype_), soutline,
+	    mpoarcahead (node->aat, X1, ahnum (node->lineatype_), outlinestr,
 		     qenv (node, Xarrowht, node->lineheight_),
 		     qenv (node, Xarrowwid, node->linewidth_), lth,
 		     -fabs (node->aradius_), node->arcangle_, &X1);
@@ -421,8 +420,8 @@ mpodraw (primitive * node) {
   case Xarrow:
     if (firstsegment (node)) {
       snode = node;
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill) {
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill) {
 	mposetthick (0.0);
 	printf ("fill ");
 	wpos (node->aat);
@@ -433,28 +432,28 @@ mpodraw (primitive * node) {
 	  tx = tx->son;
 	}
 	printf (" --cycle");
-	addcolor (sshade, vfill);
+	addcolor (shadestr, fillfrac);
 	printf (" X\n");
-	vfill = -1.0;
-	sshade = NULL;
+	fillfrac = -1.0;
+	shadestr = NULL;
       }
-      lth = qenv (node, Xlinethick, tn->lthick);
+      lth = qenv (node, Xlinethick, lastseg->lthick);
       if (lsp != Xinvis) {
 	mposetthick (lth);
-	TEMP = ahlex (tn->lineatype_);
+	TEMP = ahlex (lastseg->lineatype_);
 	if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	  mpoahead (ahnum (tn->lineatype_), &node->aat,
+	  mpoahead (ahnum (lastseg->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth,
-		    soutline);
+		    qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr);
 	}
-	TEMP = ahlex (tn->lineatype_);
+	TEMP = ahlex (lastseg->lineatype_);
 	if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	  mpoahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth,
-		    soutline);
+	  mpoahead (ahnum (lastseg->lineatype_), &lastseg->endpos_,
+		    lastseg->aat, qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr);
 	}
 	mpolinecap (lsp);
 	printf ("drw ");
@@ -470,11 +469,11 @@ mpodraw (primitive * node) {
     }
     if (node->son == NULL) {
       while (snode != NULL) {
-	With1 = snode;
-	if (With1->textp != NULL) {
-	  mpowrtext (node, With1->textp,
-		     0.5 * (With1->endpos_.xpos + With1->aat.xpos),
-		     0.5 * (With1->endpos_.ypos + With1->aat.ypos));
+	primp = snode;
+	if (primp->textp != NULL) {
+	  mpowrtext (node, primp->textp,
+		     0.5 * (primp->endpos_.xpos + primp->aat.xpos),
+		     0.5 * (primp->endpos_.ypos + primp->aat.ypos));
 	}
 	snode = snode->son;
       }
@@ -487,11 +486,11 @@ mpodraw (primitive * node) {
     }
     if (node->son == NULL) {
       while (snode != NULL) {
-	With1 = snode;
-	if (With1->textp != NULL) {
-	  mpowrtext (node, With1->textp,
-		     0.5 * (With1->endpos_.xpos + With1->aat.xpos),
-		     0.5 * (With1->endpos_.ypos + With1->aat.ypos));
+	primp = snode;
+	if (primp->textp != NULL) {
+	  mpowrtext (node, primp->textp,
+		     0.5 * (primp->endpos_.xpos + primp->aat.xpos),
+		     0.5 * (primp->endpos_.ypos + primp->aat.ypos));
 	}
 	snode = snode->son;
       }
@@ -501,8 +500,8 @@ mpodraw (primitive * node) {
   case Xspline:
     if (firstsegment (node)) {
       snode = node;
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill) {
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill) {
 	spltot = primdepth (node);
 	splcount = spltot;
 	mposetthick (0.0);
@@ -514,35 +513,35 @@ mpodraw (primitive * node) {
 	  tx = tx->son;
 	}
 	printf (" --cycle");
-	addcolor (sshade, vfill);
+	addcolor (shadestr, fillfrac);
 	printf (" X\n");
-	vfill = -1.0;
-	sshade = NULL;
+	fillfrac = -1.0;
+	shadestr = NULL;
       }
-      lth = qenv (tn, Xlinethick, tn->lthick);
+      lth = qenv (lastseg, Xlinethick, lastseg->lthick);
       if (lsp != Xinvis) {
 	spltot = primdepth (node);
 	splcount = spltot;
 	mposetthick (lth);
-	TEMP = ahlex (tn->lineatype_);
+	TEMP = ahlex (lastseg->lineatype_);
 	if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	  mpoahead (ahnum (tn->lineatype_), &node->aat,
+	  mpoahead (ahnum (lastseg->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth,
-		    soutline);
+		    qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr);
 	}
-	TEMP = ahlex (tn->lineatype_);
+	TEMP = ahlex (lastseg->lineatype_);
 	if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	  mpoahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth,
-		    soutline);
+	  mpoahead (ahnum (lastseg->lineatype_), &lastseg->endpos_,
+		    lastseg->aat, qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr);
 	}
 	deletename (&node->shadedp);
-	sshade = NULL;
+	shadestr = NULL;
 	node->linefill_ = -1.0;
-	vfill = -1.0;
+	fillfrac = -1.0;
 	mpolinecap (lsp);
 	printf ("drw ");
       }
@@ -552,12 +551,11 @@ mpodraw (primitive * node) {
       if (splcount == 1) {
 	mpodashdot (lsp, node->lparam, node->outlinep);
 	while (snode != NULL) {
-	  With1 = snode;
-	  if (With1->textp != NULL) {
-	    mpowrtext (node, With1->textp,
-		       0.5 * (With1->endpos_.xpos + With1->aat.xpos),
-		       0.5 * (With1->endpos_.ypos +
-			      With1->aat.ypos));
+	  primp = snode;
+	  if (primp->textp != NULL) {
+	    mpowrtext (node, primp->textp,
+		       0.5 * (primp->endpos_.xpos + primp->aat.xpos),
+		       0.5 * (primp->endpos_.ypos + primp->aat.ypos));
 	  }
 	  snode = snode->son;
 	}

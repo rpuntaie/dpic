@@ -29,7 +29,7 @@ texprelude (double n, double s, double e, double w) {
 
 void
 texpostlude (void) {
-  printf ("\\end{picture}\n");
+  printf ("\\end{picture}%%\n");
 }
 
 /* Test angle near 0 or pi/2 */
@@ -146,11 +146,11 @@ void
 texdraw (primitive * node) {
   int i, npts, lsp;
   double r, x, y, x1, y1, ct, st, lgth, lth;
-  primitive *tn, *p;
+  primitive *lastseg, *p;
   postype tmpat, X0, X3;
   int TEMP;
 
-  getlinespec (node, &lsp, &tn);
+  getlinespec (node, &lsp, &lastseg);
   lth = qenv (node, Xlinethick, node->lthick);
   switch (node->ptype) {
 
@@ -186,19 +186,20 @@ texdraw (primitive * node) {
 
   case Xline:
   case Xarrow:
-    if (drawn (node, lsp, -1.0)) {
+    if (firstsegment(node)) { isdrawn = drawn(node, lsp, -1.0); }
+    if (isdrawn) {
       if (firstsegment (node)) {	/* first segment */
 	    if (drawmode == Pict2e) { p2setthick (lth); }
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      p2ahead (&node->aat, node->endpos_,
-		   qenv (node, Xarrowht, tn->lineheight_)); }
+		   qenv (node, Xarrowht, lastseg->lineheight_)); }
         }
       TEMP = ahlex (node->lineatype_);
       if ((node->son == NULL) & ((TEMP == Xdoublehead) ||
 		 (TEMP == Xrighthead))) {
 	    p2ahead (&node->endpos_, node->aat,
-		 qenv (node, Xarrowht, tn->lineheight_)); }
+		 qenv (node, Xarrowht, lastseg->lineheight_)); }
       lgth = linlen (node->endpos_.xpos - node->aat.xpos,
 		     node->endpos_.ypos - node->aat.ypos);
       if ((drawmode == Pict2e) ||
@@ -253,10 +254,10 @@ texdraw (primitive * node) {
 	    splcount = spltot;
 	    tmpat = node->aat;
 	    p2setthick (lth);
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      p2ahead (&node->aat, node->endpos_,
-		   qenv (node, Xarrowht, tn->lineheight_));
+		   qenv (node, Xarrowht, lastseg->lineheight_));
 	      }
 	    if ((spltot > 1) & ismdistmax (node->aradius_)) {
 	      printf ("\\put");
@@ -302,7 +303,7 @@ texdraw (primitive * node) {
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      x = linlen (node->endpos_.xpos - node->aat.xpos,
 		      node->endpos_.ypos - node->aat.ypos);
-	      y = qenv (node, Xarrowht, tn->lineheight_);
+	      y = qenv (node, Xarrowht, lastseg->lineheight_);
 	      pprop (node->aat, &node->endpos_, y, x - y, x);
 	      }
 	    if ((spltot > 1) & ismdistmax (node->aradius_)) {
@@ -324,7 +325,7 @@ texdraw (primitive * node) {
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      p2ahead (&tmpat, node->aat,
-		   qenv (node, Xarrowht, tn->lineheight_)); }
+		   qenv (node, Xarrowht, lastseg->lineheight_)); }
         }
       splcount--; }
     else if ((lsp == Xdotted) || (lsp == Xdashed) || (lsp == Xsolid)) {

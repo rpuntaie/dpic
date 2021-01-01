@@ -108,12 +108,10 @@ pswstring (nametype * p) {
   Char c;
   boolean waswhite = false;
   boolean iswhite;
-  int FORLIM;
 
   if (p == NULL) { return; }
   if (p->segmnt == NULL) { return; }
-  FORLIM = p->len;
-  for (i = 0; i < FORLIM; i++) {
+  for (i = 0; i < p->len; i++) {
     c = p->segmnt[p->seginx + i];
     iswhite = ((c == etxch) || (c == nlch) || (c == tabch) || (c == ' '));
     if ((!iswhite) || (!waswhite)) {
@@ -479,11 +477,11 @@ void
 psdraw (primitive * node) {
   int lsp;
   postype X1, X2;
-  primitive *tn, *tx;
+  primitive *lastseg, *tx;
   double h, w, lth, fill;
   int TEMP;
 
-  getlinespec (node, &lsp, &tn);
+  getlinespec (node, &lsp, &lastseg);
   lth = qenv (node, Xlinethick, node->lthick);	/* printobject(node); */
   switch (node->ptype) {
 
@@ -575,8 +573,8 @@ psdraw (primitive * node) {
   case Xspline:
     if (firstsegment (node)) {
       snode = node;
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill) {
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill) {
 	    psnewpath ();
 	    if (node->ptype != Xspline) {
 	      pswpos (node->aat);
@@ -596,30 +594,30 @@ psdraw (primitive * node) {
 	      tx = tx->son;
 	      }
 	    pssetthick (0.0);
-	    pslinearfill (vfill, sshade);
-	    vfill = -1.0;
-	    sshade = NULL;
+	    pslinearfill (fillfrac, shadestr);
+	    fillfrac = -1.0;
+	    shadestr = NULL;
         }
       if (lsp != Xinvis) {
-	    lth = qenv (tn, Xlinethick, tn->lthick);
+	    lth = qenv (lastseg, Xlinethick, lastseg->lthick);
 	    spltot = primdepth (node);
 	    splcount = spltot;
 	    pssetthick (lth);
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	      pssetcolor (soutline);
-	      psahead (ahnum (tn->lineatype_), &node->aat, node->endpos_,
-		    qenv (tn, Xarrowht, tn->lineheight_),
-		    qenv (tn, Xarrowwid, tn->linewidth_), lth);
-	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
+	      pssetcolor (outlinestr);
+	      psahead (ahnum (lastseg->lineatype_), &node->aat, node->endpos_,
+		    qenv (lastseg, Xarrowht, lastseg->lineheight_),
+		    qenv (lastseg, Xarrowwid, lastseg->linewidth_), lth);
+	      if (outlinestr != NULL) { printf (" setrgbcolor\n"); }
 	      }
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	      pssetcolor (soutline);
-	      psahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (tn, Xarrowht, tn->lineheight_),
-		    qenv (tn, Xarrowwid, tn->linewidth_), lth);
-	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
+	      pssetcolor (outlinestr);
+	      psahead (ahnum (lastseg->lineatype_), &lastseg->endpos_,
+		    lastseg->aat, qenv (lastseg, Xarrowht, lastseg->lineheight_),
+		    qenv (lastseg, Xarrowwid, lastseg->linewidth_), lth);
+	      if (outlinestr != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    if (node->ptype != Xspline) {
 	      psnewpath ();
@@ -636,8 +634,8 @@ psdraw (primitive * node) {
         }
       if (node->son == NULL) {
 	    psdashdot (lsp, node->lparam);
-	    pssetcolor (soutline);
-	    psendline (soutline);
+	    pssetcolor (outlinestr);
+	    psendline (outlinestr);
         }
       }
     splcount--;
@@ -670,42 +668,42 @@ psdraw (primitive * node) {
   case Xarc:
     if (drawn (node, lsp, node->linefill_)) {
       pssetthick (lth);
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
       X1 = arcstart (node);
       X2 = arcend (node);
-      if (bfill) {
+      if (hasfill) {
 	    printf (" currentrgbcolor\n");
 	    psnewpath ();
 	    pswarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
 	    pssetthick (0.0);
-	    pslinearfill (vfill, sshade);
-	    vfill = -1.0;
-	    sshade = NULL;
+	    pslinearfill (fillfrac, shadestr);
+	    fillfrac = -1.0;
+	    shadestr = NULL;
 	    printf (" setrgbcolor\n");
         }
       if (lsp != Xinvis) {
 	    pssetthick (lth);
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	      pssetcolor (soutline);
+	      pssetcolor (outlinestr);
 	      startarc (node, X1, lth, &h, &w);
 	      psarcahead (node->aat, ahnum (node->lineatype_), &X1, h, w,
 		      lth, fabs(node->aradius_), node->arcangle_);
-	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
+	      if (outlinestr != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	      pssetcolor (soutline);
+	      pssetcolor (outlinestr);
 	      endarc (node, X2, lth, &h, &w);
 	      psarcahead (node->aat, ahnum (node->lineatype_), &X2, h, w,
 		      lth, -fabs (node->aradius_), node->arcangle_);
-	      if (soutline != NULL) { printf (" setrgbcolor\n"); }
+	      if (outlinestr != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    psnewpath ();
 	    pswarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
 	    psdashdot (lsp, node->lparam);
-	    pssetcolor (soutline);
-	    psendline (soutline);
+	    pssetcolor (outlinestr);
+	    psendline (outlinestr);
         }
       printf (" setlineparms\n");
       }

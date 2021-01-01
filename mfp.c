@@ -14,7 +14,7 @@ mfpprelude (double n, double s, double e, double w) {
 
 void
 mfppostlude (void) {
-  printf ("\\end{mfpic}\n");
+  printf ("\\end{mfpic}%%\n");
 }
 
 void
@@ -382,12 +382,11 @@ void
 mfpdraw (primitive * node) {
   int lsp;
   postype X0, X1;
-  primitive *tn, *tx;
+  primitive *lastseg, *tx, *primp;
   double lth;
   int TEMP;
-  primitive *With1;
 
-  getlinespec (node, &lsp, &tn);
+  getlinespec (node, &lsp, &lastseg);
   lth = qenv (node, Xlinethick, node->lthick);
   switch (node->ptype) {
 
@@ -442,11 +441,11 @@ mfpdraw (primitive * node) {
 
   case Xspline:
     if (firstsegment (node)) {
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill) {
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill) {
     	mfsetthick (0.0);
     	printf ("\\draw");
-    	mfpsetshade (vfill, sshade);
+    	mfpsetshade (fillfrac, shadestr);
     	printf ("%%\n");
     	printf ("\\lclosed");
     	spltot = primdepth (node);
@@ -456,29 +455,29 @@ mfpdraw (primitive * node) {
     	  mfpsplinesegment (tx, splcount, spltot);
     	  splcount--;
     	  tx = tx->son; }
-    	vfill = -1.0;
-    	sshade = NULL;
+    	fillfrac = -1.0;
+    	shadestr = NULL;
         }
       if (lsp != Xinvis) {
-	    lth = qenv (tn, Xlinethick, tn->lthick);
-	    TEMP = ahlex (tn->lineatype_);
+	    lth = qenv (lastseg, Xlinethick, lastseg->lthick);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	      mfpahead (ahnum (tn->lineatype_), &node->aat,
+	      mfpahead (ahnum (lastseg->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (tn, Xarrowht, tn->lineheight_),
-		    qenv (tn, Xarrowwid, tn->linewidth_), lth,
-		    soutline);
+		    qenv (lastseg, Xarrowht, lastseg->lineheight_),
+		    qenv (lastseg, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr);
 	      }
-	    TEMP = ahlex (tn->lineatype_);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	      mfpahead (ahnum (node->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (tn, Xarrowht, tn->lineheight_),
-		    qenv (tn, Xarrowwid, tn->linewidth_), lth,
-		    soutline);
+	      mfpahead (ahnum (node->lineatype_), &lastseg->endpos_,
+		    lastseg->aat, qenv (lastseg, Xarrowht, lastseg->lineheight_),
+		    qenv (lastseg, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr);
 	      }
 	    spltot = primdepth (node);
 	    splcount = spltot;
-	    mfplineopts (lth, node->lparam, lsp, soutline); }
+	    mfplineopts (lth, node->lparam, lsp, outlinestr); }
       }
     if (lsp != Xinvis) { mfpsplinesegment (node, splcount, spltot); }
     splcount--;
@@ -491,11 +490,11 @@ mfpdraw (primitive * node) {
   case Xmove:
     if (firstsegment (node)) {
       snode = node;
-      getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-      if (bfill) {
+      getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+      if (hasfill) {
     	mfsetthick (0.0);
     	printf ("\\draw");
-    	mfpsetshade (vfill, sshade);
+    	mfpsetshade (fillfrac, shadestr);
     	printf ("%%\n");
     	printf ("\\lclosed\\polyline{");
     	wpos (node->aat);
@@ -505,24 +504,24 @@ mfpdraw (primitive * node) {
     	  wpos (tx->endpos_);
     	  tx = tx->son; }
     	printf ("}\n");
-    	vfill = -1.0;
-    	sshade = NULL; }
+    	fillfrac = -1.0;
+    	shadestr = NULL; }
       if (lsp != Xinvis) {
-	    lth = qenv (tn, Xlinethick, tn->lthick);
-	    TEMP = ahlex (tn->lineatype_);
+	    lth = qenv (lastseg, Xlinethick, lastseg->lthick);
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	      mfpahead (ahnum (tn->lineatype_), &node->aat,
+	      mfpahead (ahnum (lastseg->lineatype_), &node->aat,
 		    node->endpos_,
-		    qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth,
-		    soutline); }
-	    TEMP = ahlex (tn->lineatype_);
+		    qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr); }
+	    TEMP = ahlex (lastseg->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	      mfpahead (ahnum (tn->lineatype_), &tn->endpos_,
-		    tn->aat, qenv (node, Xarrowht, tn->lineheight_),
-		    qenv (node, Xarrowwid, tn->linewidth_), lth,
-		    soutline); }
-	    mfplineopts (lth, node->lparam, lsp, soutline);
+	      mfpahead (ahnum (lastseg->lineatype_), &lastseg->endpos_,
+		    lastseg->aat, qenv (node, Xarrowht, lastseg->lineheight_),
+		    qenv (node, Xarrowwid, lastseg->linewidth_), lth,
+		    outlinestr); }
+	    mfplineopts (lth, node->lparam, lsp, outlinestr);
 	    printf ("\\polyline{");
 	    wpos (node->aat); }
         }
@@ -531,16 +530,16 @@ mfpdraw (primitive * node) {
         wpos (node->endpos_);
         if (node->son == NULL) {
 	      printf ("}\n");
-	      if (soutline != NULL) { printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
+	      if (outlinestr != NULL) { printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
         }
       }
     if (node->son == NULL) {
       while (snode != NULL) {
-	    With1 = snode;
-	    if (With1->textp != NULL) {
-	      mfpwrtext (snode, With1->textp,
-		     0.5 * (With1->aat.xpos + With1->endpos_.xpos),
-		     0.5 * (With1->aat.ypos + With1->endpos_.ypos)); }
+	    primp = snode;
+	    if (primp->textp != NULL) {
+	      mfpwrtext (snode, primp->textp,
+		     0.5 * (primp->aat.xpos + primp->endpos_.xpos),
+		     0.5 * (primp->aat.ypos + primp->endpos_.ypos)); }
 	    snode = snode->son; }
       }
     break;
@@ -548,34 +547,34 @@ mfpdraw (primitive * node) {
   case Xarc:
     X0 = arcstart (node);
     X1 = arcend (node);
-    getlinshade (node, &tn, &sshade, &soutline, &vfill, &bfill);
-    if (bfill) {
+    getlinshade (node, &lastseg, &shadestr, &outlinestr, &fillfrac, &hasfill);
+    if (hasfill) {
       mfsetthick (0.0);
       printf ("\\draw");
-      mfpsetshade (vfill, sshade);
+      mfpsetshade (fillfrac, shadestr);
       printf ("%%\n");
       printf ("\\lclosed");
       mfpwarc(node->aat, node->aradius_, posangle(X0, node->aat),
 	       posangle(X1, node->aat), node->arcangle_);
-      vfill = -1.0;
-      sshade = NULL; }
+      fillfrac = -1.0;
+      shadestr = NULL; }
     if (lsp != Xinvis) {
       TEMP = ahlex (node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	    mfparcahead(node->aat, X0, ahnum(node->lineatype_), soutline,
+	    mfparcahead(node->aat, X0, ahnum(node->lineatype_), outlinestr,
 		     qenv(node, Xarrowht, node->lineheight_),
 		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     fabs(node->aradius_), node->arcangle_, &X0); }
       TEMP = ahlex (node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	    mfparcahead(node->aat, X1, ahnum(node->lineatype_), soutline,
+	    mfparcahead(node->aat, X1, ahnum(node->lineatype_), outlinestr,
 		     qenv(node, Xarrowht, node->lineheight_),
 		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     -fabs(node->aradius_), node->arcangle_, &X1); }
-      mfplineopts (lth, node->lparam, lsp, soutline);
+      mfplineopts (lth, node->lparam, lsp, outlinestr);
       mfpwarc(node->aat, node->aradius_, posangle(X0, node->aat),
 	       posangle(X1, node->aat), node->arcangle_);
-      if (soutline != NULL) { printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
+      if (outlinestr != NULL) { printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
       }
     mfpwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;

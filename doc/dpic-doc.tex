@@ -1409,7 +1409,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
 \subsection{End of line}
   The line end is significant in the pic grammar.
   However, dpic ignores line ends following {\tt then}, {\tt \tLB},
-  {\tt else}, or end of line.
+  {\tt :}, {\tt else}, or end of line.
   Both the CR (octal 015) and NL (octal 012) characters are treated as
   line ends.
 
@@ -1505,7 +1505,7 @@ Equivalently, a string is produced by the C-like sprintf function
 The C sprintf function is used for implementing this; therefore, the
 precision of default formats such as {\tt \%g} may vary by machine and compiler.
 To produce transportable results, specify the precision completely,
-e.g. {\tt \%8.5f}.  As in C, the pair {\tt \%\%}
+e.g., {\tt \%8.5f}.  As in C, the pair {\tt \%\%}
 in the format string prints the percent
 character.  Only the {\tt f}, {\tt e}, {\tt g} formatting parameters are
 valid, since expressions are stored as floating-point numbers, e.g.

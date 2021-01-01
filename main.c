@@ -207,7 +207,6 @@ wfloat (FILE ** iou, double y) {
 void
 wstring (FILE ** iou, nametype * p) {
   int i, FORLIM;
-
   if (p == NULL) { return; }
   if (p->segmnt != NULL) {
     FORLIM = p->seginx + p->len;
@@ -224,26 +223,11 @@ setjust (nametype * tp, int v) {
   if (tp == NULL) { return; }
   i = (long) floor (tp->val + 0.5);
   switch (v) {
-
-  case Xrjust:
-    tp->val = ((i >> 2) * 4.0) + 1;
-    break;
-
-  case Xljust:
-    tp->val = ((i >> 2) * 4.0) + 2;
-    break;
-
-  case Xbelow:
-    tp->val = ((i >> 4) * 16.0) + (i & 3) + 4;
-    break;
-
-  case Xabove:
-    tp->val = ((i >> 4) * 16.0) + (i & 3) + 8;
-    break;
-
-  case Xcenter:
-    tp->val = (i >> 4) * 16.0;
-    break;
+  case Xrjust: tp->val = ((i >> 2) * 4.0) + 1; break;
+  case Xljust: tp->val = ((i >> 2) * 4.0) + 2; break;
+  case Xbelow: tp->val = ((i >> 4) * 16.0) + (i & 3) + 4; break;
+  case Xabove: tp->val = ((i >> 4) * 16.0) + (i & 3) + 8; break;
+  case Xcenter: tp->val = (i >> 4) * 16.0; break;
   }
 }
 
@@ -304,6 +288,10 @@ epilog (void) {
 
 void
 consoleflush (void) {
+  fflush(errout);
+#ifdef DDEBUG
+  if (debuglevel > 0) { fflush(log_); }
+#endif
 }
 
 							/* Unrecoverable errors */
@@ -418,10 +406,8 @@ disposebufs (fbuffer ** buf) {
   fbuffer *bu;
 #ifdef DDEBUG
   if (debuglevel > 0) {
-    fprintf (log_, "\ndisposebufs");
-    wrbufaddr (*buf, 1);
-    putc ('\n', log_);
-    }
+    fprintf (log_, "\ndisposebufs"); wrbufaddr (*buf, 1);
+    putc ('\n', log_); }
 #endif
   if ((*buf) == NULL) { return; }
   bu = *buf;
@@ -456,18 +442,15 @@ exitmacro (void) {
 #ifdef DDEBUG
   int i;
   fbuffer *mbody;
-  int FORLIM;
   if (debuglevel > 0) {
     fprintf (log_, " exitmacro ");
     if (currentmacro == NULL) { }
     else if (currentmacro->argbody == NULL) { }
     else if (currentmacro->argbody->carray != NULL) {
       mbody = currentmacro->argbody;
-      FORLIM = -mbody->attrib;
-      for (i = 1; i <= FORLIM; i++) { wchar (&log_, mbody->carray[i]); }
-      }
-    putc ('\n', log_);
-    }
+      for (i = 1; i <= -(mbody->attrib); i++) {
+        wchar (&log_, mbody->carray[i]); } }
+    putc ('\n', log_); }
 #endif
   currentmacro = NULL;
   aa = args;
@@ -617,9 +600,7 @@ inchar (void) {
 #ifdef DDEBUG
 	    if (debuglevel == 2) {
 	      fprintf (log_, " For detected, ");
-	      logchar (ch);
-	      putc (' ', log_);
-	      }
+	      logchar (ch); putc (' ', log_); }
 #endif
 	    inbuf->readx = 1;
 	    while (inbuf->prevb != NULL) {
@@ -631,9 +612,7 @@ inchar (void) {
 #ifdef DDEBUG
 	    if (debuglevel == 2) {
 	      fprintf (log_, " Not for, ");
-	      logchar (ch);
-	      putc (' ', log_);
-	      }
+	      logchar (ch); putc (' ', log_); }
 #endif
 	    while (inbuf->prevb != NULL) { inbuf = inbuf->prevb; }
 	    if (inbuf->nextb != NULL) { disposebufs (&inbuf->nextb); }
@@ -648,7 +627,7 @@ inchar (void) {
         }
       }
     }
-							/* This is not a loop */
+							/* Done with endofbuf; not a loop */
   if (forbufend || inputeof) { ch = nlch; }
   else {
     ch = inbuf->carray[inbuf->readx];
@@ -658,8 +637,7 @@ inchar (void) {
   if (debuglevel == 2) {
     fprintf (log_, " savedlen=%d ", inbuf->savedlen);
     if (inputeof) { fprintf (log_, "inputeof "); }
-    logchar (ch);
-    }
+    logchar (ch); }
 #endif
 }				/* inchar */
 
@@ -984,8 +962,8 @@ prlex (boolean acc) {
 }
 #endif
 
-							/* Prepend a buffer on the left of current buf*/
-fbuffer *(prebuf (fbuffer * buf)) {
+			                /* Prepend a buffer to the left of current buf */
+fbuffer *(prependbuffer (fbuffer * buf)) {
   fbuffer *prior;
   if (buf->prevb == NULL) { newbuf (&buf->prevb); }
   prior = buf->prevb;
@@ -997,128 +975,105 @@ fbuffer *(prebuf (fbuffer * buf)) {
   return (buf->prevb);
 }
 
-							/* Push macro or arg or string from mac into
-   the head of the input stream */
+                            /* Push macro or arg or string (from mac) into
+                               the head of the input stream */
 void
-copyleft (fbuffer * mac, fbuffer ** buf, int attr) {
+copyleft (fbuffer * mac, fbuffer ** buf, int macattr) {
   fbuffer *ml;
-  int i, k;
-  boolean newflag;
+  int i, macix, neededspace;
+  boolean neednewbuffer;
   boolean copied = false;
-  fbuffer *With;
-  int FORLIM;
 #ifdef DDEBUG
   if (debuglevel > 0) {
-    fprintf (log_, "copyleft(%d", odp (mac));
-    fprintf (log_, ",%d,%d):\n", odp (*buf), attr);
-    }
+    fprintf (log_, "copyleft(%d,%d,%d):\n", odp(mac), odp(*buf), macattr); }
   if (debuglevel > 1) {
-    fprintf (log_, " input string");
-    wrbuf (mac, 3, 1);
-    fprintf (log_, " output");
-    wrbuf (*buf, 3, 1);
-    }
+    fprintf (log_, " input string"); wrbuf (mac, 3, 1);
+    fprintf (log_, " output"); wrbuf (*buf, 3, 1); }
 #endif
   if (mac != NULL) { while (mac->nextb != NULL) { mac = mac->nextb; } }
   while (mac != NULL) {
     if (mac->carray != NULL) {
       if (mac->savedlen >= mac->readx) {
 	    copied = true;
-	    if ((*buf) == NULL) { newflag = true; }
-        else if ((*buf)->attrib >= 0) { newflag = true; } /* for */
-	    else { newflag = false; }
-	    if (newflag) {
+	    if ((*buf) == NULL) { neednewbuffer = true; }
+        else if ((*buf)->attrib >= 0) { neednewbuffer = true; } /* for */
+	    else { neednewbuffer = false; }
+	    if (neednewbuffer) {
 	      newbuf (&ml);
-	      if (attr == 0) { ml->attrib = mac->attrib; }
-          else { ml->attrib = attr; }
+	      if (macattr == 0) { ml->attrib = mac->attrib; }
+          else { ml->attrib = macattr; }
 	      ml->savedlen = CHBUFSIZ;
 	      ml->readx = CHBUFSIZ + 1;
 	      ml->higherb = *buf;
-	      *buf = ml;
-	      }
+	      *buf = ml; }
         }
-      k = mac->savedlen;
-      if ((*buf)->readx < (k - mac->readx + 2)) {
-	    With = *buf;
-	    while (With->readx > 1) {	/* fill the left part of buf */
-	      With->readx--;
-	      With->carray[With->readx] = mac->carray[k];
-	      k--;
-	      }
-	    *buf = prebuf (*buf);
+      macix = mac->savedlen;
+      neededspace = (mac->savedlen - mac->readx + 1);
+      if (neededspace > (*buf)->readx - 1) {
+	    while ((*buf)->readx > 1) {
+	      (*buf)->readx--;
+	      (*buf)->carray[(*buf)->readx] = mac->carray[macix];
+	      macix--; }
+	    *buf = prependbuffer (*buf);
         }
-      FORLIM = mac->readx;
-	  With = *buf;
-      for (i = k; i >= FORLIM; i--) {
-	    With->readx--;
-	    With->carray[With->readx] = mac->carray[i];
+      for (i = macix; i >= mac->readx; i--) {
+	    (*buf)->readx--;
+	    (*buf)->carray[(*buf)->readx] = mac->carray[i];
         }
       }
     mac = mac->prevb;
     }
-  if (!copied) { return; }
+  if (copied) {
 #ifdef DDEBUG
-  if (debuglevel > 0) {
-    fprintf (log_, " copyleft result\n");
-    wrbuf (*buf, 3, 1);
-    }
+    if (debuglevel > 0) {
+      fprintf (log_, " copyleft result\n"); wrbuf (*buf, 3, 1); }
 #endif
-  if ((*buf)->readx <= 1) { *buf = prebuf (*buf); }
-  With = *buf;
-  With->carray[With->readx - 1] = nlch;
+                            /* precede the leftmost char with a newline */
+    if ((*buf)->readx <= 1) { *buf = prependbuffer (*buf); }
+    (*buf)->carray[(*buf)->readx - 1] = nlch;
+    }
 }
 
-							/*  $n has been seen in a macro argument;
-   							copy the body into the tail of the input buffer */
+							/* $n has been seen in a macro argument; append the
+   							   body to the tail of the input stream */
 void
 copyright (fbuffer * mac, fbuffer ** buf) {
   fbuffer *ml;
-  int i, k;
-  fbuffer *With;
-  int FORLIM;
+  int i, macreadx, spaceneeded;
 #ifdef DDEBUG
   if (debuglevel > 0) {
-    fprintf (log_, "copyright:\n input");
-    wrbuf (mac, 3, 1);
-    fprintf (log_, " output");
-    wrbuf (*buf, 3, 0);
-    }
+    fprintf (log_, "copyright:\n input"); wrbuf (mac, 3, 1);
+    fprintf (log_, " output"); wrbuf (*buf, 3, 0); }
 #endif
   while (mac != NULL) {
     if ((*buf) == NULL) {
       newbuf (buf);
-      With = *buf;
-      With->attrib = -1;
-      With->savedlen = 0;
-      With->readx = 1;
+      (*buf)->attrib = -1;
+      (*buf)->savedlen = 0;
+      (*buf)->readx = 1;
       }
-    k = mac->readx;
-    if (CHBUFSIZ - (*buf)->savedlen <= mac->savedlen - k) {
-      With = *buf;
-      while (With->savedlen < CHBUFSIZ) {
-	    With->savedlen++;
-	    With->carray[With->savedlen] = mac->carray[k];
-	    k++;
-        }
+    macreadx = mac->readx;
+    spaceneeded = mac->savedlen - macreadx + 1;
+    if (spaceneeded > CHBUFSIZ - (*buf)->savedlen) {
+      while ((*buf)->savedlen < CHBUFSIZ) {
+	    (*buf)->savedlen++;
+	    (*buf)->carray[(*buf)->savedlen] = mac->carray[macreadx];
+	    macreadx++; }
       newbuf (&ml);
       ml->attrib = (*buf)->attrib;
       ml->prevb = *buf;
       (*buf)->nextb = ml;
       *buf = ml;
       }
-    With = *buf;
-    FORLIM = mac->savedlen;
-    for (i = k; i <= FORLIM; i++) {
-      With->savedlen++;
-      With->carray[With->savedlen] = mac->carray[i];
+    for (i = macreadx; i <= mac->savedlen; i++) {
+      (*buf)->savedlen++;
+      (*buf)->carray[(*buf)->savedlen] = mac->carray[i];
       }
     mac = mac->nextb;
     }
 #ifdef DDEBUG
   if (debuglevel > 0) {
-    fprintf (log_, " result");
-    wrbuf (*buf, 3, 0);
-    }
+    fprintf (log_, " result"); wrbuf (*buf, 3, 0); }
 #endif
 }
 
@@ -1163,17 +1118,15 @@ skipwhite (void) {/* D if debuglevel = 2 then writeln(log, 'skipwhite: ' ); D */
     }
 }
 
-							/* Stash the current argument into the arg
-   struct*/
+							/* Stash the arg body into the arg struct */
 void
-defineargbody (int *parenlevel, fbuffer ** p2) {
+copyargbody (int *parenlevel, fbuffer ** p2) {
   int j, n, bracketlevel;
   arg *ar;
   fbuffer *p;
   fbuffer *p1 = NULL;
   boolean inarg, instring;
   Char prevch;
-  fbuffer *With;
 
   skipwhite ();
   bracketlevel = 0;
@@ -1187,7 +1140,6 @@ defineargbody (int *parenlevel, fbuffer ** p2) {
     instring = false;
     prevch = ' ';
     do {
-      With = p1;
       if (prevch != bslch) {
 	    if (instring && (ch == '"')) { instring = false; }
         else if (ch == '"') { instring = true; }
@@ -1200,15 +1152,14 @@ defineargbody (int *parenlevel, fbuffer ** p2) {
         }
       if ((!instring) && (bracketlevel == 0) && 
           (((*parenlevel) < 0) || (((*parenlevel) == 0) && (ch == ',')))) {
-	    j = With->savedlen; inarg = false; }
+	    j = p1->savedlen; inarg = false; }
       else if (ch != '$') {
 	    prevch = ch;
-	    if (With->savedlen < CHBUFSIZ) { With->savedlen++; }
-        else { markerror (872); }
-	    With->carray[With->savedlen] = ch;
+        p1->savedlen++; 
+	    p1->carray[p1->savedlen] = ch;
 	    inchar ();
         }
-      else {
+      else {                /* $ found in a macro arg */
     	prevch = ch;
     	inchar ();
     	if (isdigit (ch) != 0) {
@@ -1221,15 +1172,13 @@ defineargbody (int *parenlevel, fbuffer ** p2) {
     	  if (ar != NULL) { copyright (ar->argbody, &p1); }
           }
         else {
-    	  if (With->savedlen < CHBUFSIZ) { With->savedlen++; }
-          else { markerror (872); }
-    	  With->carray[With->savedlen] = prevch;
+          p1->savedlen++; 
+    	  p1->carray[p1->savedlen] = prevch;
     	  }
         }
-      /* $ found in a macro arg */
       if (inputeof) {
 	    markerror (806);
-	    j = With->savedlen;
+	    j = p1->savedlen;
 	    inarg = false;
 	    *parenlevel = -1;
         }
@@ -1253,11 +1202,9 @@ eqstring (Char * seg1, chbufinx inx1, chbufinx len1, Char * seg2,
 #ifdef DDEBUG
   if (debuglevel == 2) {
     fprintf (log_, " eqstring:\n");
-    if (seg1 == NULL)
-      fprintf (log_, " seg1 == NULL");
-    if (seg2 == NULL)
-      fprintf (log_, " seg2 == NULL");
-  }
+    if (seg1 == NULL) { fprintf (log_, " seg1 == NULL"); }
+    if (seg2 == NULL) { fprintf (log_, " seg2 == NULL"); }
+    }
 #endif
   if ((seg1 == NULL) || (seg2 == NULL)) {
     k = maxint;
@@ -1272,47 +1219,34 @@ eqstring (Char * seg1, chbufinx inx1, chbufinx len1, Char * seg2,
 #endif
     k = seg1[inx1 + i] - seg2[inx2 + i];
     if (k == 0) { i++; } else { j = i; }
-  }
+    }
   if (k != 0) { return k; }
   if (len1 > len2) { k = seg1[inx1 + i]; }
-  else if (len1 < len2) {
-    k = -seg2[inx2 + i];
+  else if (len1 < len2) { k = -seg2[inx2 + i]; }
 #ifdef DDEBUG
-    if (debuglevel == 2) {
-      fprintf (log_, " i=%d j=%d eqstring=%d\n", i, j, k); }
+  if (debuglevel == 2) { fprintf (log_, " i=%d j=%d eqstring=%d\n", i, j, k); }
 #endif
-    }
   return k;
 }
 
 							/* Look for given macro name */
 arg
-  *(findmacro
-    (arg * p, Char * chb, chbufinx inx, chbufinx toklen, arg ** last)) {
+  *(findmacro (arg * p, Char * chb, chbufinx inx, chbufinx toklen,
+      arg ** last)) {
   arg *pj = NULL;
-  arg *With;
   *last = NULL;
 #ifdef DDEBUG
   if (debuglevel == 2) {
     fprintf (log_, "findmacro:");
-    snapname (chb, inx, toklen);
-    putc ('\n', log_);
-    fflush (log_);
-    }
+    snapname (chb, inx, toklen); putc ('\n', log_);
+    fflush (log_); }
 #endif
   if (p != NULL) {
     while (p != pj) {
-      With = p;
-      if (With->argbody == NULL) {
-	    *last = p;
-	    p = p->nexta; }
-      else if (eqstring(With->argbody->carray, 1,
-        -With->argbody->attrib, chb, inx, toklen) == 0) {
-	    pj = p; }
-      else {
-	    *last = p;
-	    p = p->nexta;
-        }
+      if (p->argbody == NULL) { *last = p; p = p->nexta; }
+      else if (eqstring(p->argbody->carray, 1, -(p->argbody->attrib),
+                        chb, inx, toklen) == 0) { pj = p; }
+      else { *last = p; p = p->nexta; }
       }
     }
   return p;
@@ -1322,16 +1256,11 @@ arg
    								old-arg stack or make a new one */
 void
 newarg (arg ** ar) {
-  arg *With;
   if (freearg == NULL) { *ar = malloc (sizeof (arg)); }
-  else {
-    *ar = freearg;
-    freearg = freearg->nexta;
-    }
-  With = *ar;
-  With->argbody = NULL;
-  With->highera = NULL;
-  With->nexta = NULL;
+  else { *ar = freearg; freearg = freearg->nexta; }
+  (*ar)->argbody = NULL;
+  (*ar)->highera = NULL;
+  (*ar)->nexta = NULL;
 #ifdef DDEBUG
   if (debuglevel > 0) { fprintf (log_, " newarg[%d]\n", odp (*ar)); }
 #endif
@@ -1342,31 +1271,32 @@ boolean
 ismacro (Char * chb, chbufinx obi, chbufinx chbi) {
   arg *mac, *lastp, *ar;
   arg *lastarg = NULL, *firstarg = NULL;
-  int level;
+  int argdepth;
   boolean ism = false;
 #ifdef DDEBUG
+  int i;
   if (debuglevel > 0) {
     fprintf (log_, "\nismacro[");
-    for (level = obi; level < chbi; level++) { putc (chb[level], log_); }
-    fprintf (log_, "]:");
-    }
+    for (i = obi; i < chbi; i++) { putc (chb[i], log_); }
+    fprintf (log_, "]:"); }
 #endif
   if (oldsymb == Xdefine) { skipwhite (); }
   else if (oldsymb != Xundefine) {
     mac = findmacro (macros, chb, obi, chbi - obi, &lastp);
     if (mac != NULL) {
       ism = true;
-      if (ch == '(') { level = 0; } else { backup (); level = -1; }
+      if (ch == '(') { argdepth = 0; }
+      else { backup (); argdepth = -1; } /* this macro has no arguments */
       do {
         newarg (&ar);
         ar->highera = args;
         if (lastarg == NULL) { firstarg = ar; } else { lastarg->nexta = ar; }
-        if (level >= 0) {
+        if (argdepth >= 0) {
           inchar ();
-          defineargbody (&level, &ar->argbody);
+          copyargbody (&argdepth, &ar->argbody);
           }
         lastarg = ar;
-      } while (level >= 0);
+      } while (argdepth >= 0);
       args = firstarg;
       copyleft (mac->argbody, &inbuf, 0);
       }
@@ -1379,10 +1309,10 @@ ismacro (Char * chb, chbufinx obi, chbufinx chbi) {
   return ism;
 }
 
-							/* Push an argument to the left of the
-   								input stream */
+                            /* Push an argument to the left of the
+                               input stream */
 void
-copyarg (Char * chb, chbufinx chbs, chbufinx chbi) {
+expandarg (Char * chb, chbufinx chbs, chbufinx chbi) {
   int n = 0;
   int i;
   arg *ar;
@@ -1394,7 +1324,7 @@ copyarg (Char * chb, chbufinx chbs, chbufinx chbi) {
     if (ar->argbody != NULL) { copyleft (ar->argbody, &inbuf, -1); } }
 }
 
-							/* Check for $+ or copy arg */
+							/* Check for $+ or else copy arg */
 boolean
 insertarg (void) {
   int icx;
@@ -1404,11 +1334,12 @@ insertarg (void) {
     backup ();
     ch = '$';
     chbufi--;
-    return false; }
+    return false;
+    }
   else {
     icx = chbufi - 1;
     while (isdigit (ch) != 0) { pushch (); }
-    copyarg (chbuf, icx, chbufi);
+    expandarg (chbuf, icx, chbufi);
     chbufi = icx;
     inchar ();
     return true;
@@ -1427,7 +1358,7 @@ yylex (attribute * a0) {
   int lxix;
   Char firstch;
   boolean terminalaccepted, looping;
-  fbuffer *With;
+  fbuffer *currbuf;
 
   lexsymb = -1;
   do {
@@ -1441,10 +1372,10 @@ yylex (attribute * a0) {
        3 when .PE found
        4 to process .PE */
     if (lexstate == 1) {
-      newsymb = XDotPS;
+      newsymb = DotPS;
       lexstate = 2; }
     else if (lexstate == 3) {
-      newsymb = XDotPE;
+      newsymb = DotPE;
       lexstate = 4; }
     else if (lexstate == 4) {
       newsymb = Xnewline;
@@ -1470,13 +1401,11 @@ yylex (attribute * a0) {
       inchar ();
       terminalaccepted = false; }
 
-							/* Use the lexical tables to identify
-       							terminals, checking for macro names */
     else {
       firstch = ch;
       pushch ();
 							/* Continuation, comment, constant, latex */
-      With = inbuf;
+      currbuf = inbuf;
       if (firstch == bslch) {
 	    if ((ch == nlch) || (ch == '#')) {
 	      if (ch == '#') { skiptoend (); }
@@ -1486,10 +1415,12 @@ yylex (attribute * a0) {
         else { readlatex (); } }
       else if ((firstch == '.') && (isdigit (ch) != 0)) {
 	    readconst (firstch); }
-      else if ((firstch == '.') && (With->readx == 3) &&
+      else if ((firstch == '.') && (currbuf->readx == 3) &&
 		 (inbuf->prevb == NULL) && (newsymb != (-2))) {
 	    readlatex (); }
-      else {			    /* Search in the lexical tree */
+							/* Use the lexical tables to identify
+       							terminals, checking for macro names */
+      else {
 	    newsymb = entrytv[abs (firstch)];
 	    lxix = entryhp[abs (firstch)];
 	    while (lxix != 0) {
@@ -1503,10 +1434,9 @@ yylex (attribute * a0) {
 	        pushch (); }
           else { lxix = lxnp[lxix]; }
 	      }
-							/* Insert argument or macro */
+							/* Check for Label or macro */
 	if ((isupper (firstch) != 0) &&
 	    ((isalnum (ch) != 0) || (ch == '_') || (ch == '$'))) {
-							/* Label */
 	  looping = true;
 	  while (looping) {
 	    if (ch == '$') { looping = insertarg (); }
@@ -1515,9 +1445,10 @@ yylex (attribute * a0) {
 	    }
 	  if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
       else { newsymb = Xlabel; } }
+
+							/* Check for name or macro */
     else if (((isalnum (firstch) != 0) || (firstch == '_')) &&
 		   ((isalnum (ch) != 0) || (ch == '_') || (ch == '$'))) {
-							/* variable name */
 	  looping = true;
 	  while (looping) {
 	    if (ch == '$') { looping = insertarg (); }
@@ -1526,6 +1457,7 @@ yylex (attribute * a0) {
 	    }
 	  if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
       else { newsymb = Xname; } }
+
     else if (newsymb == Xstring) {
 	  chbufi--;
 	  readstring (); }
@@ -1534,19 +1466,19 @@ yylex (attribute * a0) {
 	  ch = nlch;
 	  terminalaccepted = false;
 	  }
+    else if ((newsymb == Xlt) && inlogic) {
+	  lexsymb = Xcompare;
+	  newsymb = Xcompare; }
 							/* Skip after designated terminals */
 	else if ((newsymb == Xnewline) &&
 		 ((oldsymb == Xelse) || (oldsymb == Xleftbrace) ||
 		  (oldsymb == Xthen) || (oldsymb == Xcolon) ||
 		  (oldsymb == Xnewline))) {
 	  terminalaccepted = false; }
-    else if ((newsymb == Xlt) && inlogic) {
-	  lexsymb = Xcompare;
-	  newsymb = Xcompare; }
+							/* Multiple-valued terminals */
     else if ((newsymb > Xeq) && (newsymb <= Xremeq)) {
 	  lexsymb = newsymb;
 	  newsymb = Xeq; }
-							/* Multiple-valued terminals */
 	else if (newsymb > Xcorner) {
 	  lexsymb = newsymb;
 	  if (newsymb > Xenvvar) { newsymb = Xenvvar; }
@@ -1561,6 +1493,7 @@ yylex (attribute * a0) {
       else if (newsymb > Xparam) { newsymb = Xparam; }
       else if (newsymb > Xcompare) { newsymb = Xcompare; }
       else { newsymb = Xcorner; } }
+
     else if (newsymb == Xarg) {
 	  if (ch == '+') {	/* $+ */
 	    floatvalue = argcount (args);
@@ -1568,14 +1501,14 @@ yylex (attribute * a0) {
 	    inchar (); }
       else if (isdigit (ch) != 0) {	/* $<integer> */
 	    do { pushch (); } while (isdigit (ch) != 0);
-	    copyarg (chbuf, oldbufi, chbufi);
+	    expandarg (chbuf, oldbufi, chbufi);
 	    terminalaccepted = false; }
       else { markerror (805); } }
+
     else if (newsymb == Xdo) { skipwhite (); }
 #ifdef DDEBUG
 	else if (newsymb == Xampersand) {
 	  chbufi = oldbufi;
-	  if (debuglevel > 0) { consoleflush (); }
 	  if (ch >= 'A') { /* linesignal = ch - 'A' + 1; */ }
       else if (ch > '0') {
 	    if (oflag <= 0) { openlogfile (); }
@@ -1587,16 +1520,17 @@ yylex (attribute * a0) {
 	  terminalaccepted = false;
 	  }
 #endif
-	else if ((newsymb == 0) && (isupper (firstch) != 0)) {
 							/* Label, second possibility */
+	else if ((newsymb == 0) && (isupper (firstch) != 0)) {
 	  if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
       else { newsymb = Xlabel; } }
+							/* name, second possibility */
       else if ((newsymb == 0) &&
 		   ((isalnum (firstch) != 0) || (firstch == '_'))) {
-							/* name, second possibility */
 	    if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
         else { newsymb = Xname; } }
-      else if (newsymb == 0) {	/* char not recognized */
+	                        /* char not recognized */
+      else if (newsymb == 0) {
 #ifdef DDEBUG
 	    if (debuglevel > 0) { fprintf (log_,
 		     "\nMarking 800:ord(firstch)=%12d ord(ch)=%12d\n", firstch, ch); }
@@ -1609,17 +1543,17 @@ yylex (attribute * a0) {
 	    markerror (800);
 	    terminalaccepted = false; }
       }
-    }				/*lookahead terminals */
+    }				/* end of lookahead terminals */
 #ifdef DDEBUG
     prlex (terminalaccepted);
 #endif
     if ((newsymb != XLaTeX) && (newsymb != Xstring) &&
 	  (newsymb != Xlabel) && (newsymb != Xname)) { chbufi = oldbufi; }
   } while (!terminalaccepted);
+
   if (lexsymb == (-1)) { lexsymb = newsymb; }
   oldsymb = newsymb;
-
-							/* create the attribute */
+							/* construct the attribute */
   a0->chbufx = oldbufi;
   a0->toklen = chbufi - oldbufi;
   a0->prim = NULL;
@@ -1687,14 +1621,9 @@ deletebufs (fbuffer ** buf) {
 void
 P_sun_argv (char *s, int len, int n) {
   char *cp;
-  if ((unsigned) n < P_argc)
-    cp = P_argv[n];
-  else
-    cp = "";
-  while (*cp && --len >= 0)
-    *s++ = *cp++;
-  while (--len >= 0)
-    *s++ = ' ';
+  if ((unsigned) n < P_argc) { cp = P_argv[n]; } else { cp = ""; }
+  while (*cp && --len >= 0) { *s++ = *cp++; }
+  while (--len >= 0) { *s++ = ' '; }
 }
 
 void
@@ -1827,8 +1756,6 @@ main (int argc, Char * argv[]) {
 							/* Initialize the semantic actions, the
      							parse state, and the lexical state */
   inputeof = false;
-  tmpbuf = NULL;
-  tmpfmt = NULL;
   initrandom ();
 
   chbuf = malloc (sizeof (chbufarray));
