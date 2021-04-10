@@ -36,7 +36,7 @@
 %{
 #define EXTRN extern
 #include "dpic.h"
-#define Rnd(x)	((long)floor(x + 0.5))
+#define Rnd(x)	(x<0?(-(long)floor(-x+0.5)):((long)floor(x + 0.5)))
 
 #define envinx(x)	blockparms.env[(int)(Rnd(x)-Xenvvar-1)]
 
@@ -46,7 +46,7 @@ boolean hasoutline(int, boolean);
 boolean hasshade(int, boolean);
 boolean isprint_(Char);
 boolean teststflag(int, int);
-double findvar(Char *, int);
+double findvar(char *, int);
 double intpow(double, int);
 double linlen(double, double);
 double pheight(primitive *);
@@ -87,7 +87,7 @@ void inheritenv(primitive *);
 void initnesw(void);
 void inittwo(void);
 void lineardir(primitive *, double, double, int *);
-void makevar(Char *, int, double);
+void makevar(char *, int, double);
 void markerror(int);
 void marknotfound(int, Char *, chbufinx, chbufinx);
 void nesw(primitive *);
@@ -121,7 +121,7 @@ void printobject(primitive *);
 void prvars(primitive *);
 void snapname(Char *, chbufinx, chbufinx);
 void wrbufaddr(fbuffer *, int);
-extern void logpos(Char *, postype );
+extern void logpos(char *, postype );
 extern void logspec(int );
 extern int ordp(void *);
 extern int odp(void *);
@@ -877,7 +877,8 @@ stringexpr:	string                                           /* stringexpr1 */
 	     		($1.prim->textp->seginx + $1.prim->textp->len ==
 	      		  prp->textp->seginx)) {
 			  $$.prim->textp->len += prp->textp->len;
-			  putbval($$.prim->textp->segmnt,bval($1.prim->textp->segmnt)-1);
+			  putbval($$.prim->textp->segmnt,
+                bval($1.prim->textp->segmnt)-1);
 			  prp->textp->segmnt = NULL;
     		  }
     		else { appendstring($$.prim->textp, prp->textp->segmnt,
@@ -1209,7 +1210,8 @@ systemcmd:	Xsh stringexpr                                    /* systemcmd1 */
 #ifndef SAFE_MODE
 			    else {
 			      primtextp->segmnt[primtextp->seginx + primtextp->len] = '\0';
-			      $$.xval = system(&primtextp->segmnt[primtextp->seginx]); }
+			      $$.xval = system((char*)
+                    &primtextp->segmnt[primtextp->seginx]); }
 #endif
 		        }
 		      }
@@ -3067,8 +3069,9 @@ newbuf(fbuffer **buf)
   if (debuglevel > 0) { fprintf(log_, " newbuf"); }
 #endif
   if (freeinbuf == NULL) {
-    *buf = malloc(sizeof(fbuffer));
+    *buf = malloc(sizeof(fbuffer)); if (*buf==NULL){ fatal(9); }
     (*buf)->carray = malloc(sizeof(chbufarray));
+    if ((*buf)->carray==NULL){ fatal(9); }
     }
   else {
 #ifdef DDEBUG
@@ -3123,7 +3126,7 @@ inittwo(void)
 {
   freeinbuf = NULL;
   freeseg = NULL;
-  freex = 0;
+  freex = 2;
   freearg = NULL;
   lastfillval = mdistmax;
   gslinethick = mdistmax;
@@ -3206,7 +3209,7 @@ markerror(int emi) {
   else { fprintf(errout, "WARNING: "); }
   wrmacro(&errout, currentmacro);
   if (currentmacro != NULL) { fprintf(errout, ", "); }
-  if (inbufdepth == 0) { P_sun_argv(infname, sizeof(mstring), argct); }
+  if (inbufdepth == 0) { P_sun_argv((char *)infname, sizeof(mstring), argct); }
   j = 0; k = FILENAMELEN;
   while (j < k) {
     if ((infname[j]==' ') || (infname[j]=='\0')) { k = j; } else { j++; } }
@@ -3275,7 +3278,7 @@ markerror(int emi) {
     break;
 							/* lexical error messages */
   case 800:
-    fprintf(errout, "Character not recognized: ignored\n");
+    fprintf(errout, "Invalid character, ignored\n");
     break;
 
   case 802:
@@ -3421,7 +3424,7 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
     fprintf(log_, "Search failure %d", eno);
     if (chb != NULL) {
 	  fprintf(log_, " for \"");
-	  for (i = inx; i < (inx + len); i++) { putc(chb[i], log_); }
+	  for (i = inx; i < (inx + len); i++) { wchar(&log_,chb[i]); }
 	  putc('"', log_); }
     putc('\n', log_);
     }
@@ -3430,7 +3433,7 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
   fprintf(errout, "Search failure");
   if (chb != NULL) {
     fprintf(errout, " for \"");
-    for (i = inx; i < (inx + len); i++) { putc(chb[i], errout); }
+    for (i = inx; i < (inx + len); i++) { wchar(&errout,chb[i]); }
     putc('"', errout);
     }
   putc('\n', errout);
@@ -3466,7 +3469,7 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
 #ifdef DDEBUG
   if (debuglevel > 0) {
     fprintf(log_, " findname|");
-    for (i = chbufx; i < (chbufx + toklen); i++) { putc(chb[i], log_); }
+    for (i = chbufx; i < (chbufx + toklen); i++) { wchar(&log_,chb[i]); }
     fprintf(log_, "|:");
     if (eb == NULL) { fprintf(log_, " eb=nil"); }
     else {
@@ -3528,7 +3531,7 @@ logchar(Char c)
 
 
 void
-wlogfl(Char *nm, double v, int cr)
+wlogfl(char *nm, double v, int cr)
 {
   fprintf(log_, " %s=", nm);
   if (MaxReal - fabs(v) < MaxReal * 1e-6) {
@@ -3635,7 +3638,8 @@ snapname(Char *chbu, chbufinx inx, chbufinx namelen)
   int j;
   fprintf(log_, " (%d inx=%d len=%d)|", ordp(chbu), inx, namelen);
   if (chbu == NULL) { fprintf(log_, "**nil string pointer**"); }
-  else { for (j = inx; j < (inx + namelen); j++) { putc(chbu[j], log_); } }
+  else { for (j = inx; j < (inx + namelen); j++) {
+    wchar(&log_,chbu[j]); } }
   putc('|', log_);
   fflush(log_);
 }
@@ -4080,7 +4084,7 @@ findplace(primitive *p, Char *chb, chbufinx inx, chbufinx toklen))
 
 							/* Get the value of a global variable */
 double
-findvar(Char *s, int ln)
+findvar(char *s, int ln)
 {
   int i, k;
   nametype *last, *np;
@@ -4158,8 +4162,7 @@ addsuffix(Char *buf, chbufinx *inx, int *len, double x, int lx, double y)
 
 							/* Implement "then" or the "to" special case */
 void
-appendthen(primitive **pr)
-{
+appendthen(primitive **pr) {
   primitive *prp, *prq;
   for (prq=(*pr); prq->son != NULL; prq = prq->son) {}
   copyprim(prq, &prp);
@@ -4179,8 +4182,7 @@ appendthen(primitive **pr)
 
 							/* Attribute up, down, left, right */
 void
-lineardir(primitive *pr, double dy, double dx, int *state)
-{
+lineardir(primitive *pr, double dy, double dx, int *state) {
   if (!(teststflag(*state, Xto) | teststflag(*state, Xdirecton))) {
       pr->endpos_ = pr->aat; }
   switch (pr->direction) {
@@ -4202,8 +4204,7 @@ lineardir(primitive *pr, double dy, double dx, int *state)
 
 							/* Test for outline for outlined "string" */
 boolean
-hasoutline(int lx, boolean warn)
-{
+hasoutline(int lx, boolean warn) {
   boolean hs;
   hs = ((lx == Xspline) || (lx == Xarrow) || (lx == Xline) ||
 	(lx == Xarc) || (lx == Xellipse) ||
@@ -4216,8 +4217,7 @@ hasoutline(int lx, boolean warn)
 
 							/* Test for shade for shaded "string" */
 boolean
-hasshade(int lx, boolean warn)
-{
+hasshade(int lx, boolean warn) {
   boolean hs;
   if ((lx == Xellipse) || (lx == Xcircle) || (lx == Xbox)) { hs = true; }
   else if ((drawmode == Pict2e) || (drawmode == TeX) || (drawmode == tTeX) ||
@@ -4232,10 +4232,9 @@ hasshade(int lx, boolean warn)
 
 							/* Create a string struct */
 void
-newstr(nametype **sp)
-{
+newstr(nametype **sp) {
   nametype *namestruct;
-  *sp = malloc(sizeof(nametype));
+  *sp = malloc(sizeof(nametype)); if (*sp==NULL){ fatal(9); }
   namestruct = *sp;
   namestruct->val = 0.0;
   namestruct->segmnt = NULL;
@@ -4250,31 +4249,34 @@ newstr(nametype **sp)
 
 							/* Copy a string into freeseg */
 void
-storestring(nametype *outstr,Char *srcbuf,chbufinx psrc,chbufinx lsrc,int job)
-{
-  int i, j;
+storestring(nametype *outstr,
+  Char *srcbuf, chbufinx psrc, chbufinx lsrc, int job)
+{ int i, j;
   boolean newseg;
   if ((freeseg == NULL) || (lsrc > (CHBUFSIZ - freex + 1))) { newseg = true; }
   else { newseg = false; }
   if (newseg) {
-    freeseg = malloc(sizeof(chbufarray));
+    freeseg = malloc(sizeof(chbufarray)); if (freeseg==NULL){ fatal(9); }
 #ifdef DDEBUG
-    if (debuglevel>0) { fprintf(log_, "storestring new[%d]\n", ordp(freeseg));}
+    if (debuglevel>0) { fprintf(log_,
+      " storestring new[%d]\n lsrc=%d freex=%d space=%d\n",
+        ordp(freeseg),lsrc,freex,CHBUFSIZ-freex+1); }
 #endif
     putbval(freeseg, 0);
-    freex = 3; }
+    freex = 2; }
+  if (lsrc > (CHBUFSIZ - freex + 1)) { markerror(866); fatal(4); }
   for (i = 0; i < lsrc; i++) { freeseg[freex + i] = srcbuf[psrc + i]; }
   outstr->segmnt = freeseg;
   outstr->seginx = freex;
   outstr->len = lsrc;
   j = bval(freeseg);
-  putbval(freeseg, j + 1);
+  putbval(freeseg, j+1);
   freex += lsrc;
 #ifdef DDEBUG
-  if (debuglevel > 0) {
-  fprintf(log_,
+  if (debuglevel > 0) { fprintf(log_,
 	  "storestring to strptr %d: segmnt=%d seginx=%d links=%d freex=%d\n",
-	  ordp(outstr), ordp(freeseg), outstr->seginx, bval(freeseg), freex);
+	  ordp(outstr), ordp(freeseg), outstr->seginx, bval(freeseg),
+      freex);
   snapname(freeseg, outstr->seginx, outstr->len);
   fprintf(log_, " from:");
   snapname(srcbuf, psrc, lsrc);
@@ -4298,29 +4300,29 @@ copystr(nametype **sp, nametype *ip)
 							/* Append buf to *sp */
 void
 appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx namelen)
-{
-  int i;
-  int j;
+{ int i, j;
   Char *tmpseg;
   int FORLIM;
   if ((sp == NULL) || (buf == NULL)) { return; }
   if ((sp->segmnt == freeseg) && (sp->seginx + sp->len == freex) &&
       (freex + namelen - 1 <= CHBUFSIZ)) {
+                            /* New string fits; append to sp */
     for (i = 0; i < namelen; i++) { freeseg[freex + i] = buf[px + i]; }
     sp->len += namelen;
     freex += namelen;
     return;
     }
   if (sp->len + namelen + 2 > CHBUFSIZ) { markerror(866); return; }
-  tmpseg = malloc(sizeof(chbufarray));
+  tmpseg = malloc(sizeof(chbufarray)); if (tmpseg==NULL){ fatal(9); }
+                            /* Copy the existing string to tmpseg */
   FORLIM = sp->len;
-  for (i = 0; i < FORLIM; i++) { tmpseg[i+3] = sp->segmnt[sp->seginx + i]; }
+  for (i = 0; i < FORLIM; i++) { tmpseg[i+2] = sp->segmnt[sp->seginx + i]; }
   j = bval(sp->segmnt);
   if (j > 1) {
-    putbval(sp->segmnt, j - 1);
+    putbval(sp->segmnt, j-1);
     if ((sp->segmnt == freeseg) && (sp->seginx + sp->len == freex)) {
 	  freex = sp->seginx;
-	  j = 3;
+	  j = 2;
 	  while (freex > j) {
 	    if (sp->segmnt[freex-1] == nlch) { freex--; }
 	    else { j = freex; }
@@ -4335,12 +4337,14 @@ appendstring(nametype *sp, Char *buf, chbufinx px, chbufinx namelen)
     if (sp->segmnt == freeseg) { freeseg = NULL; }
     Free(sp->segmnt);
     }
-  for (i = 0; i < namelen; i++) { tmpseg[sp->len + i + 3] = buf[px + i]; }
+                            /* Append new string to tmpseg */
+  if (sp->len + namelen + 1 > CHBUFSIZ) { fatal(4); }
+  for (i = 0; i < namelen; i++) { tmpseg[sp->len + i + 2] = buf[px + i]; }
   freeseg = tmpseg;
-  freex = sp->len + namelen + 3;
+  freex = sp->len + namelen + 2;
   putbval(freeseg, 1);
   sp->segmnt = freeseg;
-  sp->seginx = 3;
+  sp->seginx = 2;
   sp->len += namelen;
 }
 
@@ -4893,14 +4897,14 @@ FindExitPoint(primitive *pr, postype *pe)
 int
 bval(Char *buf)
 {
-  return (((int) buf[0]) << 7) + (int) buf[1] ;
+  return (((int) buf[0]) << 8) + (int) buf[1] ;
 }
 
 							/* Store integer in first two buffer bytes */
 void
 putbval(Char *buf, int n)
 {
-  buf[0] = (Char)(n>>7); buf[1] = (Char)(n % 128);
+  buf[0] = (n>>8); buf[1] = (n & 255);
 }
 
 							/* Free the space used by the name string */
@@ -4921,7 +4925,7 @@ deletename(nametype **head)
 	    putbval(pn->segmnt, j - 1);
 	    if ((pn->segmnt == freeseg) && (pn->seginx + pn->len == freex)) {
 		  freex = pn->seginx;
-		  j = 3;
+		  j = 2;
 		  while (freex > j) {
 		    if (pn->segmnt[freex-1] == nlch) { freex--; }
 		    else { j = freex; }
@@ -4977,27 +4981,27 @@ newprim(primitive **pr, int primtype, primitive *envblk)
   switch (primtype) {
     case Xbox:
     case Xstring:
-      *pr = malloc(sizeof(Xboxprimitive));
+      *pr = malloc(sizeof(Xboxprimitive)); if (*pr==NULL){ fatal(9); }
       break;
     case Xblock:
-      *pr = malloc(sizeof(primitive));
+      *pr = malloc(sizeof(primitive)); if (*pr==NULL){ fatal(9); }
       break;
     case Xcircle:
-      *pr = malloc(sizeof(Xcircleprimitive));
+      *pr = malloc(sizeof(Xcircleprimitive)); if (*pr==NULL){ fatal(9); }
       break;
     case Xellipse:
-      *pr = malloc(sizeof(Xellipseprimitive));
+      *pr = malloc(sizeof(Xellipseprimitive)); if (*pr==NULL){ fatal(9); }
       break;
     case Xline:
     case Xarc:
     case Xarrow:
     case Xmove:
     case Xspline:
-      *pr = malloc(sizeof(Xlineprimitive));
+      *pr = malloc(sizeof(Xlineprimitive)); if (*pr==NULL){ fatal(9); }
       break;
     case Xlabel:
     case XLaTeX:
-      *pr = malloc(sizeof(Xlabelprimitive));
+      *pr = malloc(sizeof(Xlabelprimitive)); if (*pr==NULL){ fatal(9); }
       break;
     }
 
@@ -5472,6 +5476,8 @@ resetenv(int envval, primitive *envbl)
   else { last = envval; }
   if (envbl->blockparms.env == NULL) {
     envbl->blockparms.env = malloc(sizeof(envarray));
+    if (envbl->blockparms.env==NULL){ fatal(9); }
+
 #ifdef DDEBUG
     if (debuglevel > 0) {
 	  fprintf(log_, "resetenv envarray[%d]\n", ordp(envbl->blockparms.env)); }
@@ -5552,6 +5558,7 @@ inheritenv(primitive *envbl)
   pr = findenv(envbl);
   if (pr == NULL) { resetenv(0, envbl); return; }
   envbl->blockparms.env = malloc(sizeof(envarray));
+  if (envbl->blockparms.env==NULL){ fatal(9); }
   for (i = XXenvvar; i <= (Xlastenv - 1); i++) {
       envbl->blockparms.env[i - XXenvvar] = pr->blockparms.env[i - XXenvvar];
   }
@@ -5672,6 +5679,7 @@ copyprim(primitive *prin, primitive **prout)
 	  (*prout)->blockparms.nvars[i] = prin->blockparms.nvars[i]; }
     if (prin->blockparms.env != NULL) {
 	  (*prout)->blockparms.env = malloc(sizeof(envarray));
+	  if ((*prout)->blockparms.env==NULL){ fatal(9); }
 	  for (i = XXenvvar; i < Xlastenv; i++) {
 	    (*prout)->blockparms.env[i - XXenvvar] =
           prin->blockparms.env[i - XXenvvar];
@@ -5754,7 +5762,7 @@ mkOptionVars(void)
 
 							/* The program equivalent of var = number */
 void
-makevar(Char *s, int ln, double varval)
+makevar(char *s, int ln, double varval)
 {
   nametype *vn, *lastvar, *namptr;
   int j, tstval;
@@ -5996,7 +6004,7 @@ queueprim(primitive *pr, primitive *envblk)
 
 
 void
-clearchbuf(chbufinx bi, int ln)
+clearchbuf(chbufinx bi, int ln) /* Needed in the C version */
 {
   int i,j;
   if ((bi+ln) == chbufi) {
@@ -6116,7 +6124,8 @@ sprintfstring( attribute *a3, attribute *a5, int nexprs ))
         tmpfmt[substrend - 1 - substrstart] = 'L';
         tmpfmt[substrend - substrstart] = fsegmnt[fseginx + substrend - 1];
         tmpfmt[substrend + 1 - substrstart] = '\0';
-        numberlen = snprintf(tmpbuf,CHBUFSIZ,tmpfmt, (long double) a5->xval);
+        numberlen = snprintf((char *)tmpbuf,
+          CHBUFSIZ,(char *)tmpfmt, (long double) a5->xval);
 	    a5++; a5++;
         }
       if (numberlen < 0) { markerror(874); substrend = flen; }

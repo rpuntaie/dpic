@@ -26,6 +26,7 @@ extern void ddash (void);
 extern void deletename (nametype **);
 extern void deletetree (primitive **);
 extern void ddot (void);
+extern void fatal (int);
 extern void popgwarc (postype, double, double, double, double);
 extern void pprop (postype, postype *, double, double, double);
 extern void wcoord (FILE **, double, double);
@@ -51,7 +52,7 @@ firstsegment (primitive * pr) {
 
 #ifdef DDEBUG
 void
-logpos(Char *lbl, postype P)
+logpos(char *lbl, postype P)
 { fprintf(log_, "\n %s:(", lbl);
   wfloat(&log_, P.xpos);
   putc(',', log_);

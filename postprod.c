@@ -44,7 +44,7 @@ if (debuglevel > 0) {
 /*
   if (chbufi > 0) {
     fprintf(log_,"Xchbuf(0:%d)|",chbufi);
-    for (i=0; i<chbufi; i++) { putc(chbuf[i], log_); }
+    for (i=0; i<chbufi; i++) { wchar(&log_,chbuf[i]); }
     fprintf(log_,"|\n");
     }
 */

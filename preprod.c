@@ -1,4 +1,8 @@
-/* preprod.c debugging code inserted into dpic.tab.c if debug is activated */
+/* preprod.c debugging code inserted into dpic.tab.c if debug is activated.
+   Uncomment lines 19 and 20 below if you do not mind "uninitialized data"
+   comments by valgrind, depending on the input file; i.e., yyvsp[newp].lexval
+   may not have been set. */
+
 #ifdef DDEBUG
 
 extern void prvars (primitive *);
@@ -12,9 +16,8 @@ if (debuglevel > 0) {
   newp = 1 - yylen;
 
   fprintf (log_, "\nProduction( ");
-  if ((p >= 0) && (yyvsp[newp].lexval <= Xlastenv)) {
-    fprintf (log_, "lexval=%d, ", yyvsp[newp].lexval);
-    }
+  /* if ((p > 2) && (yyvsp[newp].lexval <= Xlastenv)) {
+    fprintf (log_, "lexval=%d, ", yyvsp[newp].lexval); } */
   fprintf (log_, "p=%d )", p);
 
   switch (p) {

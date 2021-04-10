@@ -3,7 +3,7 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 9.4, copyright (c) 2020 J. D. Aplevich under      #
+# Circuit_macros Version 9.5.1, copyright (c) 2021 J. D. Aplevich under      #
 # the LaTeX Project Public Licence in file Licence.txt. The files of       #
 # this distribution may be redistributed or modified provided that this    #
 # copyright notice is included and provided that modifications are clearly #
@@ -66,8 +66,8 @@ define array {
 define array2 { for i_array=3 to $+ do {
   exec sprintf("$1[%g,%g]=$%g",$2,i_array-2,i_array);}}
 
-#                               posarray(Var,position1,position2,...)
-#                               Var[1]:position1; Var[2]:Position2,...
+#                               posarray(Var,Position1,Position2,...)
+#                               Var[1]:Position1; Var[2]:Position2,...
 define posarray {
  for i_array=2 to $+ do { exec sprintf("$1[%g] : $%g",i_array-1,i_array); }}
 

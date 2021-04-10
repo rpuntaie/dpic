@@ -136,7 +136,7 @@ The pic language itself allows macro definitions, and both pic and m4 macros
 will be described.
 
 Many other software tools can produce line diagrams and the choice of
-tool is often subjective or a matter of prior knowledge. The advantages of
+tool is often subjective or a matter of prior familiarity. The advantages of
 \dpic\ are that its basic use is easy to learn and that
 arbitrary formatted diagram text can be included using \LaTeX.
 \Dpic\ will also produce
@@ -333,6 +333,16 @@ with dpic language syntax.  Some of these details
 are exclusive to dpic and are not described in the GNU manual
 but are discussed in \SR{Diffs:} of this document.
 
+%\iffalse
+\subsection{Character set}
+\Dpic\ input employs ordinary ASCII characters.
+The characters {\tt LF (\textbackslash{}n)}
+and {\tt CR (\textbackslash{}r)} have identical effect,
+and {\tt ETX (\textbackslash{}003)} is reserved for internal use.
+Characters outside the range of 0 to 127 are allowed in strings but
+receive no special treatment.
+%\fi
+
 \subsection{Blocks}
 The basic planar objects in pic are {\tt box}, {\tt circle}, and {\tt ellipse},
 the placing of which is done according to the current drawing direction or
@@ -435,7 +445,6 @@ called Circuit\_macros~\cite{Aplevich09} for drawing electric circuits
 and other diagrams using dpic and m4,
 from which examples will be taken.
 
-%\subsection{Dpic macros}
 A dpic macro is defined by the statement
 \ntt{define {\sl name} \tLB\ {\sl contents} \tRB}\\
 where {\sl name} may begin with a lowercase or uppercase letter.
@@ -526,12 +535,15 @@ define bisect {
      else { bisect($1,x_m,x_c,$4,$5) } }
   }
 \end{verbatim}
-%\begin{wrapfigure}[12]{r}{0.4\textwidth}%
-\begin{wrapfigure}[9]{r}{0.4\textwidth}%
-  \vspace*{-4\baselineskip}%
-  \hspace*{1em}%
+\iffalse
+%\begin{wrapfigure}[9]{r}{0.4\textwidth}%
+\begin{wrapfigure}[4]{r}{0.4\textwidth}%
+% \vspace*{-4\baselineskip}%
+  \vspace*{-12\baselineskip}%
+  \hspace*{2em}%
   \parbox{0.4\textwidth}{\input{Spiral.tex}}%
  \end{wrapfigure}%
+\fi
 
 This macro repeatedly calls {\tt parabola} and then itself,
 halving the search interval until it is smaller than the
@@ -540,6 +552,12 @@ The Circuit\_macros library version
 operates essentially as above but avoids name clashes by appending
 the value of the first argument to the internal names.
 
+\begin{wrapfigure}[9]{r}{0.4\textwidth}%
+  \vspace*{-4\baselineskip}%
+% \vspace*{-12\baselineskip}%
+  \hspace*{2em}%
+  \parbox{0.4\textwidth}{\input{Spiral.tex}}%
+ \end{wrapfigure}%
 A somewhat more sophisticated use of a root finder is shown at the right.
 Drawing the spiral on the surface of the sphere requires knowing the
 points of transition of the curve from visible to hidden and back.
@@ -561,6 +579,58 @@ define lozenge {
 \end{verbatim}
 \smash{\hspace*{4in}\input circles.tex}%
 \vspace*{-\baselineskip}
+
+\subsubsection{Branching}\label{Branching:}
+Pic has a basic if-statement of the form
+\ntt{if {\sl expression} then \tLB\ {\sl if-true} \tRB\ else
+ \tLB\ {\sl if-false} \tRB}\\
+but lacks a case statement.  Multiple branches
+can be defined by nested {\tt if} statements but there is another way.
+The macro
+\ntt{define case \tLB\ exec sprintf("\$\%g",floor(\$1+0.5)+1); \tRB}\\
+adds 1 to its rounded first argument to determine which
+alternative among the remaining arguments should be executed.
+The semicolon (or a newline) forces
+dpic to perform the {\tt exec} statement before leaving the macro.
+For example,
+\ntt{case(2,}
+\ntt{\quad print "A",}
+\ntt{\quad print "B")}\\
+executes the second alternative (the third argument) and prints B.
+
+\subsubsection{Looping}
+The pic language includes a basic for-loop, such as the following:
+\ntt{for x = 1 to 10 by 2 do \{ print x \}}\\
+but there is no explicit language element (except macro recursion)
+for executing a block of code an
+indefinite number of times. However, the {\tt for} variable can be reset
+within the executable code, as in the following example where
+the first macro argument is printed and doubled
+repeatedly until it becomes greater than the second argument:
+%\ntt{define series \{ x = \$1; for i=1 to 2 do \{}
+%\ntt{  if x \tRA\ \$2 then \{ i = 2 \} else \{ print x; x = x*2; i=1 \} \} \}}
+\ntt{define series \{ x = \$1; for done = 0 to 1 do \{ print x; x *= 2}
+\ntt{  done = (x > \$2) \} }
+
+If this trick seems like an abuse of language, it can be disguised somewhat
+by the definition of a C-like loop. For example, suppose we wish to
+write
+\ntt{loop(\ x=1,\ x<10,\ x=x*2,}
+\ntt{ \ loop(\ y=1,\ y<=4,\ y=y+1,}
+\ntt{ \ \ print (x,y)\ )\ )}
+
+Then the following defines a suitable mechanism with a loop depth index to
+allow nesting:
+\ntt{ld\_\_ = 0}
+\ntt{define loop \{ld\_\_=ld\_\_+1; \$1}
+\ntt{\ for lx\_\_[ld\_\_]=0 to 1 do \{}
+\ntt{\ \ if \$2 then \{ lx\_\_[ld\_\_]=0; \$4; \$3 \}
+ else \{lx\_\_[ld\_\_]=1\}\}}
+\ntt{\ ld\_\_=ld\_\_-1;\}}
+
+However, {\tt loop()} is a macro, so references to arguments
+in the body will refer to {\tt loop()} arguments, which may not be desired.
+In that case, use a {\tt for} loop.
 
 \subsubsection{Evaluating arguments}
 A macro argument is referenced as {\tt\$}$n$,
@@ -592,43 +662,18 @@ are another example:
 define dpquicksort { [ if $3 > $2 then {
   pivot = $1[($2+($3))/2]
   loop(lo = $2; hi = $3, lo <= hi,
-    loop(,$1[lo] < pivot, lo = lo + 1)
-    loop(,$1[hi] > pivot, hi = hi - 1)
+    loop(,$1[lo] < pivot, lo += 1)
+    loop(,$1[hi] > pivot, hi -= 1)
     if lo < hi then {
       tmp = $1[lo]; $1[lo] := $1[hi]; $1[hi] := tmp
       tmp = $4[lo]; $4[lo] := $4[hi]; $4[hi] := tmp }
-    if lo <= hi then { lo = lo + 1; hi = hi - 1 } )
+    if lo <= hi then { lo += 1; hi -= 1 } )
   if hi > $2 then { exec sprintf("dpquicksort($1,%g,%g,$4)",$2,hi) }
   if lo < $3 then { exec sprintf("dpquicksort($1,%g,%g,$4)",lo,$3) }
   } ] }
 \end{verbatim}
 
-\subsubsection{Branching}\label{Branching:}
-Pic has a basic if-statement of the form
-\ntt{if {\sl expression} then \tLB\ {\sl if-true} \tRB\ else
- \tLB\ {\sl if-false} \tRB}\\
-but lacks a case statement.  Multiple branches
-can be defined by nested {\tt if} statements but there is another way.
-The macro
-\ntt{define case \tLB\ exec sprintf("\$\%g",floor(\$1+0.5)+1); \tRB}\\
-adds 1 to its rounded first argument to determine which
-alternative among the remaining arguments should be executed.
-The semicolon (or a newline) forces
-dpic to perform the {\tt exec} statement before leaving the macro.
-For example,
-\ntt{case(2,}
-\ntt{\quad print "A",}
-\ntt{\quad print "B")}\\
-executes the second alternative (the third argument) and prints B.
-
-A semicolon or newline is also required in
-the following {\tt if} test with an {\tt else} clause:
-\ntt{if (sh "test -f fileA.pic")==0 then \tLB $\;$ copy "fileA.pic"; \tRB \tBS}
-\ntt{else \tLB $\;$ copy "fileB.pic" \tRB}\\
-The semicolon ensures that the {\tt copy} command completes before exiting
-the first pair of braces.
-
-\subsection{Hiding variables}
+\subsubsection{Hiding variables}
 As mentioned in \SR{Scope:}, locations inside a block are accessible
 from outside, but the values of variables are not.  Therefore, a block
 can be used to hide variables internal to a macro, as in the following example:
@@ -670,39 +715,7 @@ omit the {\tt [ ]} brackets and rename the local variables to avoid
 name clashes. For example, {\tt r} above could be {\tt r\_rgbtohsv} and
 so on for other variables. 
 
-\subsection{Looping}
-The pic language includes a basic for-loop, such as the following:
-\ntt{for x = 1 to 10 by 2 do \{ print x \}}\\
-but there is no explicit language element (except macro recursion)
-for executing a block of code an
-indefinite number of times. However, the {\tt for} variable can be reset
-within the executable code, as in the following example where
-the first macro argument is printed and doubled
-repeatedly until it becomes greater than the second argument:
-\ntt{define series \{ x = \$1; for i=1 to 2 do \{}
-\ntt{  if x \tRA\ \$2 then \{ i = 2 \} else \{ print x; x = x*2; i=1 \} \} \}}
-
-If this trick seems like an abuse of language, it can be disguised somewhat
-by the definition of a C-like loop. For example, suppose we wish to
-write
-\ntt{loop(\ x=1,\ x<10,\ x*=2,}
-\ntt{ \ loop(\ y=1,\ y<=4,\ y+=1,}
-\ntt{ \ \ print (x,y)\ )\ )}
-
-Then the following defines a suitable mechanism with a loop depth index to
-allow nesting:
-\ntt{ld\_\_ = 0}
-\ntt{define loop \{ld\_\_+=1; \$1}
-\ntt{\ for lx\_\_[ld\_\_]=0 to 1 do \{}
-\ntt{\ \ if \$2 then \{ lx\_\_[ld\_\_]=0; \$4; \$3 \}
- else \{lx\_\_[ld\_\_]=1\}\}}
-\ntt{\ ld\_\_-=1;\}}
-
-However, {\tt loop()} is a macro, so references to arguments
-in the body will refer to {\tt loop()} arguments, which may not be desired.
-In that case, use a {\tt for} loop.
-
-\subsection{Complex numbers}
+\subsubsection{Complex numbers}
 A complex number is an ordered pair of real numbers like a
 position, so it is natural to do complex algebra using macros such as
 the following example, which evaluates the
@@ -1392,8 +1405,9 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   In gpic, a for loop has the form
     \ntt{for {\sl variable} = {\sl expr1} to {\sl expr2}
       {\rm[}by {\rm[}*{\rm]}{\sl expr3}{\rm]} do X {\sl body} X}\\
-  where X is any character not occurring in {\sl body}, but \tLB\ {\sl
-  body} \tRB\ is also allowed.  In dpic only the latter is allowed.
+  where {\tt X} is any character not occurring in {\sl body},
+  but \tLB\ {\sl body} \tRB\ is also allowed.
+  In dpic only the latter is allowed.
   Similarly, the required form of an if statement for dpic is
     \ntt{if {\sl expr} then \tLB\ {\sl if-true} \tRB\ {\rm[}else
     \tLB\ {\sl if-false} \tRB{\rm]}}
@@ -1405,6 +1419,37 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   Both gpic and dpic allow the
   loop index variable to be changed within the loop, so infinite
   repetition or control of termination by a test are possible.
+
+\subsection{Closing braces and nul elements}
+  In some cases where the contents of {\tt \tLB \tRB} are scanned, a semicolon
+  or newline must be inserted prior to the closing brace to ensure that the
+  contents of the braces are completed before exit.
+  Such a case occurred in the definition of the {\tt case} macro
+  on \PR{Branching:}.
+  Similarly, a semicolon or newline is required in
+  the following {\tt if} test with an {\tt else} clause:
+  \ntt{if (sh "test -f fileA.pic")==0 then \tLB $\;$ copy "fileA.pic";
+    \tRB \tBS}
+  \ntt{else \tLB $\;$ copy "fileB.pic" \tRB}\\
+  The semicolon ensures that the {\tt copy} command completes before exiting
+  the first pair of braces.
+
+  In the following lines, gpic ignores the {\tt \tLB \tRB} braces
+  enclosing the trivial for-loop in the first line and the if-test in the
+  second line.  Consequently, the {\tt "x"} labels are misplaced. Dpic
+  places the labels correctly.  The cure for gpic is to put a semicolon or
+  newline between the rightmost braces.
+    \ntt{\tLB for i=1 to 1 do \tLB line right\tRB\tRB; "x"}
+    \ntt{move; i=1; \tLB if i==1 \tLB line right\tRB\tRB; "x"}
+
+%\subsection{Nul elements}
+  Gpic gives error messages if there is nothing or nothing more than
+  newlines or semicolons between ``{\tt \tLB\ \tRB}'' braces or
+  ``{\tt [ ]}'' brackets.  These constructs do not occur often in
+  hand-generated code (although {\tt []} is sometimes convenient) but
+  \Mfour\ or other macros containing conditional expansion can generate
+  them unless care is taken to avoid them.
+  Dpic allows both items, with {\tt [ ]} generating a block of zero size.
 
 \subsection{End of line}
   The line end is significant in the pic grammar.
@@ -1553,6 +1598,9 @@ arguments can be arbitrary expressions rather than the constants shown.
 
   String height and width are unscaled on final output from dpic since
   these may depend on later formatting by \LaTeX.
+
+  Gpic does not allow newlines in strings; dpic does,
+  with an upper limit of 4095 characters.
 
 \subsection{{\tt print} {\sl arg},~$\ldots$}
   Dpic allows only one argument, which may be an expression, position,
@@ -1856,103 +1904,106 @@ A few additional mathematical functions are defined in dpic:
   {\tt abs}, {\tt acos}, {\tt asin}, {\tt expe}, {\tt floor},
   {\tt loge}, {\tt sign}, {\tt tan}, and {\tt pmod}.
 
-\subsection{PSTricks anomaly}
-  At some time between the years 2000 and 2010,
-  the behaviour of the low-level \PSTricks command
-  {\tt \tBS{}psbezier}
-  was changed to match the existing context-dependent behavior
-  of the {\tt \tBS{}pscurve} command within the\verb|\pscustom| environment%
-\footnote{%
-  The context-dependency of {\tt \tBS{}pscurve} was taken to be a feature
-  rather than a bug.
-  An alternative that preserves command orthogonality would have been
-  to define two curve (and spline) commands for the in-pscustom and out of
-  pscustom contexts.
-% presumably without consideration of independently
-% generated coordinate data.
-% Since curve-defining code then has to be modified
-% depending on where it occurs with respect to {\tt \tBS{}pscustom},
-% the functionality could have been kept while preserving command
-% orthogonality by the use of command options or additional commands.
-  Such are the difficulties of software library maintenance.%
-}.
-  \Dpic does not generate the {\tt \tBS{}pscurve} command,
-  but the new behaviour affects \dpic-defined filled splines.
-  The ``normal'' \PSTricks spline syntax is
-   \ntt{\tBS psbezier(x1,y1)(x2,y2)(x3,y3)(x4,y4)~$\ldots$}\\
-  However, if a correctly defined path containing this spline as its second
-  or later subpath is now enclosed in a\verb|\pscustom| environment, the
-  path coordinates are incorrect;
-% the\verb|\psbezier| command is not the
-% first segment of a path within a\verb|\pscustom| environment then
-  {\tt (x1,y1)} must be omitted since, under these
-  conditions,\verb|\psbezier|
-  takes its first coordinate pair to be the current position.
-  This anomaly would not
-  be a significant problem if it were always known at the time of
-  generating the\verb|\psbezier| coordinates whether the curve will be enclosed
-  within\verb|\pscustom|, but such is not the case.
-
-% Within the pic language in particular, the\verb|\pscustom| command may be
-% introduced via {\tt command} {\sl string} independently of anything else,
-% so \dpic cannot know automatically
-% whether\verb|\pscustom| has been invoked.
-
-  Dpic always generates four (or
-  more) coordinate-pair arguments as in the normal syntax, sometimes
-  resulting in the addition of an extraneous path segment produced
-  within\verb|\pscustom|.
-
-  For some versions of \PSTricks,
-  a workaround for the problem has been to insert a
-  \PSTricks patch in your \LaTeX\ code if you are enclosing splines
-  within\verb|\pscustom| commands.
-  More recent versions of the \PSTricks package have changed
-  again but, starting from the
-  August~27, 2010 {\tt pstricks.tex} distribution file, a parameter
-  {\tt noCurrentPoint} has been introduced,
-  which prevents\verb|\psbezier| (and other commands)
-  from taking the current point as the first coordinate pair.
-  The following line inserted into a latex document avoids an
-  error if the \PSTricks version is August 2010 or later:
-\begin{verbatim}
- \psset{noCurrentPoint}
-\end{verbatim}
-%  As a result, the following file inserted into a latex document seems
-%  to handle both cases in which a workaround is possible: 
-  Older versions of \PSTricks are handled using the following workaround:
-\begin{verbatim}
-command "\makeatletter\@ifundefined{ifPst@noCurrentPoint}%
-{\@ifundefined{MPS@Patch}{\gdef\MPS@Patch{}%
- \typeout{ Dpic -p: patching psbezier in pstricks.tex (some versions) }%
- \def\psbezier@ii{\addto@pscode{%
-  \ifshowpoints true \else false \fi\tx@OpenBezier%
-  \ifshowpoints\tx@BezierShowPoints\fi}\end@OpenObj}}{}}%
-{\@ifundefined{MPS@PatchMsg}{\gdef\MPS@PatchMsg{}%
- \typeout{ Dpic -p: Setting noCurrentPoint to use all coord pairs }}{}%
- \psset{noCurrentPoint}}\makeatother%"
-\end{verbatim}
-
-  This patch need only be executed once per \LaTeX\ run rather than with
-  every diagram.
-
-  If the above fix does not work then, for now,
-  do not insert {\tt spline} commands into paths within the {\tt \tBS pscustom}
-  environment, {\em unless} the spline is the first path segment. It is probably
-  safe to say that this anomaly does not occur very often, but it
-  can cause considerable difficulty when it does; the cure is to update your
-  \PSTricks files.
-
-  Legacy diagrams can often be treated in the following way, if pstricks97.tex
-  is available on your machine as in MiKTeX distributions, for example.
-  Replace the line\verb|\usepackage{pstricks}|
-  with\verb|\usepackage[97]{pstricks}| or\verb|\input{pstricks97.tex}|.
-  However, this method precludes using the newer \PSTricks facilities.
+%\subsection{PSTricks anomaly}
+%  At some time between the years 2000 and 2010,
+%  the behaviour of the low-level \PSTricks command
+%  {\tt \tBS{}psbezier}
+%  was changed to match the existing context-dependent behavior
+%  of the {\tt \tBS{}pscurve} command within the\verb|\pscustom| environment%
+%\footnote{%
+%  The context-dependency of {\tt \tBS{}pscurve} was taken to be a feature
+%  rather than a bug.
+%  An alternative that preserves command orthogonality would have been
+%  to define two curve (and spline) commands for the in-pscustom and out of
+%  pscustom contexts.
+%% presumably without consideration of independently
+%% generated coordinate data.
+%% Since curve-defining code then has to be modified
+%% depending on where it occurs with respect to {\tt \tBS{}pscustom},
+%% the functionality could have been kept while preserving command
+%% orthogonality by the use of command options or additional commands.
+%  Such are the difficulties of software library maintenance.%
+%}.
+%  \Dpic does not generate the {\tt \tBS{}pscurve} command,
+%  but the new behaviour affects \dpic-defined filled splines.
+%  The ``normal'' \PSTricks spline syntax is
+%   \ntt{\tBS psbezier(x1,y1)(x2,y2)(x3,y3)(x4,y4)~$\ldots$}\\
+%  However, if a correctly defined path containing this spline as its second
+%  or later subpath is now enclosed in a\verb|\pscustom| environment, the
+%  path coordinates are incorrect;
+%% the\verb|\psbezier| command is not the
+%% first segment of a path within a\verb|\pscustom| environment then
+%  {\tt (x1,y1)} must be omitted since, under these
+%  conditions,\verb|\psbezier|
+%  takes its first coordinate pair to be the current position.
+%  This anomaly would not
+%  be a significant problem if it were always known at the time of
+%  generating the\verb|\psbezier| coordinates whether the curve will be enclosed
+%  within\verb|\pscustom|, but such is not the case.
+%
+%% Within the pic language in particular, the\verb|\pscustom| command may be
+%% introduced via {\tt command} {\sl string} independently of anything else,
+%% so \dpic cannot know automatically
+%% whether\verb|\pscustom| has been invoked.
+%
+%  Dpic always generates four (or
+%  more) coordinate-pair arguments as in the normal syntax, sometimes
+%  resulting in the addition of an extraneous path segment produced
+%  within\verb|\pscustom|.
+%
+%  For some versions of \PSTricks,
+%  a workaround for the problem has been to insert a
+%  \PSTricks patch in your \LaTeX\ code if you are enclosing splines
+%  within\verb|\pscustom| commands.
+%  More recent versions of the \PSTricks package have changed
+%  again but, starting from the
+%  August~27, 2010 {\tt pstricks.tex} distribution file, a parameter
+%  {\tt noCurrentPoint} has been introduced,
+%  which prevents\verb|\psbezier| (and other commands)
+%  from taking the current point as the first coordinate pair.
+%  The following line inserted into a latex document avoids an
+%  error if the \PSTricks version is August 2010 or later:
+%\begin{verbatim}
+% \psset{noCurrentPoint}
+%\end{verbatim}
+%%  As a result, the following file inserted into a latex document seems
+%%  to handle both cases in which a workaround is possible: 
+%  Older versions of \PSTricks are handled using the following workaround:
+%\begin{verbatim}
+%command "\makeatletter\@ifundefined{ifPst@noCurrentPoint}%
+%{\@ifundefined{MPS@Patch}{\gdef\MPS@Patch{}%
+% \typeout{ Dpic -p: patching psbezier in pstricks.tex (some versions) }%
+% \def\psbezier@ii{\addto@pscode{%
+%  \ifshowpoints true \else false \fi\tx@OpenBezier%
+%  \ifshowpoints\tx@BezierShowPoints\fi}\end@OpenObj}}{}}%
+%{\@ifundefined{MPS@PatchMsg}{\gdef\MPS@PatchMsg{}%
+% \typeout{ Dpic -p: Setting noCurrentPoint to use all coord pairs }}{}%
+% \psset{noCurrentPoint}}\makeatother%"
+%\end{verbatim}
+%
+%  This patch need only be executed once per \LaTeX\ run rather than with
+%  every diagram.
+%
+%  If the above fix does not work then, for now,
+%  do not insert {\tt spline} commands into paths within the {\tt \tBS pscustom}
+%  environment, {\em unless} the spline is the first path segment. It is probably
+%  safe to say that this anomaly does not occur very often, but it
+%  can cause considerable difficulty when it does; the cure is to update your
+%  \PSTricks files.
+%
+%  Legacy diagrams can often be treated in the following way, if pstricks97.tex
+%  is available on your machine as in MiKTeX distributions, for example.
+%  Replace the line\verb|\usepackage{pstricks}|
+%  with\verb|\usepackage[97]{pstricks}| or\verb|\input{pstricks97.tex}|.
+%  However, this method precludes using the newer \PSTricks facilities.
 
 %\pagebreak
 \pdfbookmark[section]{\refname}{refs}
 \bibliographystyle{plain}
-%\addcontentsline{toc}{section}{\protect{\hspace*{1em}$\;$}References}
+\makeatletter
+\addcontentsline{toc}{section}{\protect{\hspace*{1em}$\:\,$}References
+\unhbox \voidb@x}
+\makeatother
 \bibliography{./dpic-doc}
 
 %===============================================================================

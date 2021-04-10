@@ -178,14 +178,14 @@ svgendpath (void) {
 }
 
 void
-svgparam (Char * p, double x) {
+svgparam (char * p, double x) {
   printf (" %s=\"", p);
   wfloat (&output, x / fsc);
   quote ();
 }
 
 void
-svgcoord (Char * s1, Char * s2, double x, double y) {
+svgcoord (char * s1, char * s2, double x, double y) {
   svgparam (s1, x);
   svgparam (s2, xfheight - y);
 }

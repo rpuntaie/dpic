@@ -124,7 +124,7 @@ mpocorner (postype ctr, double x, double y, double r, double ct, double st) {
 }
 
 void
-mpobox (Char * initial, postype ctr, double halfwid, double halfht,
+mpobox (char * initial, postype ctr, double halfwid, double halfht,
 	double rad) {
   double r, h, v;
 
@@ -151,7 +151,7 @@ mpobox (Char * initial, postype ctr, double halfwid, double halfht,
 }
 
 void
-mpoellipse (Char * initial, postype ctr, double halfwid, double halfht) {
+mpoellipse (char * initial, postype ctr, double halfwid, double halfht) {
   fputs (initial, stdout);
   wcoord (&output, ctr.xpos + halfwid, ctr.ypos);
   controls ();

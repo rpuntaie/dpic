@@ -27,7 +27,7 @@
                                 /* Machine constants                  */
                                 /* Assume simple ASCII; forget EBCDIC */
 #define ordMINCH        0
-#define ordMAXCH        127
+#define ordMAXCH        255
 #define ordNL           10
 #define ordTAB          9
 #define ordCR           13
@@ -67,8 +67,7 @@
 #define pointd          72
 #define DFONT           11      /* default svg font size, pt          */
 
-#define Char char
-typedef unsigned char uchar;
+#define Char unsigned char
 typedef unsigned char boolean;
 
                                 /* Lexical types                      */
@@ -80,7 +79,7 @@ typedef Char chbufarray[CHBUFSIZ + 1];
 typedef Char mstring[FILENAMELEN];
 
                                 /* Environment variable index         */
-typedef uchar environx;
+typedef Char environx;
 
                                 /* For storing names                  */
 typedef struct nametype {

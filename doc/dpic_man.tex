@@ -3,7 +3,7 @@
 %
 % BSD Licence:
 % 
-% Copyright (c) 2020, J. D. Aplevich
+% Copyright (c) 2021, J. D. Aplevich
 % All rights reserved.
 % 
 % Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 %
 % Use {\tt "} instead of ".
 %
-\phead{DPIC}{1}{2021.01.01}{}{}\shead{NAME}
+\phead{DPIC}{1}{2021.04.10}{}{}\shead{NAME}
 dpic - convert pic-language input to LaTeX-compatible and other formats
 \shead{SYNOPSIS}
 {\tt dpic\ [\ -defghmprstvx\ ]\ [\ -z\ ]\ [}
@@ -111,6 +111,17 @@ are implemented for specific purposes.
 
 \shead{LANGUAGE SUMMARY}
 Input consists of a sequence of ASCII text lines.
+The characters
+{\tt LF}
+(\textbackslash n) and
+{\tt CR}
+(\textbackslash r) have identical effect,
+and
+{\tt ETX}
+(\textbackslash 003) is reserved for internal use.
+Characters outside the range of 0 to 127 are allowed in strings but
+receive no special treatment.
+
 The first line of a picture is
 {\tt .PS}
 and the last is
@@ -1286,7 +1297,7 @@ illustrations.)
 
 J. D. Aplevich,
 {\it Drawing with dpic,}
-2020,
+2021,
 % .br
 \url{http://ece.uwaterloo.ca/~aplevich/dpic/dpic-doc.pdf}
 % .br
@@ -1306,7 +1317,7 @@ pic.)
 
 J. D. Aplevich,
 {\it M4 Macros for Electric Circuit Diagrams in LaTeX Documents,}
-2020.
+2021.
 File Circuit\_macros.pdf in the graphics/Circuit\_macros section
 of CTAN repositories.
 (Extension of the pic
@@ -1315,7 +1326,7 @@ and other diagrams.)
 %
 \shead{AUTHOR}
     Dwight Aplevich $<$aplevich at uwaterloo dot ca$>$
-%   Copyright (c) 2020, J. D. Aplevich
+%   Copyright (c) 2021, J. D. Aplevich
 %   .SH BSD licence:
 %   .P
 %   All rights reserved.

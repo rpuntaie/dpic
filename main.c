@@ -26,7 +26,7 @@ extern int ordp (void *);
 extern void logaddr (fbuffer *);
 extern void logchar (Char);
 extern void snapname (Char *, chbufinx, chbufinx);
-extern void wlogfl (Char *, double, int);
+extern void wlogfl (char *, double, int);
 extern void wrbufaddr (fbuffer *, int);
 extern void wrbuf (fbuffer *, int, int);
 #endif
@@ -297,7 +297,10 @@ consoleflush (void) {
 							/* Unrecoverable errors */
 void
 fatal (int t) {
-  if (t != 0) { fprintf (errout, "\n*** dpic: "); }
+#ifdef DDEBUG
+  if (debuglevel > 0) { fprintf (log_, "\nfatal(%d)\n",t); fflush(log_); }
+#endif
+  if (t != 0) { fprintf (errout, "\n*** dpic terminating: "); }
   switch (t) {
   case 0:
 							/* blank case */
@@ -322,6 +325,9 @@ fatal (int t) {
 							/* case 6 and 7: pascal only, parse overflow */
   case 8:
     fprintf (errout, "error recovery abandoned\n");
+    break;
+  case 9:
+    fprintf (errout, "malloc failed: insufficient available memory\n");
     break;
   default:
     fprintf (errout, "unclassified fatal error\n");
@@ -351,29 +357,6 @@ openlogfile (void) {
 }
 #endif
 
-							/* Check if a file is accessible */
-int
-checkfile (Char * ifn, boolean isverbose) {
-  int cf;
-  int i = 0, j = FILENAMELEN;
-  while (j > i) {
-    if (ifn[j - 1] == ' ') { j--; } else { i = j; } }
-  if (j < FILENAMELEN) { j++; } else { fatal (1); }
-  ifn[j - 1] = '\0';
-  cf = access (ifn, 4);
-  if (!(isverbose && (cf != 0))) { return cf; }
-  fprintf (errout, " *** dpic: Searching for file \"");
-  for (i = 0; i <= (j - 2); i++) { putc (ifn[i], errout); }
-  fprintf (errout, "\" returns %d\n", cf);
-  return cf;
-}
-
-							/* Open the error stream */
-void
-openerror (void) {
-  errout = stderr;
-}
-
 							/* Printable character */
 boolean
 isprint_ (Char ch) {
@@ -388,7 +371,30 @@ wchar (FILE ** iou, Char c) {
   else if (c == crch) { fprintf (*iou, "\\r"); }
   else if (c == tabch) { fprintf (*iou, "\\t"); }
   else if (c < 32) { fprintf (*iou, "^%c", c + 64); }
-  else { fprintf (*iou, "\\%d%d%d", (c >> 6) & 7, (c >> 3) & 7, c & 7); }
+  else { fprintf (*iou, "\\%d%d%d", (c >> 6) & 3, (c >> 3) & 7, c & 7); }
+}
+
+							/* Check if a file is accessible */
+int
+checkfile (Char * ifn, boolean isverbose) {
+  int cf;
+  int i = 0, j = FILENAMELEN;
+  while (j > i) {
+    if (ifn[j - 1] == ' ') { j--; } else { i = j; } }
+  if (j < FILENAMELEN) { j++; } else { fatal (1); }
+  ifn[j - 1] = '\0';
+  cf = access ((char *)ifn, 4);
+  if (!(isverbose && (cf != 0))) { return cf; }
+  fprintf (errout, " *** dpic: Searching for file \"");
+  for (i = 0; i <= (j - 2); i++) { wchar(&errout,ifn[i]); }
+  fprintf (errout, "\" returns %d\n", cf);
+  return cf;
+}
+
+							/* Open the error stream */
+void
+openerror (void) {
+  errout = stderr;
 }
 
 /*--------------------------------------------------------------------*/
@@ -449,7 +455,7 @@ exitmacro (void) {
     else if (currentmacro->argbody->carray != NULL) {
       mbody = currentmacro->argbody;
       for (i = 1; i <= -(mbody->attrib); i++) {
-        wchar (&log_, mbody->carray[i]); } }
+        wchar (&log_,  mbody->carray[i]); } }
     putc ('\n', log_); }
 #endif
   currentmacro = NULL;
@@ -759,8 +765,9 @@ pointinput (nametype * txt) {
   if (higherinbuf != NULL) { markerror (853); return; }
   if (checkfile (infname, true) != 0) { markerror (859); return; }
   if (copyin != NULL) {
-       copyin = freopen (trimname (infname, sizeof (mstring)), "r", copyin); }
-  else { copyin = fopen (trimname (infname, sizeof (mstring)), "r"); }
+       copyin = freopen ((char *)trimname (infname, sizeof (mstring)),
+         "r", copyin); }
+  else { copyin = fopen ((char *)trimname (infname, sizeof (mstring)), "r"); }
   if (copyin == NULL) { fatal (1); }
   backup ();
   ch = nlch;
@@ -805,16 +812,18 @@ pointoutput (boolean create, nametype * txt, int *ier) {
   if ((*ier) != 0) { markerror (861); return; }
   if (create) {
     if (redirect != NULL) {
-      redirect= freopen (trimname (outfnam, sizeof (mstring)), "w", redirect);}
+      redirect= freopen ((char *) trimname (outfnam, sizeof (mstring)),
+       "w", redirect);}
     else {
-      redirect =  fopen (trimname (outfnam, sizeof (mstring)), "w"); }
+      redirect =  fopen ((char *)trimname (outfnam, sizeof (mstring)), "w"); }
     if (redirect == NULL) { markerror(876); fatal (8); }
     return;
     }
   if (redirect != NULL) {
-    redirect = freopen (trimname (outfnam, sizeof (mstring)), "a", redirect); }
+    redirect = freopen ((char *)trimname (outfnam, sizeof (mstring)),
+     "a", redirect); }
   else {
-    redirect =   fopen (trimname (outfnam, sizeof (mstring)), "a"); }
+    redirect =   fopen ((char *)trimname (outfnam, sizeof (mstring)), "a"); }
   if (redirect == NULL) { markerror(876); fatal (8); }
 }
 
@@ -874,7 +883,7 @@ readstring (void) {
     putc ('\n', log_);
     fprintf (log_, " readstring done, chbufi=%d |", chbufi);
     while (j < chbufi) {
-      putc (chbuf[j], log_);
+      wchar(&log_,chbuf[j]);
       j++;
       }
     fprintf (log_, "| ");
@@ -950,7 +959,7 @@ prlex (boolean acc) {
   if (newsymb != XLaTeX) {
     fprintf (log_, " chbuf(%d:%d)=\"", oldbufi, chbufi - 1);
     FORLIM = chbufi;
-    for (i = oldbufi; i < FORLIM; i++) { putc (chbuf[i], log_); }
+    for (i = oldbufi; i < FORLIM; i++) { wchar(&log_,chbuf[i]); }
     putc ('"', log_); }
   else { fprintf (log_, "=<LaTeX>"); }
   if (newsymb == Xfloat) { wlogfl ("value", floatvalue, 0); }
@@ -1256,7 +1265,8 @@ arg
    								old-arg stack or make a new one */
 void
 newarg (arg ** ar) {
-  if (freearg == NULL) { *ar = malloc (sizeof (arg)); }
+  if (freearg == NULL) { *ar = malloc (sizeof (arg));
+    if (*ar==NULL){ fatal(9); } }
   else { *ar = freearg; freearg = freearg->nexta; }
   (*ar)->argbody = NULL;
   (*ar)->highera = NULL;
@@ -1277,7 +1287,7 @@ ismacro (Char * chb, chbufinx obi, chbufinx chbi) {
   int i;
   if (debuglevel > 0) {
     fprintf (log_, "\nismacro[");
-    for (i = obi; i < chbi; i++) { putc (chb[i], log_); }
+    for (i = obi; i < chbi; i++) { wchar (&log_,chb[i]); }
     fprintf (log_, "]:"); }
 #endif
   if (oldsymb == Xdefine) { skipwhite (); }
@@ -1346,6 +1356,21 @@ insertarg (void) {
     }
 }
 
+boolean
+illegalchar(Char c) {
+#ifdef DDEBUG
+  if (debuglevel > 0) {
+    fprintf(log_, "Marking 800: chr(%d)\"", c);
+    wchar(&log_, c);
+    fprintf(log_, "\" invalid\n");
+    }
+#endif
+  fprintf(errout, "Character chr(%d)\"", c);
+  wchar(&errout, c);
+  fprintf(errout, "\" invalid\n");
+  markerror(800);
+  return false;
+}
 							/* Find the next terminal.
    								Set lexsymb (terminal lexical value),
    								newsymb (terminal number used for parsing),
@@ -1402,7 +1427,7 @@ yylex (attribute * a0) {
       terminalaccepted = false; }
 
     else {
-      firstch = ch;
+      firstch =  ch;
       pushch ();
 							/* Continuation, comment, constant, latex */
       currbuf = inbuf;
@@ -1418,11 +1443,12 @@ yylex (attribute * a0) {
       else if ((firstch == '.') && (currbuf->readx == 3) &&
 		 (inbuf->prevb == NULL) && (newsymb != (-2))) {
 	    readlatex (); }
+/* else if (firstch > ordMAXCH) { terminalaccepted = illegalchar(firstch); } */
 							/* Use the lexical tables to identify
        							terminals, checking for macro names */
       else {
-	    newsymb = entrytv[abs (firstch)];
-	    lxix = entryhp[abs (firstch)];
+	    newsymb = entrytv[firstch];
+	    lxix = entryhp[firstch];
 	    while (lxix != 0) {
 	      if (ch == '$') {
             if (!insertarg ()) { lxix = 0; }
@@ -1530,18 +1556,7 @@ yylex (attribute * a0) {
 	    if (ismacro (chbuf, oldbufi, chbufi)) { terminalaccepted = false; }
         else { newsymb = Xname; } }
 	                        /* char not recognized */
-      else if (newsymb == 0) {
-#ifdef DDEBUG
-	    if (debuglevel > 0) { fprintf (log_,
-		     "\nMarking 800:ord(firstch)=%12d ord(ch)=%12d\n", firstch, ch); }
-#endif
-	    fprintf (errout, "Char chr(%d)", firstch);
-	    putc ('"', errout);
-	    wchar (&errout, firstch);
-	    putc ('"', errout);
-	    fprintf (errout, " unknown\n");
-	    markerror (800);
-	    terminalaccepted = false; }
+      else if (newsymb == 0) { terminalaccepted = illegalchar(firstch); }
       }
     }				/* end of lookahead terminals */
 #ifdef DDEBUG
@@ -1632,13 +1647,14 @@ openfiles (void) {
   higherinbuf = NULL;
   output = stdout; input = stdin;
   if (argct >= P_argc) { return; }
-  P_sun_argv (infname, sizeof (mstring), argct);
+  P_sun_argv ((char *)infname, sizeof (mstring), argct);
   while (i < j) { if (infname[i-1] != ' ') { i++; } else { j = i; } }
                             /* Open the main input file        */
   if (checkfile (infname, true) != 0) { fatal (1); }
   if (input != NULL) {
-       input = freopen (trimname (infname, sizeof (mstring)), "r", input); }
-  else { input = fopen (trimname (infname, sizeof (mstring)), "r"); }
+       input = freopen ((char *)trimname (infname, sizeof (mstring)),
+        "r", input); }
+  else { input = fopen ((char *)trimname (infname, sizeof (mstring)), "r"); }
   if (input == NULL) { fatal (1); }
 #ifdef DDEBUG
   if (oflag <= 0) { return; }
@@ -1681,7 +1697,7 @@ getoptions (void) {
   argct = 1;
   istop = P_argc;
   while (argct < istop) {
-    P_sun_argv (infname, sizeof (mstring), argct);
+    P_sun_argv ((char *)infname, sizeof (mstring), argct);
     cht = optionchar (infname);
     if (cht == 0) {
       istop = argct;
@@ -1735,7 +1751,7 @@ getoptions (void) {
 }				/* getoptions */
 
 int
-main (int argc, Char * argv[]) {
+main (int argc, char * argv[]) {
   P_argc = argc;
   P_argv = argv;
   redirect = NULL;
@@ -1758,7 +1774,7 @@ main (int argc, Char * argv[]) {
   inputeof = false;
   initrandom ();
 
-  chbuf = malloc (sizeof (chbufarray));
+  chbuf = malloc (sizeof (chbufarray)); if (chbuf==NULL){ fatal(9); }
 #ifdef DDEBUG
   if (debuglevel > 0) { fprintf (log_, "new(chbuf)[%d]\n", odp (chbuf)); }
 #endif

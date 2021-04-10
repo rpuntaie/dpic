@@ -8,7 +8,7 @@
 # drive the lexical analyzer.
 
 BEGIN { 
-   ORDMAXCH = 127
+   ORDMAXCH = 255
 
    for (i=0; i<=ORDMAXCH; i++){
       entryhp[i] = 0

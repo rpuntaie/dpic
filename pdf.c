@@ -1,7 +1,7 @@
 /* Output routines for PDF */
 
 void
-pdfstream (Char * s, int ls, nametype ** strm)
+pdfstream (char * s, int ls, nametype ** strm)
 {
   int i, ll;
   int s0 = 1;
@@ -17,6 +17,7 @@ pdfstream (Char * s, int ls, nametype ** strm)
     if ((*strm)->len > CHBUFSIZ) {
 	  newstr (&ns);
 	  ns->segmnt = malloc (sizeof (chbufarray));
+      if (ns->segmnt==NULL){ fatal(9); }
 	  (*strm)->nextname = ns;
 	  *strm = ns;
 	  }
@@ -31,7 +32,7 @@ pdfendline (nametype ** strm)
 }
 
 void
-pdfwln (Char * s, int ln, nametype ** strm)
+pdfwln (char * s, int ln, nametype ** strm)
 {
   pdfstream (s, ln, strm);
   pdfendline (strm);
@@ -109,6 +110,7 @@ pdfprelude (double n, double s, double e, double w, double lth)
   gsdashs = 0.0;
   newstr (&stream);
   stream->segmnt = malloc (sizeof (chbufarray));
+  if (stream->segmnt==NULL){ fatal(9); }
   cx = stream;
   pdfwln (" 0.8 w", 6, &cx);
   gslinethick = 0.8;
@@ -120,12 +122,13 @@ pdfwfloat (double y) {
   int i,j;
   if (y < 0) { pdfstream(" -",2,&cx); y = -y; } else { pdfstream(" ",1,&cx); }
   if (y >= 10e32) { y = 10e32; markerror(902); }
-  i = snprintf(buf, CHBUFSIZ, "%33.6f", floor(y*1000000+0.5)/1000000.0 );
+  i = snprintf((char *)buf,
+    CHBUFSIZ, "%33.6f", floor(y*1000000+0.5)/1000000.0 );
   for (i--; buf[i]=='0'; ) { i--; }
   if (buf[i]=='.') { i--; }
   for (j=i-1; (j>=0) && (buf[j]!=' '); ) { j--; }
   j++;
-  pdfstream(&buf[j],i-j+1,&cx);
+  pdfstream((char *)&buf[j],i-j+1,&cx);
 }
 
 void
@@ -257,7 +260,7 @@ pdfwstring (nametype * p)
 	  if ((c == bslch) || (c == ')') || (c == '(')) {
 	    pdfstream ("\\", 1, &cx); }
 	  CHR[0] = c;
-	  pdfstream (CHR, 1, &cx); }
+	  pdfstream ((char *)CHR, 1, &cx); }
     waswhite = iswhite;
     }
 }

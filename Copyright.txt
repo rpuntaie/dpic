@@ -1,13 +1,13 @@
 Files: All except as noted below:
-Copyright: 2020, J. D. Aplevich
+Copyright: 2021, J. D. Aplevich
 License: BSD-2-clause
 
 Files: dpic-doc.pdf
-Copyright: 2020 J. D. Aplevich
+Copyright: 2021 J. D. Aplevich
 License: CC-BY-3.0
 
 Files: doc/dpictools.pic
-Copyright: 2020 J. D. Aplevich
+Copyright: 2021 J. D. Aplevich
 License: LaTeX Project Public License v. 1.3c
 
 Files: dpic.tab.*
