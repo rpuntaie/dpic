@@ -733,10 +733,11 @@ arg *(findarg (arg * arlst, int k)) {
 
 Char *
 trimname (Char * fn, int len) {
-  static Char fnbuf[256];
+  static Char fnbuf[FILENAMELEN];
   Char *cp = fnbuf;
-  while (--len >= 0 && *fn && !isspace ((unsigned)*fn))
-    *cp++ = *fn++;
+  while (--len >= 0 && *fn && !isspace ((unsigned)*fn)) {
+    *cp = *fn;
+     cp++; fn++; }
   *cp = 0;
   return fnbuf;
 }
@@ -1326,7 +1327,12 @@ expandarg (Char * chb, chbufinx chbs, chbufinx chbi) {
   int n = 0;
   int i;
   arg *ar;
-
+#ifdef DDEBUG
+  if (debuglevel > 0) {
+    fprintf(log_, "\nexpandarg(");
+    for (i = chbs; i < chbi; i++) { wchar(&log_,chb[i]); }
+    fprintf(log_, ") "); }
+#endif
   for (i = chbs + 1; i < chbi; i++) { n = (n * 10) + chb[i] - '0'; }
   ar = findarg (args, n);
   backup ();
@@ -1340,6 +1346,10 @@ insertarg (void) {
   int icx;
 
   pushch ();
+#ifdef DDEBUG
+  if (debuglevel > 0) { fprintf(log_, "\n insertarg $"); wchar(&log_, ch);
+    putc('\n', log_); }
+#endif
   if (ch == '+') {
     backup ();
     ch = '$';

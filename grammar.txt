@@ -4,14 +4,16 @@ $accept: input "end of file"
 input: %empty
      | input picture NL
 
-picture: start NL elementlist optnl "end of file or .PE"
+picture: prestart psline NL elementlist optnl "end of file or .PE"
 
 NL: "end of line or ;"
   | error
 
-start: ".PS"
-     | ".PS" term
-     | ".PS" term term
+prestart: %empty
+
+psline: ".PS"
+      | ".PS" term
+      | ".PS" term term
 
 elementlist: %empty
            | element

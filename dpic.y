@@ -410,8 +410,9 @@ input :                                                           /* input1 */
 		  }
 		;
 
-picture	:	start NL elementlist optnl DotPE                   /* picture1 */
-		{ if (envblock != NULL ) { getnesw(envblock->son);
+picture	:	prestart psline NL elementlist optnl DotPE          /* picture1 */
+		{ $$ = $2;
+		  if (envblock != NULL ) { getnesw(envblock->son);
 #ifdef DDEBUG
 	      if (debuglevel > 0) {
             snaptree(envblock->son,0);
@@ -491,14 +492,17 @@ NL	:	Xnewline                                                     /* NL1 */
 		{ yyerrok; /* yyclearin; */ }
 		;
 
-start	:	DotPS                                                /* start1 */
-		{ mkOptionVars(); $$.xval = 0; $$.yval = 0; }
+prestart	: /* empty */                                      /* prestart1 */
+		{ mkOptionVars(); }
 
-		| DotPS term                                             /* start2 */
-		{ mkOptionVars(); $$.xval = $2.xval; $$.yval = 0; }
+psline	:	DotPS                                                /* psline1 */
+		{ $$.xval = 0; $$.yval = 0; }
 
-		| DotPS term term                                        /* start3 */
-		{ mkOptionVars(); $$.xval = $2.xval; $$.yval = $3.xval; }
+		| DotPS term                                             /* psline2 */
+		{ $$.xval = $2.xval; $$.yval = 0; }
+
+		| DotPS term term                                        /* psline3 */
+		{ $$.xval = $2.xval; $$.yval = $3.xval; }
 		;
 
 elementlist	:                                               /* elementlist1 */
@@ -2837,6 +2841,7 @@ lcompare:	expression                                         /* lcompare1 */
 			markerror(869);
 			bswitch = false;
 			deletestringbox(&$1.prim);
+		    $$.lexval = XEMPTY;
 		    }
 		  else {
 #ifdef DDEBUG
@@ -3197,8 +3202,9 @@ markerror(int emi) {
   if (errcount > MAXERRCOUNT) { fatal(3); }
 #ifdef DDEBUG
   if (debuglevel > 0) {
-    fprintf(log_, "*** markerror");
-    wrbufaddr(inbuf, 0);
+    fprintf(log_, "*** Markerror");
+    /* wrbufaddr(inbuf, 0); */
+    wrbuf(inbuf,3,0);
     fprintf(log_, " emi=%d, lexsymb=%d:\n", emi, lexsymb);
     wrmacro( &log_, currentmacro );
     putc('\n', log_);
@@ -3739,7 +3745,9 @@ printobject(primitive *primp)
 	    if (wprim->shadedp != NULL) {
 		  fprintf(log_, " shaded:");
 		  printtext(wprim->shadedp); }
-	    if (wprim->textp != NULL) { printtext(wprim->textp); }
+	    if (wprim->textp != NULL) {
+          fprintf(log_," textp->");
+          printtext(wprim->textp); }
 	    fprintf(log_, " aat");
 	    wpair(&log_, wprim->aat.xpos, wprim->aat.ypos);
 	    wlogfl("lparam", wprim->lparam, 0);
@@ -3896,6 +3904,9 @@ deletetree(primitive **p)
 {
   primitive *r, *wprim;
   int i;
+#ifdef DDEBUG
+    if (debuglevel > 0) { fprintf(log_, "deletetree:\n"); }
+#endif
   if ((*p) != NULL) { (*p)->parent = NULL; }
   while ((*p) != NULL) {
     while (((*p)->nextname != NULL) || ((*p)->son != NULL)) {
@@ -3911,10 +3922,16 @@ deletetree(primitive **p)
     deletename(&(*p)->name);
     wprim = *p;
     if ((wprim->ptype) == Xblock) {
+#ifdef DDEBUG
+      if (debuglevel > 0) { fprintf(log_, "Xblock: "); }
+#endif
 	  for (i = HASHLIM; i >= 0; i--) { deletename(&wprim->blockparms.vars[i]);}
 	  if (wprim->blockparms.env != NULL) { Free(wprim->blockparms.env); }
       }
-    else { Free(*p); }
+#ifdef DDEBUG
+    if (debuglevel > 0) {fprintf(log_, "*p free(%d)\n",odp(*p)); }
+#endif
+    free(*p);
     *p = r;
     }
   }
@@ -4913,6 +4930,9 @@ deletename(nametype **head)
 { /*F(var head: strptr)F*/
   nametype *pn, *r;
   int j, FORLIM;
+#ifdef DDEBUG
+  if (debuglevel > 0) {fprintf(log_, "deletename:\n"); }
+#endif
   while ((*head) != NULL) {
     pn = *head;
     r = pn;
@@ -4937,14 +4957,24 @@ deletename(nametype **head)
 	      }
 	    }
 	  else if ((pn->segmnt == freeseg) && (freeseg != NULL)) {
+#ifdef DDEBUG
+        if (debuglevel > 0) {fprintf(log_, "freeseg free(%d)\n",odp(freeseg)); }
+#endif
 	    Free(freeseg);
 	    freeseg = NULL;
 	    }
 	  else {
+#ifdef DDEBUG
+        if (debuglevel > 0) {
+          fprintf(log_, "pn->segmnt free(%d)\n",odp(pn->segmnt)); }
+#endif
 	    Free(pn->segmnt);
         pn->segmnt = NULL;
 	    }
       }
+#ifdef DDEBUG
+    if (debuglevel > 0) { fprintf(log_, "pn free(%d)\n",odp(pn)); }
+#endif
     Free(pn);
     }
 }
@@ -5726,9 +5756,13 @@ deletestringbox(primitive **pr)
 	if ((*pr)->parent->son == (*pr)) { (*pr)->parent->son = NULL; }
 	else {
 	  prx = (*pr)->parent->son;
-	  while ((prx->nextname != NULL) && (prx->nextname != (*pr))) { prx = prx->nextname;}
+	  while ((prx->nextname != NULL) && (prx->nextname != (*pr))) {
+        prx = prx->nextname;}
 	  prx->nextname = NULL; }
     }
+#ifdef DDEBUG
+    if (debuglevel > 0) {fprintf(log_, "deletestringbox tree\n"); }
+#endif
   deletetree(pr);
 }
 
@@ -5766,6 +5800,10 @@ makevar(char *s, int ln, double varval)
 {
   nametype *vn, *lastvar, *namptr;
   int j, tstval;
+#ifdef DDEBUG
+  if (debuglevel > 0) { fprintf(log_, "makevar chbufi=%d\n", chbufi); }
+#endif
+  if (chbufi+ln-1 > CHBUFSIZ) {fatal(4);}     /* This cannot happen now */
   for (j = 0; j < ln; j++) { chbuf[chbufi + j] = s[j]; }
   vn = findname(envblock, chbuf, chbufi, ln, &lastvar, &tstval);
   newstr(&vn);
