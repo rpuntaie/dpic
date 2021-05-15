@@ -377,16 +377,11 @@ wchar (FILE ** iou, Char c) {
 							/* Check if a file is accessible */
 int
 checkfile (Char * ifn, boolean isverbose) {
-  int cf;
-  int i = 0, j = FILENAMELEN;
-  while (j > i) {
-    if (ifn[j - 1] == ' ') { j--; } else { i = j; } }
-  if (j < FILENAMELEN) { j++; } else { fatal (1); }
-  ifn[j - 1] = '\0';
+  int cf, i;
   cf = access ((char *)ifn, 4);
   if (!(isverbose && (cf != 0))) { return cf; }
   fprintf (errout, " *** dpic: Searching for file \"");
-  for (i = 0; i <= (j - 2); i++) { wchar(&errout,ifn[i]); }
+  for (i = 0; ifn[i] != '\0'; i++) { wchar(&errout,ifn[i]); }
   fprintf (errout, "\" returns %d\n", cf);
   return cf;
 }
@@ -731,44 +726,30 @@ arg *(findarg (arg * arlst, int k)) {
   return ar;
 }
 
-Char *
-trimname (Char * fn, int len) {
-  static Char fnbuf[FILENAMELEN];
-  Char *cp = fnbuf;
-  while (--len >= 0 && *fn && !isspace ((unsigned)*fn)) {
-    *cp = *fn;
-     cp++; fn++; }
-  *cp = 0;
-  return fnbuf;
-}
-
 							/* Start reading from file for copy "file" */
 #ifndef SAFE_MODE
 void
 pointinput (nametype * txt) {
   int i;
-  Char c = ' ';
   int FORLIM;
   if (txt == NULL) { return; }
   if (txt->segmnt == NULL) { return; }
   if (txt->len >= FILENAMELEN) { txt->len = FILENAMELEN - 1; }
   FORLIM = txt->len;
   for (i = 0; i < FORLIM; i++) { infname[i] = txt->segmnt[txt->seginx + i]; }
-  for (i = txt->len; i < FILENAMELEN; i++) { infname[i] = c; }
+  infname[txt->len] = '\0';
 #ifdef DDEBUG
   if (debuglevel > 0) {
     fprintf (log_, "Pointinput(segmnt %d, len %d) ", txt->seginx, txt->len);
     FORLIM = txt->len;
-    for (i = 0; i < FORLIM; i++) { putc (infname[i], log_); }
+    for (i = 0; i < FORLIM; i++) { wchar(&log_,infname[i]); }
     putc ('\n', log_);
     }
 #endif
   if (higherinbuf != NULL) { markerror (853); return; }
   if (checkfile (infname, true) != 0) { markerror (859); return; }
-  if (copyin != NULL) {
-       copyin = freopen ((char *)trimname (infname, sizeof (mstring)),
-         "r", copyin); }
-  else { copyin = fopen ((char *)trimname (infname, sizeof (mstring)), "r"); }
+  if (copyin != NULL) { copyin = freopen ((char *) infname, "r", copyin); }
+  else { copyin = fopen ((char *) infname, "r"); }
   if (copyin == NULL) { fatal (1); }
   backup ();
   ch = nlch;
@@ -782,14 +763,8 @@ pointinput (nametype * txt) {
 void
 pointoutput (boolean create, nametype * txt, int *ier) {
   int i, FORLIM;
-  if (txt == NULL) {
-    *ier = 1;
-    markerror (861);
-    return; }
-  else if (txt->segmnt == NULL) {
-    *ier = 1;
-    markerror (861);
-    return; }
+  if (txt == NULL) { *ier = 1; markerror (861); return; }
+  else if (txt->segmnt == NULL) { *ier = 1; markerror (861); return; }
   *ier = 0;
   if (txt->len >= FILENAMELEN) { txt->len = FILENAMELEN - 1; }
   FORLIM = txt->len;
@@ -805,26 +780,19 @@ pointoutput (boolean create, nametype * txt, int *ier) {
     fprintf (log_, "Pointoutput(%s segmnt %d, len %d) \"",
 	     create ? " TRUE" : "FALSE", txt->seginx, txt->len);
     FORLIM = txt->len;
-    for (i = 0; i < FORLIM; i++) { putc (outfnam[i], log_); }
+    for (i = 0; i < FORLIM; i++) { wchar (&log_, outfnam[i]); }
     fprintf (log_, "\"\n");
     fflush (log_);
     }
 #endif
   if ((*ier) != 0) { markerror (861); return; }
   if (create) {
-    if (redirect != NULL) {
-      redirect= freopen ((char *) trimname (outfnam, sizeof (mstring)),
-       "w", redirect);}
-    else {
-      redirect =  fopen ((char *)trimname (outfnam, sizeof (mstring)), "w"); }
+    if (redirect != NULL) { redirect=freopen((char *) outfnam, "w", redirect);}
+    else { redirect =  fopen ((char *)outfnam, "w"); }
     if (redirect == NULL) { markerror(876); fatal (8); }
-    return;
-    }
-  if (redirect != NULL) {
-    redirect = freopen ((char *)trimname (outfnam, sizeof (mstring)),
-     "a", redirect); }
-  else {
-    redirect =   fopen ((char *)trimname (outfnam, sizeof (mstring)), "a"); }
+    return; }
+  if (redirect != NULL) { redirect=freopen((char *)outfnam, "a", redirect); }
+  else { redirect =   fopen ((char *)outfnam, "a"); }
   if (redirect == NULL) { markerror(876); fatal (8); }
 }
 
@@ -1644,7 +1612,7 @@ deletebufs (fbuffer ** buf) {
                             /* Get the file name from the command
                                line argument                   */
 void
-P_sun_argv (char *s, int len, int n) {
+P__argv (char *s, int len, int n) {
   char *cp;
   if ((unsigned) n < P_argc) { cp = P_argv[n]; } else { cp = ""; }
   while (*cp && --len >= 0) { *s++ = *cp++; }
@@ -1657,14 +1625,13 @@ openfiles (void) {
   higherinbuf = NULL;
   output = stdout; input = stdin;
   if (argct >= P_argc) { return; }
-  P_sun_argv ((char *)infname, sizeof (mstring), argct);
+  P__argv ((char *)infname, sizeof (mstring), argct);
   while (i < j) { if (infname[i-1] != ' ') { i++; } else { j = i; } }
+  infname[i-1] = '\0';
                             /* Open the main input file        */
   if (checkfile (infname, true) != 0) { fatal (1); }
-  if (input != NULL) {
-       input = freopen ((char *)trimname (infname, sizeof (mstring)),
-        "r", input); }
-  else { input = fopen ((char *)trimname (infname, sizeof (mstring)), "r"); }
+  if (input != NULL) { input = freopen ((char *)infname, "r", input); }
+  else { input = fopen ((char *)infname, "r"); }
   if (input == NULL) { fatal (1); }
 #ifdef DDEBUG
   if (oflag <= 0) { return; }
@@ -1707,7 +1674,7 @@ getoptions (void) {
   argct = 1;
   istop = P_argc;
   while (argct < istop) {
-    P_sun_argv ((char *)infname, sizeof (mstring), argct);
+    P__argv ((char *)infname, sizeof (mstring), argct);
     cht = optionchar (infname);
     if (cht == 0) {
       istop = argct;

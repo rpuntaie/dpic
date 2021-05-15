@@ -161,7 +161,7 @@ extern void inchar(void);
 extern void newarg(arg **);
 extern void pointinput(nametype *);
 extern void pointoutput(boolean, nametype *, int *);
-extern void P_sun_argv(char*, int, int);
+extern void P__argv(char*, int, int);
 extern void setjust(nametype *, int);
 extern void skipcontinue(boolean);
 extern void skiptobrace(void);
@@ -3215,7 +3215,7 @@ markerror(int emi) {
   else { fprintf(errout, "WARNING: "); }
   wrmacro(&errout, currentmacro);
   if (currentmacro != NULL) { fprintf(errout, ", "); }
-  if (inbufdepth == 0) { P_sun_argv((char *)infname, sizeof(mstring), argct); }
+  if (inbufdepth == 0) { P__argv((char *)infname, sizeof(mstring), argct); }
   j = 0; k = FILENAMELEN;
   while (j < k) {
     if ((infname[j]==' ') || (infname[j]=='\0')) { k = j; } else { j++; } }
