@@ -1,5 +1,6 @@
 
-2021 05 15 Redundant code removed dating from pascal conversion.
+2021 08 01 Line thickness recovery parameter enabled.
+2021 05 15 Redundant code dating from pascal conversion removed.
 2021 05 12 Robustness fixes.
 2021 04 10 Improved robustness for fuzzed input.
 2021 01 01 Added colored svg sprintf text and % appended to selected outputs.

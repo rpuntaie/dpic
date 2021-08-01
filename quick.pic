@@ -1,7 +1,7 @@
 .PS                            # Pic input begins with .PS
-# cct_init Version 9.5.3: PSTricks m4 macro settings.
+# cct_init Version 9.6.1: PSTricks m4 macro settings.
   
-  # gen_init Version 9.5.3: PSTricks m4 macro settings.
+  # gen_init Version 9.6.1: PSTricks m4 macro settings.
   
 
   define rpoint__ {
@@ -38,8 +38,8 @@ Origin: Here                   # Position names are capitalized
   { Src_C: circle rad (0.25*linewid)  at Here }
   
   line from Here+(((0.25*linewid))*(cos(rp_ang)),((0.25*linewid))*(sin(rp_ang))) \
-          to Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang)))} 
-  { [box invis wid (0.25*linewid)*2 ht (0.25*linewid)*2+0] at Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang))) }
+          to Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang)))}
+  { [box invis wid (0.25*linewid)*2 ht (0.25*linewid)*2] at Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang))) } 
   line to Here+((rp_len)*(cos(rp_ang)),(rp_len)*(sin(rp_ang))) invis ;  {"$ -$" \
      at last [].s rjust below }; {"$ v_s$" \
      at last [].w rjust }; {"$ +$" \
@@ -91,6 +91,7 @@ Origin: Here                   # Position names are capitalized
   
   
   
+  
   }
   
   {[box invis wid linewid/3 ht linewid/3*0.3 ] at Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang)))}
@@ -108,8 +109,7 @@ Origin: Here                   # Position names are capitalized
   rpoint__
   
    
-   
- { line to Here+(((rp_len-4*linewid/16*2)/2)*(cos(rp_ang)),((rp_len-4*linewid/16*2)/2)*(sin(rp_ang)))
+         { line to Here+(((rp_len-4*linewid/16*2)/2)*(cos(rp_ang)),((rp_len-4*linewid/16*2)/2)*(sin(rp_ang)))
        [ S: Here; {line to Here+((-(linethick *(scale/72)/2))*((-sin(rp_ang))),(-(linethick *(scale/72)/2))*(cos(rp_ang)))};
      for m4i=1 to 4 do {
        arc cw from Here to Here+((linewid/16*2)*(cos(rp_ang)),(linewid/16*2)*(sin(rp_ang))) with .c at Here+((linewid/16)*(cos(rp_ang)),(linewid/16)*(sin(rp_ang)))

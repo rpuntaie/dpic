@@ -245,7 +245,7 @@ These commands can be permanently disabled by the use of a compile-time
 option.
 
 In all cases, arbitrary postprocessor commands (that is, arbitrary \PSTricks,
-SVG, \Postscript, or other commands) can be inserted into the dpic output
+SVG, \Postscript, or other code) can be inserted into the dpic output
 directly from the source.
 This possibility adds considerable power for manipulating diagram
 elements.
@@ -324,8 +324,8 @@ numerical computations at the price of number-crunching in an interpreted
 language, but sometimes there is convenience in calculating plotted
 values in the same source as graphing them.
 
-Pic is very suitable for line diagrams, and recent language extensions
-allow for basic color.  Elaborate fills and cropping are the domain of
+Pic is very suitable for line diagrams with basic color.
+Elaborate fills and cropping are the domain of
 the postprocessors, but can be included easily with the use of macros.
 
 The following sections are intended to help you become familiar
@@ -471,14 +471,17 @@ deletes the macro definition.
 is equivalent to
 \ntt{{\sl name}(x,y,z )}
 
+%\enlargethispage{\baselineskip}
 In a macro invocation, the arguments are separated by commas.  An argument
-may contain commas if they are enclosed within strings or
-{\tt (~)} parentheses.  A double quote character within a string
+may contain commas if they are between
+{\tt (~)} parentheses, {\tt [~]} brackets, or in strings.
+A double quote character within a string
 must be preceded by a backslash.
 Thus, for example, the macro invocation
 \ntt{{\sl name}(ABc"{\textbackslash}"t,"(,DE,F))}\\
 has one argument.
 
+\pagebreak
   In a dpic macro, the value of {\tt\$+} is the number of arguments given to
   the macro on invocation.  Thus if {\sl x} is a macro name, the values of
   {\tt\$+}
@@ -552,6 +555,7 @@ The Circuit\_macros library version
 operates essentially as above but avoids name clashes by appending
 the value of the first argument to the internal names.
 
+\pagebreak
 \begin{wrapfigure}[9]{r}{0.4\textwidth}%
   \vspace*{-4\baselineskip}%
 % \vspace*{-12\baselineskip}%
@@ -647,6 +651,7 @@ Since
 behaves like a string, the following works:
 \ntt{for j=1 to \$+ do \tLB\ exec sprintf("c[j] = \$\%g",j); \tRB}
 
+\enlargethispage{\baselineskip}
 Macro arguments are passed verbatim, as for example,
 {\tt function(x,y+z)}, inside which {\tt \$1} is replaced by {\tt x}
 and {\tt \$2} is replaced by {\tt y+z}.
@@ -999,8 +1004,8 @@ and transformations. There are two ways of passing
 commands into dpic output.
 
 \Dpic lines beginning with the backslash \tBS\ are passed through to the
-output without modification.  This method works well for TeX statements,
-\LaTeX\ statements, and commands to postprocessors that rely on the TeX macro
+output without modification.  This method works well for
+\LaTeX\ statements and commands to postprocessors that rely on TeX macro
 processing.
 
 The second method is the form
@@ -1218,7 +1223,7 @@ of dpic produce output that is not intended to be processed directly by
   \hspace*{1em}%
   \parbox{0.3\textwidth}{\input{Xtest.tex}}%
  \end{wrapfigure}%
-  One difficulty is that
+  One issue is that
   the formatted height of text is generally a fraction of the nominal size.
   For example, the Times letter X at 100\,bp placed on a 100\,bp by
   100\,bp grid is shown at the right.
@@ -1242,7 +1247,7 @@ of dpic produce output that is not intended to be processed directly by
     \ntt{dpPPI = 96}
     \ntt{dptextratio = 0.66}\\
   in the outermost scope of the diagram.  These are ordinary variables
-  that can be referenced as usual.
+  that can be referenced or changed as usual.
   The variable {\tt dpPPI} is given the inital value 96 which is
   pixels per inch
   on a 20-inch wide computer monitor of 1920 pixels width.
@@ -1518,25 +1523,27 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   In gpic, the location corresponding to {\tt last line} is
     {\tt last line.start}.
 
-  In current versions of dpic,
+  With dpic,
+% In current versions of dpic,
   {\tt last line.wid} returns the arrowhead width of the line or the default
   arrowhead width if the line has not been given an arrowhead;
   similarly for {\tt .ht} and for the other linear objects including {\tt move}
   and, of course, {\tt arrow}.
 
   The compass corners of multisegmented linear objects are not
-  defined in descriptions of the \pic grammar
-  and they should be used with care.
+  defined in descriptions of the \pic grammar; reasonable positions are
+  returned but they should be used with care.
 
 \subsection{Arc defaults}  Gpic and dpic have different algorithms for picking
   a default radius.  The best practice is to specify arcs completely.
   There is also ambiguity in the pic language.  The statement
    \ntt{arc cw rad x from A to B}\\
   does not define a unique arc.
-  There are two arcs, with centres on opposite sides of the line
-  joining {\tt A} and {\tt B}, that satisfy this specification, and the
-  interpreter will choose one by attempting to minimize the angle between
-  the current direction and the initial arc tangent.
+  There are two arcs that satisfy this specification,
+  with centres on opposite sides of the line
+  joining {\tt A} and {\tt B}.
+  Dpic will choose one by attempting to minimize the angle between
+  the current direction and the initial tangent of the arc.
   Instead, use
    \ntt{arc cw from A to B with .c at C}
 
@@ -1564,7 +1571,7 @@ Similarly,
 places a line containing the formatted string without the quotes into
 the output.
 The numerical {\tt sprintf}
-arguments can be arbitrary expressions rather than the constants shown.
+arguments can be arbitrary expressions in place of the constants shown.
 
   Dpic allows strings to be concatenated by the {\tt+} operator; thus,
   \ntt{"abc" + sprintf(" def\%g",2)}\\
@@ -2023,7 +2030,6 @@ in {\tt <} {\tt >} pairs are generated internally.  Equated tokens
 \begin{verbatim}
     
     terminals:
-         "<EMPTY>" "<ERROR>"
          "<" "cw" "ccw"
          "(" ")" "*" "+" "-" "/" "%" ";" = "<NL>"
          "^" "!" "&&" "||" 
@@ -2034,7 +2040,7 @@ in {\tt <} {\tt >} pairs are generated internally.  Equated tokens
          '"' = "<string>"
          "#"
          "$" = "<arg>"
-         "<START>" "<END>"
+         ".PS" ".PE"
          "ht" = "height" "wid" = "width"
          "rad" = "radius" "diam" = "diameter"
          "thick" = "thickness"
@@ -2099,240 +2105,240 @@ in {\tt <} {\tt >} pairs are generated internally.  Equated tokens
 
 The expanded dpic grammar follows:
 \begin{verbatim}
-        input = "<EMPTY>" 
-              | input picture NL 
+input: %empty
+     | input picture NL
 
-        picture = start NL elementlist optnl "<END>" 
+picture: prestart psline NL elementlist optnl ".PE"
 
-        NL = ";" 
-           | "<ERROR>" 
+NL: ";"
+  | error
 
-        start = "<START>" 
-              | "<START>" term 
-              | "<START>" term term 
+prestart: %empty
 
-        elementlist = "<EMPTY>" 
-                    | element 
-                    | elementlist NL element 
+psline: ".PS"
+      | ".PS" term
+      | ".PS" term term
 
-        optnl = "<EMPTY>" 
-              | NL 
+elementlist: %empty
+           | element
+           | elementlist NL element
 
-        term = factor 
-             | term "*" factor 
-             | term "/" factor 
-             | term "%" factor 
+term: factor
+    | term "*" factor
+    | term "/" factor
+    | term "%" factor
 
-        element = namedobj 
-                | "<Label>" suffix ":" position 
-                | assignlist 
-                | "<directon>" 
-                | "<LaTeX>" 
-                | command 
-                | lbrace elementlist optnl "}" 
-                | ifpart 
-                | elsehead elementlist optnl "}" 
-                | for "}" 
-                | "command" stringexpr 
-                | "exec" stringexpr 
+element: namedobj
+       | "label" suffix ":" position
+       | assignlist
+       | "direction: up down right left"
+       | "LaTeX"
+       | command
+       | lbrace elementlist optnl "}"
+       | ifpart
+       | elsehead elementlist optnl "}"
+       | for "}"
+       | "command" stringexpr
+       | "exec" stringexpr
 
-        lbrace = "{" 
+lbrace: "{"
 
-        namedobj = object 
-                 | "<Label>" suffix ":" object 
+namedobj: object
+        | "label" suffix ":" object
 
-        suffix = "<EMPTY>" 
-               | "[" expression "]" 
-               | "[" position "]" 
+suffix: %empty
+      | "[" expression "]"
+      | "[" position "]"
 
-        position = pair 
-                 | expression "between" position "and" position 
-                 | expression "of" "the" "way" "between" position "and" position 
-                 | expression "<" position "," position "<compare>" shift 
+position: pair
+        | expression "between" position "and" position
+        | expression "of" "the" "way" "between" position "and" position
+        | expression "<" position "," position "logical operator" shift
 
-        assignlist = assignment 
-                   | assignlist "," assignment 
+assignlist: assignment
+          | assignlist "," assignment
 
-        command = "print" expression redirect 
-                | "print" position redirect 
-                | "print" stringexpr redirect 
-                | "reset" 
-                | "reset" resetlist 
-                | systemcmd 
-                | "copy" stringexpr 
-                | "define" "<name>" 
-                | "define" "<Label>" 
-                | "undefine" "<name>" 
-                | "undefine" "<Label>" 
+command: "print" expression redirect
+       | "print" position redirect
+       | "print" stringexpr redirect
+       | "reset"
+       | "reset" resetlist
+       | systemcmd
+       | "copy" stringexpr
+       | "define" "identifier"
+       | "define" "label"
+       | "undef" "identifier"
+       | "undef" "label"
 
-        ifpart = ifhead elementlist optnl "}" 
+optnl: %empty
+     | NL
 
-        elsehead = ifpart "else" "{" 
+ifpart: ifhead elementlist optnl "}"
 
-        for = forhead elementlist optnl 
-            | for forincr elementlist optnl 
+elsehead: ifpart "else" "{"
 
-        stringexpr = string 
-                   | stringexpr "+" string 
+for: forhead elementlist optnl
+   | for forincr elementlist optnl
 
-        string = "<string>" 
-               | sprintf ")" 
+stringexpr: string
+          | stringexpr "+" string
 
-        assignment = "<name>" suffix "=" assignrhs 
-                   | "<envvar>" "=" assignrhs 
+string: "string"
+      | sprintf ")"
 
-        assignrhs = expression 
-                  | assignment 
+assignment: "identifier" suffix "=" assignrhs
+          | "environment variable" "=" assignrhs
 
-        expression = term 
-                   | "+" term 
-                   | "-" term 
-                   | expression "+" term 
-                   | expression "-" term 
+assignrhs: expression
+         | assignment
 
-        ifhead = setlogic logexpr "then" "{" 
+expression: term
+          | "+" term
+          | "-" term
+          | expression "+" term
+          | expression "-" term
 
-        setlogic = "if" 
+ifhead: setlogic logexpr "then" "{"
 
-        logexpr = logprod 
-                | logexpr "||" logprod 
+setlogic: "if"
 
-        forhead = "for" assignlist "to" expression do "{"
+logexpr: logprod
+       | logexpr "||" logprod
 
-        forincr = "<endfor>" 
+forhead: "for" assignlist "to" expression do "{"
 
-        do = "do" 
-           | by expression "do" 
+forincr: "end of for {...} contents"
 
-        by = "by" 
-           | "by" "*" 
+do: "do"
+  | by expression "do"
 
-        redirect = "<EMPTY>" 
-                 | "<compare>" stringexpr 
-                 | "<compare>" "<compare>" stringexpr 
+by: "by"
+  | "by" "*"
 
-        resetlist = "<envvar>" 
-                  | resetlist "," "<envvar>" 
+redirect: %empty
+        | "logical operator" stringexpr
+        | "logical operator" "logical operator" stringexpr
 
-        systemcmd = "sh" stringexpr 
+resetlist: "environment variable"
+         | resetlist "," "environment variable"
 
-        defhead = "<EMPTY>" 
+systemcmd: "sh" stringexpr
 
-        sprintf = "sprintf" "(" stringexpr 
-                | "sprintf" "(" stringexpr "," exprlist 
+sprintf: "sprintf" "(" stringexpr
+       | "sprintf" "(" stringexpr "," exprlist
 
-        exprlist = expression 
-                 | expression "," exprlist 
+exprlist: expression
+        | expression "," exprlist
 
-        object = block 
-               | object "height" expression 
-               | object "width" expression 
-               | object "radius" expression 
-               | object "diameter" expression 
-               | object "thickness" expression 
-               | object "scaled" expression 
-               | object "<directon>" optexp 
-               | object "<linetype>" optexp 
-               | object "chop" optexp 
-               | object "filled" optexp 
-               | object "<arrowhd>" optexp 
-               | object "then" 
-               | object "cw" 
-               | object "ccw" 
-               | object "same" 
-               | object stringexpr 
-               | object "by" position 
-               | object "from" position 
-               | object "to" position 
-               | object "at" position 
-               | object "<textpos>" 
-               | object "<colrspec>" stringexpr 
-               | objectwith "at" position 
-               | objectwith "<corner>" "at" position 
-               | objectwith pair "at" position 
-               | "continue" 
+object: block
+      | object "ht" expression
+      | object "wid" expression
+      | object "rad" expression
+      | object "diam" expression
+      | object "thick" expression
+      | object "scaled" expression
+      | object "direction: up down right left" optexp
+      | object "line type: dotted etc" optexp
+      | object "chop" optexp
+      | object "fill" optexp
+      | object "arrowhead parameter: <- -> <->" optexp
+      | object "then"
+      | object "cw"
+      | object "ccw"
+      | object "same"
+      | object stringexpr
+      | object "by" position
+      | object "from" position
+      | object "to" position
+      | object "at" position
+      | object "text position: ljust rjust above below center"
+      | object "color spec: colored outlined shaded" stringexpr
+      | objectwith "at" position
+      | objectwith "compass corner: .n .ne .center .end etc" "at" position
+      | objectwith pair "at" position
+      | "continue"
 
-        openblock = "[" 
+openblock: "["
 
-        block = "<primitiv>" optexp 
-              | stringexpr 
-              | openblock closeblock "]" 
-              | "[]" 
+block: "drawn object: box circle line etc" optexp
+     | stringexpr
+     | openblock closeblock "]"
+     | "[]"
 
-        optexp = "<EMPTY>" 
-               | expression 
+optexp: %empty
+      | expression
 
-        closeblock = elementlist optnl 
+closeblock: elementlist optnl
 
-        objectwith = object "with" 
-                   | objectwith "." "<Label>" suffix 
-                   | objectwith "." nth primobj 
+objectwith: object "with"
+          | objectwith "." "label" suffix
+          | objectwith "." nth primobj
 
-        pair = expression "," expression 
-             | location shift 
+pair: expression "," expression
+    | location shift
 
-        nth = ncount "th" 
-            | ncount "th" "last" 
-            | "last" 
+nth: ncount "ordinal: st or rd or nd or th"
+   | ncount "ordinal: st or rd or nd or th" "last"
+   | "last"
 
-        primobj = "<primitiv>" 
-                | "[]" 
-                | "<string>" 
-                | "[" "]" 
+primobj: "drawn object: box circle line etc"
+       | "[]"
+       | "string"
+       | "[" "]"
 
-        shift = "<EMPTY>" 
-              | shift "+" location 
-              | shift "-" location 
+shift: %empty
+     | shift "+" location
+     | shift "-" location
 
-        location = "(" position ")" 
-                 | "(" position "," position ")" 
-                 | place 
-                 | location "*" factor 
-                 | location "/" factor 
+location: "(" position ")"
+        | "(" position "," position ")"
+        | place
+        | location "*" factor
+        | location "/" factor
 
-        place = placename 
-              | placename "<corner>" 
-              | "<corner>" placename 
-              | "<corner>" "of" placename 
-              | "Here" 
+place: placename
+     | placename "compass corner: .n .ne .center .end etc"
+     | "compass corner: .n .ne .center .end etc" placename
+     | "compass corner: .n .ne .center .end etc" "of" placename
+     | "Here"
 
-        factor = primary 
-               | "!" primary 
-               | primary "^" factor 
+factor: primary
+      | "!" primary
+      | primary "^" factor
 
-        placename = "<Label>" suffix 
-                  | nth primobj 
-                  | placename "." "<Label>" suffix 
-                  | placename "." nth primobj 
+placename: "label" suffix
+         | nth primobj
+         | placename "." "label" suffix
+         | placename "." nth primobj
 
-        ncount = "<float>" 
-               | "`" expression "'" 
-               | "{" expression "}" 
+ncount: "number"
+      | "`" expression "'"
+      | "{" expression "}"
 
-        logprod = logval 
-                | logprod "&&" logval 
+logprod: logval
+       | logprod "&&" logval
 
-        logval = lcompare 
-               | stringexpr "<" stringexpr 
-               | expression "<" expression 
+logval: lcompare
+      | stringexpr "<" stringexpr
+      | expression "<" expression
 
-        lcompare = expression 
-                 | stringexpr 
-                 | lcompare "<compare>" expression 
-                 | lcompare "<compare>" stringexpr 
+lcompare: expression
+        | stringexpr
+        | lcompare "logical operator" expression
+        | lcompare "logical operator" stringexpr
 
-        primary = "<envvar>" 
-                | "<name>" suffix 
-                | "<float>" 
-                | "(" logexpr ")" 
-                | location ".x" 
-                | location ".y" 
-                | placename "<param>" 
-                | "rand" "(" ")" 
-                | "rand" "(" expression ")" 
-                | "<func1>" "(" expression ")" 
-                | "<func2>" "(" expression "," expression ")" 
-                | "(" assignlist ")" 
-                | "(" systemcmd ")" 
+primary: "environment variable"
+       | "identifier" suffix
+       | "number"
+       | "(" logexpr ")"
+       | location ".x"
+       | location ".y"
+       | placename "attribute .ht .wid etc"
+       | "rand" "(" ")"
+       | "rand" "(" expression ")"
+       | "function (1 arg)" "(" expression ")"
+       | "function (2 args)" "(" expression "," expression ")"
+       | "(" assignlist ")"
+       | "(" systemcmd ")"
 \end{verbatim}
 \end{document}\endinput

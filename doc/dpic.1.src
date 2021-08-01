@@ -759,7 +759,15 @@ Exceptionally, the
 .P
 is multiple and does not require the
 .B then
-keyword.
+keyword, but this also means that the
+.I linespec
+.P
+.B "   up"
+.I expression
+.B to
+.I position
+.P
+is multiple and creates a two-segment line.
 .P
 A single
 .I expr

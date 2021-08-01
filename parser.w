@@ -1,7 +1,7 @@
 
-/* This file is the input to bison, except for the token definitions,
-   which are generated separately by an awk script and then edited and
-   inserted below by the Makefile.
+/* This file "parser.w" is the input to bison, except for the token
+   definitions, which are generated separately by an awk script and then
+   edited and inserted below by the Makefile.
 
    An explanation of coding style is in order.  This program was first
    written in the late 1980s in pascal for compilation on an IBM VM/CMS
@@ -51,6 +51,7 @@ double intpow(double, int);
 double linlen(double, double);
 double pheight(primitive *);
 double pwidth(primitive *);
+double venv(primitive *, int);
 int bval(Char *);
 int cmpstring(primitive *, primitive *);
 int getstval(int);
@@ -139,6 +140,7 @@ primitive *( nthprimobj(primitive *, int, int) );
 
 extern arg *(findmacro(arg *, Char *, chbufinx, chbufinx, arg **));
 extern boolean isthen(primitive *);
+extern boolean ismdistmax(double);
 extern double datan(double, double);
 extern double Max(double, double);
 extern double Min(double, double);
@@ -1056,7 +1058,7 @@ sprintf	:	Xsprintf Xlparen stringexpr                         /* sprintf1 */
 exprlist:	expression                                         /* exprlist1 */
 		{ $$.state = 1; }
 
-		| expression Xcomma exprlist                           /* exprlist2 */
+		| expression Xcomma exprlist  /* right recursion */    /* exprlist2 */
 		{ $$.state = $3.state + 1; }
 		;
 
@@ -1318,14 +1320,9 @@ object	:	block                                                /* object1 */
 		  }
 
 		| object Xthick expression                               /* object6 */
-		{ if ($1.prim != NULL) {
-			wprim = $1.prim;
-			if ($3.xval < 0.0) {
-			  eb = findenv(envblock);
-			  wprim->lthick = eb->envinx(Xlinethick);
-			  }
-			else { wprim->lthick = $3.xval; }
-		    }
+		{ if ($1.prim != NULL) { wprim = $1.prim;
+			if ($3.xval >= 0.0) { wprim->lthick = $3.xval; }
+            else { wprim->lthick = venv(wprim,Xlinethick); } }   /*Error msg?*/
 		  }
 
 		| object Xscaled expression                              /* object7 */
@@ -2173,11 +2170,21 @@ block	:	Xprimitiv optexp                                      /* block1 */
 		{ if (($1.lexval > Xprimitiv) && ($1.lexval < Xenvvar)) {
 			newprim(&$$.prim, $1.lexval, envblock);
 			eb = findenv(envblock);
-			if (( ($1.lexval != Xmove) && ((drawmode == MPost) ||
-			      (drawmode == Pict2e) || (drawmode == PDF) ||
-			      (drawmode == PS) || (drawmode == SVG) ||
-			      (drawmode == PSfrag)) ) || ($1.lexval == Xarc)) {
-			  $$.prim->lthick = eb->envinx(Xlinethick); }
+			if ($1.lexval != Xmove) {
+              if ($1.lexval == Xarc) { j = MPost; } else { j = drawmode; }
+              switch (j) {
+                case PGF:
+                case PSTricks:
+  			      $$.prim->lthick = -eb->envinx(Xlinethick); break;
+                case MPost:
+                case Pict2e:
+                case PDF:
+                case PS :
+                case SVG:
+                case PSfrag:
+  			      $$.prim->lthick = eb->envinx(Xlinethick); break;
+                default: break; }
+              }
 			if (($2.lexval != XEMPTY) &&               /* check expr allowed */
 			    ($1.lexval != Xmove) &&
 			    ($1.lexval != Xspline) &&
@@ -2722,59 +2729,66 @@ primary	:	Xenvvar                                             /* primary1 */
 		{ $$.xval = $1.yval; }
 
 		| placename Xparam                                      /* primary7 */
-		{ if ($1.prim != NULL) {
-			switch ($2.lexval) {
-			  case Xheight:
-			    $$.xval = pheight($$.prim);
-			    break;
-			  case Xwidth:
-			    $$.xval = pwidth($$.prim);
-			    break;
-			  case Xradius:
-			    wprim = $$.prim;
-			    if (wprim->ptype == Xcircle) {$$.xval = wprim->circleradius_; }
-			    else if (wprim->ptype == Xarc) {$$.xval = wprim->aradius_; }
-			    else if (wprim->ptype == Xbox) {$$.xval = wprim->boxradius_; }
-			    else {
-			      $$.xval = 0.0;
-			      markerror(858); }
-			    break;
+		{ if ($1.prim != NULL) { switch ($2.lexval) {
+			case Xheight:
+			  $$.xval = pheight($$.prim);
+			  break;
+			case Xwidth:
+			  $$.xval = pwidth($$.prim);
+			  break;
+			case Xradius:
+			  wprim = $$.prim;
+			  if (wprim->ptype == Xcircle) {$$.xval = wprim->circleradius_; }
+			  else if (wprim->ptype == Xarc) {$$.xval = wprim->aradius_; }
+			  else if (wprim->ptype == Xbox) {$$.xval = wprim->boxradius_; }
+			  else { $$.xval = 0.0; markerror(858); }
+			  break;
 			case Xdiameter:
 			  wprim = $1.prim;
 			  if (wprim->ptype == Xcircle) {$$.xval = wprim->circleradius_*2; }
 			  else if (wprim->ptype == Xarc) {$$.xval = wprim->aradius_*2; }
-			  else {
-			    $$.xval = 0.0;
-			    markerror(858); }
+			  else { $$.xval = 0.0; markerror(858); }
 			  break;
 			case Xthickness:
-			  wprim = $1.prim; j = wprim->ptype;
-			  if ((j == Xarc) || (j == Xspline) || (j == Xarrow) ||
-                (j == Xline) || (j == Xcircle) || (j == Xellipse) ||
-			      (j == Xbox)) { $$.xval = wprim->lthick; }
-			  else {
-			    $$.xval = 0.0;
-			    markerror(858); }
+			  wprim = $1.prim;
+              switch (wprim->ptype) {
+                case Xarc:
+                case Xspline:
+                case Xarrow:
+                case Xline:
+                case Xcircle:
+                case Xellipse:
+                case Xbox:
+                  if (ismdistmax(wprim->lthick)) {
+                    $$.xval = venv(wprim,Xlinethick); }
+                  else { $$.xval = fabs(wprim->lthick); }
+                  break;
+                default:
+                  $$.xval = 0.0; markerror(858);
+                  break; }
 			  break;
 			case Xlength:
 			  wprim = $1.prim; j = wprim->ptype;
-			  if ((j == Xspline) || (j == Xmove) || (j == Xarrow) ||
-                (j == Xline)) {
-			    primp = $1.prim;
-			    while (primp->son != NULL) { primp = primp->son; }
-			    r = fabs(primp->endpos_.xpos - wprim->aat.xpos);
-			    s = fabs(primp->endpos_.ypos - wprim->aat.ypos);
-			    if (r == 0.0) { $$.xval = s; }
-			    else if (s == 0.0) { $$.xval = r; }
-			    else { $$.xval = sqrt((r * r) + (s * s)); }
-			    }
-			  else {
-			    $$.xval = 0.0;
-			    markerror(858); }
-			  break;
-			  }
+              switch (j) {
+  	            case Xspline:
+                case Xmove:
+                case Xarrow:
+                case Xline:
+  			      primp = $1.prim;
+  			      while (primp->son != NULL) { primp = primp->son; }
+  			      r = fabs(primp->endpos_.xpos - wprim->aat.xpos);
+  			      s = fabs(primp->endpos_.ypos - wprim->aat.ypos);
+  			      if (r == 0.0) { $$.xval = s; }
+  			      else if (s == 0.0) { $$.xval = r; }
+  			      else { $$.xval = sqrt((r * r) + (s * s)); }
+                  break;
+  			    default:
+                  $$.xval = 0.0; markerror(858);
+  			      break; }
+			default:
+              break; }
 		    }
-		  }
+          }
 
 		| Xrand Xlparen Xrparen                                 /* primary8 */
 		{ $$.xval = ((double)random()) / randmax; }
@@ -4369,8 +4383,9 @@ qenv(primitive *p, int ind, double localval)
   case Xdashwid: noval = mdistmax; break;
   default: noval = 0.0; break;
   }
-  if (localval != noval) { return localval; }
-  else { return (venv(p, ind)); }
+  if (localval == noval) { return (venv(p, ind)); }
+  else if (ind == Xlinethick) { return fabs(localval); }
+  else { return localval; }
 }
 
 
@@ -5584,25 +5599,25 @@ mkOptionVars(void)
 {
     makevar("dpicopt", 7, drawmode);
     if (safemode) { i = 1; } else { i = 0; }
-    makevar("optsafe", 7, i);
-    makevar("optMFpic", 8, MFpic);
-    makevar("optMpost", 8, MPost);
-    makevar("optPDF", 6, PDF);
-    makevar("optPGF", 6, PGF);
-    makevar("optPict2e", 9, Pict2e);
-    makevar("optPS", 5, PS);
-    makevar("optPSfrag", 9, PSfrag);
+    makevar("optsafe",      7, i);
+    makevar("optMFpic",     8, MFpic);
+    makevar("optMpost",     8, MPost);
+    makevar("optPDF",       6, PDF);
+    makevar("optPGF",       6, PGF);
+    makevar("optPict2e",    9, Pict2e);
+    makevar("optPS",        5, PS);
+    makevar("optPSfrag",    9, PSfrag);
     makevar("optPSTricks", 11, PSTricks);
-    makevar("optSVG", 6, SVG);
-    makevar("optTeX", 6, TeX);
-    makevar("opttTeX", 7, tTeX);
-    makevar("optxfig", 7, xfig);
+    makevar("optSVG",       6, SVG);
+    makevar("optTeX",       6, TeX);
+    makevar("opttTeX",      7, tTeX);
+    makevar("optxfig",      7, xfig);
     if ((drawmode == SVG) || (drawmode == PDF) || (drawmode == PS)) {
 	  makevar("dptextratio", 11, 0.66);
-	  makevar("dpPPI", 5, 96.0);
+	  makevar("dpPPI",        5, 96.0);
       }
     else if (drawmode == xfig) {
-	  makevar("xfigres", 7, 1200);
+	  makevar("xfigres",  7, 1200);
 	  makevar("xdispres", 8, 80);
       }
 }

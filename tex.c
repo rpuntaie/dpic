@@ -133,9 +133,9 @@ p2ahead (postype * point, postype shaft, double ht) {
 
 void
 p2setthick (double lt) {
-  if ((lt < 0.0) || (lt == gslinethick)) {
-    return;
-  }
+  if (ismdistmax(lt)) { return; }
+  if (lt < 0.0) { lt = -lt; }
+  if (lt == gslinethick) { return; }
   printf ("\\linethickness{");
   wfloat (&output, lt);
   printf ("pt}\n");

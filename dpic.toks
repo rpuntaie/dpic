@@ -1,5 +1,5 @@
 # These are the terminals (lexical tokens) of the dpic grammar.
-# This file is processed to make a set of tables that drive the dpic
+# This file is processed to produce a set of tables that drive the dpic
 # lexical analysis routine. The terminals are automatically assigned
 # integer values in sequence, starting with 1.  Terminals of the form
 # "<identifier>" have values but are not included in the tables and must

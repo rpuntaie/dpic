@@ -206,9 +206,9 @@ xfigdraw (primitive * node) {
   int FORLIM;
 
   getlinespec (node, &lsp, &lastseg);
-  if (node->lthick < 0.0) { node->lthick = venv (node, Xlinethick); }
+  if (ismdistmax(node->lthick)) { node->lthick = venv(node,Xlinethick); }
+  else { node->lthick = fabs(node->lthick); }
   switch (node->ptype) {
-
   case Xarc:
     if (drawn (node, lsp, node->linefill_)) {
       xfarc (5, 1, lsp, node->lthick, node->linefill_,

@@ -64,16 +64,15 @@ pgfendpath (void) {
 }
 
 void
-pgfsetthick (double lthick) {
-  if (ismdistmax (lthick)) {
-    if (!ismdistmax (gslinethick)) { lthick = gslinethick; }
-    else { lthick = 0.8; }
-  }
-  if ((lthick < 0.0) || (lthick == gslinethick)) { return; }
+pgfsetthick (double lthk) {
+  if (!ismdistmax (lthk)) { if (lthk < 0.0) { lthk = -lthk; } }
+  else if (!ismdistmax (gslinethick)) { lthk = gslinethick; }
+  else { lthk = 0.8; }
+  if ((lthk < 0.0) || (lthk == gslinethick)) { return; }
   printf ("\\dpiclw=");
-  wfloat (&output, lthick);
+  wfloat (&output, lthk);
   printf ("bp\n");
-  gslinethick = lthick;
+  gslinethick = lthk;
 }
 
 void

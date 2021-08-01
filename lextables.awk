@@ -1,4 +1,4 @@
-# The file defining tokens contains lines of the form
+# The input file defining tokens contains lines of the form
 # (# comment)
 # label token
 #   =  token

@@ -1698,6 +1698,7 @@ getoptions (void) {
     else if ((cht == 'h') || (cht == '-')) {
       fprintf (errout, " *** dpic version %s\n",VERSIONDATE);
 #ifdef DDEBUG
+      openlogfile ();
       fprintf (errout, " Debug is enabled\n");
 #endif
       fprintf (errout, " Options:\n");
@@ -1721,6 +1722,9 @@ getoptions (void) {
       fprintf (errout, " *** dpic terminating: Unknown option ");
       if (isprint_ (cht)) { fprintf (errout, "\"%c\"\n", cht); }
       else { fprintf (errout, "\"char(%d)\"\n", cht); }
+#ifdef DDEBUG
+      openlogfile ();
+#endif
       fatal (0);
       }
     argct++;
