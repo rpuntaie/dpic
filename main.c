@@ -28,7 +28,7 @@ extern void logchar (Char);
 extern void snapname (Char *, chbufinx, chbufinx);
 extern void wlogfl (char *, double, int);
 extern void wrbufaddr (fbuffer *, int);
-extern void wrbuf (fbuffer *, int, int);
+extern void wrbuf (fbuffer *, int);
 #endif
 
 							/* the parser                         */
@@ -692,7 +692,7 @@ readlatex (void) {
 int
 argcount (arg * a) {
   int i = 0;
-  if (a == NULL) { markerror (805); }
+  if (a == NULL) { markerror (807); }
   while (a != NULL) {
     if (a->argbody != NULL) { i++; }
     a = a->nexta; }
@@ -720,7 +720,7 @@ arg *(findarg (arg * arlst, int k)) {
 #ifdef DDEBUG
   if (debuglevel > 0) {
     if ((i != k) || (ar == NULL)) { fprintf (log_, "not found\n"); }
-    else { wrbuf (ar->argbody, 2, 1); }
+    else { wrbuf (ar->argbody, 2); }
   }
 #endif
   return ar;
@@ -965,8 +965,8 @@ copyleft (fbuffer * mac, fbuffer ** buf, int macattr) {
   if (debuglevel > 0) {
     fprintf (log_, "copyleft(%d,%d,%d):\n", odp(mac), odp(*buf), macattr); }
   if (debuglevel > 1) {
-    fprintf (log_, " input string"); wrbuf (mac, 3, 1);
-    fprintf (log_, " output"); wrbuf (*buf, 3, 1); }
+    fprintf (log_, " input string"); wrbuf (mac, 3);
+    fprintf (log_, " output"); wrbuf (*buf, 3); }
 #endif
   if (mac != NULL) { while (mac->nextb != NULL) { mac = mac->nextb; } }
   while (mac != NULL) {
@@ -1004,11 +1004,11 @@ copyleft (fbuffer * mac, fbuffer ** buf, int macattr) {
   if (copied) {
 #ifdef DDEBUG
     if (debuglevel > 0) {
-      fprintf (log_, " copyleft result\n"); wrbuf (*buf, 3, 1); }
+      fprintf (log_, " copyleft result\n"); wrbuf (*buf, 3); }
 #endif
-                            /* precede the leftmost char with a newline */
+                            /* precede the leftmost char with an ETX */
     if ((*buf)->readx <= 1) { *buf = prependbuffer (*buf); }
-    (*buf)->carray[(*buf)->readx - 1] = nlch;
+    (*buf)->carray[(*buf)->readx - 1] = etxch;
     }
 }
 
@@ -1020,8 +1020,8 @@ copyright (fbuffer * mac, fbuffer ** buf) {
   int i, macreadx, spaceneeded;
 #ifdef DDEBUG
   if (debuglevel > 0) {
-    fprintf (log_, "copyright:\n input"); wrbuf (mac, 3, 1);
-    fprintf (log_, " output"); wrbuf (*buf, 3, 0); }
+    fprintf (log_, "copyright:\n input"); wrbuf (mac, 3);
+    fprintf (log_, " output"); wrbuf (*buf, 3); }
 #endif
   while (mac != NULL) {
     if ((*buf) == NULL) {
@@ -1051,7 +1051,7 @@ copyright (fbuffer * mac, fbuffer ** buf) {
     }
 #ifdef DDEBUG
   if (debuglevel > 0) {
-    fprintf (log_, " result"); wrbuf (*buf, 3, 0); }
+    fprintf (log_, " result"); wrbuf (*buf, 3); }
 #endif
 }
 
@@ -1155,7 +1155,7 @@ copyargbody (int *parenlevel, fbuffer ** p2) {
     	  }
         }
       if (inputeof) {
-	    markerror (806);
+	    markerror (805);
 	    j = p1->savedlen;
 	    inarg = false;
 	    *parenlevel = -1;
@@ -1507,7 +1507,7 @@ yylex (attribute * a0) {
 	    do { pushch (); } while (isdigit (ch) != 0);
 	    expandarg (chbuf, oldbufi, chbufi);
 	    terminalaccepted = false; }
-      else { markerror (805); } }
+      else { markerror (807); } }
 
     else if (newsymb == Xdo) { skipwhite (); }
 #ifdef DDEBUG
@@ -1585,7 +1585,7 @@ skiptobrace (void) {
     if (bracelevel <= 0) { break; }
     if (inputeof) {
       bracelevel = 0;
-      if (instring) { markerror (807); } else { markerror (804); } }
+      if (instring) { markerror (806); } else { markerror (804); } }
     else {
       prevch = ch;
       inchar ();

@@ -1198,6 +1198,7 @@ The C\(hylike function
 .B ")"
 .P
 is equivalent to a string.
+(Its implementation passes arguments singly to the C snprintf function.)
 Expressions are floating\(hypoint values, so the only applicable number
 formats are
 .B "e, f,"

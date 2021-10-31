@@ -25,7 +25,7 @@ DEST = ${DESTDIR}/${PREFIX}/bin
 # SAFEMODE= -DSAFE_MODE
 
 # For DJGPP compilation:
-# CFLAGS += -mcpu=pentium -march=i386 -O
+# CFLAGS += -mcpu=pentium -march=i386
 
 # MinGW
 # LIBS += -lm -liberty
@@ -41,14 +41,14 @@ DEFS=
 LIBS += -lm 
 
 CC=gcc
-CFLAGS += $(DEBUG) $(SAFEMODE) $(DEFS) -O
+CFLAGS += $(DEBUG) $(SAFEMODE) $(DEFS)
 LDFLAGS += $(LIBS)
 CPPFLAGS +=
 
 BISON = bison
 
 #DATE = `date +%Y.%m.%d`
-DATE=2021.08.01
+DATE=2021.11.01
 
 #-----------------------------------------------------------------------
 

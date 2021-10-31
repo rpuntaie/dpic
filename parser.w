@@ -112,7 +112,7 @@ void shift(primitive *, double, double);
 void skipwhite(void);
 void storestring(nametype *, Char *, chbufinx, chbufinx, int);
 void wchar(FILE **, Char);
-void wrbuf(fbuffer *, int, int);
+void wrbuf(fbuffer *, int);
 
 #ifdef DDEBUG
 int lspec(int);
@@ -227,40 +227,40 @@ input :                                                           /* input1 */
 
 picture	:	prestart psline NL elementlist optnl DotPE          /* picture1 */
 		{ $$ = $2;
-		  if (envblock != NULL ) { getnesw(envblock->son);
+		  if (envblock != NULL ) {
+            getnesw(envblock->son);
 #ifdef DDEBUG
-	      if (debuglevel > 0) {
-            snaptree(envblock->son,0);
-		    fprintf(log_, " Global dimensions:\n");
-            fprintf(log_, "(n,s)(e,w)=");
-		    wpair(&log_, north, south); wpair(&log_, east, west);
-		    fprintf(log_, " envblock<>nil:%s\n",
-              (envblock != NULL) ? " TRUE" : "FALSE"); fflush(log_); }
+	        if (debuglevel > 0) {
+              snaptree(envblock->son,0);
+		      fprintf(log_, " Global dimensions:\n");
+              fprintf(log_, "(n,s)(e,w)=");
+		      wpair(&log_, north, south); wpair(&log_, east, west);
+              putc('\n', log_);
+              fflush(log_); }
 #endif
-		  envblock->aat.xpos = (east + west) * 0.5;
-		  envblock->aat.ypos = (north + south) * 0.5;
-		  envblock->blockheight_ = north - south;
-		  envblock->blockwidth_ = east - west;
-	      if (drawmode == xfig) {
-		    shift(envblock, -west, -south);
-		    north -= south;
-		    east -= west;
-		    west = 0.0;
-		    south = 0.0; }
-	      else if ((envblock != NULL) &&
-	        ((drawmode == SVG) || (drawmode == PDF) || (drawmode == PS))) {
+		    envblock->aat.xpos = (east + west) * 0.5;
+		    envblock->aat.ypos = (north + south) * 0.5;
+		    envblock->blockheight_ = north - south;
+		    envblock->blockwidth_ = east - west;
+	        if (drawmode == xfig) {
+		      shift(envblock, -west, -south);
+		      north -= south;
+		      east -= west;
+		      west = 0.0;
+		      south = 0.0; }
+            else if (((drawmode==SVG) || (drawmode==PDF) || (drawmode==PS)) &&
+              (envblock->blockparms.env != NULL)) {
 							/* linethick/2 in drawing units*/
-		    r = (envblock->envinx(Xlinethick) / 2 / 72)
-                * envblock->envinx(Xscale);
+		      r = (envblock->envinx(Xlinethick) / 2 / 72)
+                  * envblock->envinx(Xscale);
 #ifdef DDEBUG
-		    if (debuglevel > 0) {
-			  fprintf(log_,     " west="); wfloat(&log_, west);
-			  fprintf(log_,     " south="); wfloat(&log_, south);
-			  fprintf(log_,     " r="); wfloat(&log_, r);
-			  fprintf(log_,     " shift=("); wfloat(&log_, r-west);
-              putc(',', log_);
-			  wfloat(&log_,     r - south);
-              fprintf(log_, ")\n"); fflush(log_); }
+		      if (debuglevel > 0) {
+			    fprintf(log_,     " west="); wfloat(&log_, west);
+			    fprintf(log_,     " south="); wfloat(&log_, south);
+			    fprintf(log_,     " lthick/2="); wfloat(&log_, r);
+			    fprintf(log_,     " shift=("); wfloat(&log_, r-west);
+                putc(',', log_); wfloat(&log_, r-south);
+                fprintf(log_, ")\n"); fflush(log_); }
 #endif
 							/* shift .sw to (r,r) */
 		      shift(envblock, (2 * r) - west, (2 * r) - south);
@@ -3030,8 +3030,7 @@ markerror(int emi) {
 #ifdef DDEBUG
   if (debuglevel > 0) {
     fprintf(log_, "*** Markerror");
-    /* wrbufaddr(inbuf, 0); */
-    wrbuf(inbuf,3,0);
+    wrbuf(inbuf,3);
     fprintf(log_, " emi=%d, lexsymb=%d:\n", emi, lexsymb);
     wrmacro( &log_, currentmacro );
     putc('\n', log_);
@@ -3066,13 +3065,15 @@ markerror(int emi) {
 	      if (thisbuf->savedlen < CHBUFSIZ) { inx = thisbuf->savedlen; }
 	      else { inx = CHBUFSIZ; } }
         }
+      else if (thisbuf->carray[inx] == etxch) { inx++; scanning = false; }
       else if (thisbuf->carray[inx] <= ' ') { inx--; }
       else { scanning = false; } }
     lastbuf = thisbuf;
 #ifdef DDEBUG
     if (debuglevel > 0) {
-	  fprintf(log_, "Skip white back, inx=%d\n", inx);
-	  wrbuf(thisbuf, 3, 0); }
+      fprintf(log_, "Skip back white to char=");
+      wchar(&log_,thisbuf->carray[inx]);
+      fprintf(log_, ", inx=%d\n", inx); }
 #endif
                             /* Skip back over code or tabs */
     scanning = true;
@@ -3085,15 +3086,17 @@ markerror(int emi) {
 	      if (thisbuf->savedlen < CHBUFSIZ) { j = thisbuf->savedlen; }
 	      else { j = CHBUFSIZ; } }
           }
-      else if (isprint_(thisbuf->carray[j]) || (thisbuf->carray[j]==tabch)){
-        j--; }
+      else if (thisbuf->carray[j]==etxch) { j++; scanning = false; }
+      else if (isprint_(thisbuf->carray[j])||(thisbuf->carray[j]==tabch)){j--;}
 	  else { j++; scanning = false; }
       }
     if (j < 1) { j = 1; }
 #ifdef DDEBUG
     if (debuglevel > 0) {
-	  fprintf(log_, "Skip back, j=%d\n", j);
-	  wrbuf(thisbuf, 3, 0); }
+      fprintf(log_, "Skip back printable to char=");
+      wchar(&log_,thisbuf->carray[j]);
+      fprintf(log_, ", j=%d\n", j);
+	  wrbuf(thisbuf, 3); }
 #endif
                           /* Write out the line or lines */
     while (thisbuf != NULL) {
@@ -3119,9 +3122,9 @@ markerror(int emi) {
     break;
 
   case 804:
-  case 807:
+  case 806:
     fprintf(errout, "End of file while reading ");
-    if (emi == 807) { fprintf(errout, "string in "); }
+    if (emi == 806) { fprintf(errout, "string in "); }
     switch (currprod) {
       case 1 /* elsehead1 */:
         fprintf(errout, "else");
@@ -3140,10 +3143,10 @@ markerror(int emi) {
     fprintf(errout, " {...} contents\n");
     break;
   case 805:
-    fprintf(errout, "Bad macro argument number\n");
-    break;
-  case 806:
     fprintf(errout, "End of file while evaluating macro argument\n");
+    break;
+  case 807:
+    fprintf(errout, "Bad macro argument number\n");
     break;
 							/* context error messages */
   case 851:
@@ -3414,7 +3417,7 @@ wrbufaddr(fbuffer *q, int job)
 }
 
 void
-wrbuf(fbuffer *p, int job, int r)
+wrbuf(fbuffer *p, int job)
 {
   int i, j, k, m;
   if (p == NULL) { fprintf(log_, " nil buffer "); return; }
@@ -3423,10 +3426,8 @@ wrbuf(fbuffer *p, int job, int r)
     if (job > 1) {
 	  fprintf(log_, " readx=%d savedlen=%d attrib=%d",
 		  p->readx, p->savedlen, p->attrib); }
-    if (r == 0) { j = 1; }
-    else if (r < 0) { j = -r; }
-    else { j = p->readx; }
-    if (job > 0) { fprintf(log_, "(%d,%d)", j, p->savedlen); }
+    j = p->readx;
+    if (job > 0) { fprintf(log_, "(j=%d,savedlen=%d)", j, p->savedlen); }
     fprintf(log_, "\n|");
     if (p->carray == NULL) { fprintf(log_, "nil"); }
     else {
@@ -3437,8 +3438,9 @@ wrbuf(fbuffer *p, int job, int r)
 		  m = i;
 		  k = p->savedlen + 1;
 		  while (i < k) { if (p->carray[i] == 0) { i++; } else { k = i; } }
-		  fprintf(log_, "(%d)x", i - m);
+		  fprintf(log_, "(%dx", i - m);
 		  wchar(&log_, '\0');
+          fprintf(log_, ")");
 		  i--; }
 	    i++;
 	    }
@@ -5818,7 +5820,7 @@ readfor(fbuffer *p0, int attx, fbuffer **p2, Char endch, boolean isfor)
 	  prevch = ch;
 	  if (moreinput) { inchar(); }
 	  if (inputeof) {
-        if (instring) { markerror(807); } else { markerror(804); }
+        if (instring) { markerror(806); } else { markerror(804); }
 		j = p1->savedlen;
 		moreinput = false;
 	    }
@@ -5838,7 +5840,7 @@ readfor(fbuffer *p0, int attx, fbuffer **p2, Char endch, boolean isfor)
 	  prevch = ch;
 	  if (moreinput) { inchar(); }
 	  if (inputeof) {
-        if (instring) { markerror(807); } else { markerror(804); }
+        if (instring) { markerror(806); } else { markerror(804); }
 	    j = p1->savedlen;
 	    moreinput = false;
 	    }
@@ -5849,7 +5851,7 @@ readfor(fbuffer *p0, int attx, fbuffer **p2, Char endch, boolean isfor)
   if (isfor) { backup(); }
 #ifdef DDEBUG
   if (debuglevel > 0) {
-      fprintf(log_, "\nreadfor done: for/macro buffer"); wrbuf(p1, 3, 0); }
+      fprintf(log_, "\nreadfor done: for/macro buffer"); wrbuf(p1, 3); }
 #endif
   *p2 = p1;
 }
@@ -5911,7 +5913,7 @@ dodefhead( attribute *a0 )
   if (debuglevel > 1) { putc('\n', log_);
 	if (currprod == 4 /* defhead1 */) { fprintf(log_, "defhead1"); }
 	else { fprintf(log_, "defhead2"); }
-	wrbuf(macp->argbody, 3, 0); }
+	wrbuf(macp->argbody, 3); }
 #endif
   }
 

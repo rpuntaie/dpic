@@ -25,7 +25,7 @@ DEST = ${DESTDIR}/${PREFIX}/bin
 # SAFEMODE= -DSAFE_MODE
 
 # For DJGPP compilation:
-# CFLAGS += -mcpu=pentium -march=i386 -O
+# CFLAGS += -mcpu=pentium -march=i386
 
 # MinGW
 # LIBS += -lm -liberty
@@ -41,7 +41,7 @@ DEFS= @defrand@ @defno_snprintf@ @safe_mode@
 LIBS += -lm @iberty@
 
 CC=@CC@
-CFLAGS += $(DEBUG) $(SAFEMODE) $(DEFS) -O
+CFLAGS += $(DEBUG) $(SAFEMODE) $(DEFS)
 LDFLAGS += $(LIBS)
 CPPFLAGS +=
 

@@ -36,6 +36,14 @@ examples.html of fractal images.
 To see some graphs produced using a general purpose pic library derived
 from Fortran sources, type `make' in the Graphs directory.
 
+In the illusions directory, type 
+m4 svg.m4 illusions.m4 | dpic -v > illusions.svg
+and view the results in a browser.
+
+In the Escher directory, type
+dpic -v Escher.pic > Escher.svg
+and view the results in a browser.
+
 Typing
 make clean
 deletes unneeded files created in the above steps.

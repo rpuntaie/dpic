@@ -111,3 +111,4 @@ clean:
 	rm -f man* *.pic arcs.* arrowheads.* arrows.* basictests* mode.tex
 	(cd Lindenmayer && make clean)
 	(cd Graphs && make clean)
+	rm -f illusions/*.svg Escher/*.svg
