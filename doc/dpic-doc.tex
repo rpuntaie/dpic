@@ -155,13 +155,13 @@ dpic extensions of the pic language will be given, and then
 the differences among pic translators will be itemized, particularly
 the differences between gpic and dpic.
 
-   There had better be a disclaimer:  The temptation to change the pic
+   There had better be a disclaimer:  the temptation to change the pic
    language has been resisted most of the time so that valid diagrams
    can be processed with minimal changes using the original
    Documenter's Workbench (ATT) pic, with gpic, or dpic.  There are
    exceptions: embedded word-processor commands principally,
    but also minor differences in defaults for valid pic input, a few
-   gpic constructs that dpic does not implement directly, and some dpic
+   gpic constructs that dpic does not implement directly, and a few dpic
    extensions that gpic does not implement.
    For details, see \SR{Diffs:}.
 
@@ -428,7 +428,7 @@ tool for producing line drawings. A macro serves to
   application area
 \item abbreviate long sequences of repetitive commands
 \item substitute particular values in commands by the use of macro arguments
-\item provide conditional text replacement depending on the value of its
+\item provide conditional text replacement depending on the value of macro
  arguments
 \item provide recursive looping
 \end{itemize}
@@ -1597,6 +1597,32 @@ arguments can be arbitrary expressions in place of the constants shown.
   {\tt define charstr \tLB"\$1"\tRB} then {\tt charstr(abc\tBS)}
   evaluates to a string containing the required final backslash.
 
+  Gpic implements the attribute {\tt aligned} of an object to
+  rotate attached strings by sending commands to 
+  postprocessor {\tt grops} or {\tt gropdf,}
+  which translate troff outuput to postscript or
+  pdf respectively.  The bounding box of the rotated string is unknown.
+  Dpic does not define this attribute but allows the user to rotate text
+  directly when permitted by the postprocessor.
+  For example,
+  the Circuit\_macros macro {\tt rs\_box} rotates text for \PSTricks\
+  or TikZ-PGF output and calculates the bounding box.
+  The following simple pic
+  macro accomnplishes the same goal for \PSTricks\ and \TPGF\ but
+  the resulting text bounding box is not calculated.
+\begin{verbatim}      
+#                           dprtext(degrees,text)
+define dprtext {[
+  if dpicopt==optPSTricks then {
+    sprintf("\rput[c]{%g}(0,0)",$1)+"{$2}"} else {
+  if dpicopt==optPGF then {
+    sprintf("\pgftext[rotate=%g]",$1)+"{$2}" }}
+  ]}
+\end{verbatim}      
+  Then, for example, {\tt dprtext(45,Hello) at {\sl position}}
+  places the text ``Hello'' rotated 45$^{\circ}$ at the specified position.
+  A similar Circuit\_macros facility is available for SVG output.
+
   A string cannot be assigned to a varable name; the nearest equivalent
   is to define a macro containing the string as the body.
 
@@ -1889,8 +1915,6 @@ to 0 sets the gap added by \dpic to zero.
 
 \iffalse
 \subsection{{\tt int()}}
-% Gpic {\tt int()} up to version 1.19 computed the floor of its argument
-% rather than the integer part as specified by ATT pic.
   Dpic provides
   both the {\tt floor()} and {\tt int()} functions but {\tt int()}
   does not compute the

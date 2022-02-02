@@ -1,7 +1,7 @@
 .PS                            # Pic input begins with .PS
-# cct_init Version 9.7.1: PSTricks m4 macro settings.
+# cct_init Version 9.7.9.1: PSTricks m4 macro settings.
   
-  # gen_init Version 9.7.1: PSTricks m4 macro settings.
+  # gen_init Version 9.7.9.1: PSTricks m4 macro settings.
   
 
   define rpoint__ {
@@ -39,7 +39,7 @@ Origin: Here                   # Position names are capitalized
   
   line from Here+(((0.25*linewid))*(cos(rp_ang)),((0.25*linewid))*(sin(rp_ang))) \
           to Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang)))}
-  { [box invis wid (0.25*linewid)*2 ht (0.25*linewid)*2] at Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang))) } 
+  {[box invis wid (0.25*linewid)*2 ht (0.25*linewid)*2] at Here+((rp_len/2)*(cos(rp_ang)),(rp_len/2)*(sin(rp_ang)))}
   line to Here+((rp_len)*(cos(rp_ang)),(rp_len)*(sin(rp_ang))) invis ;  {"$ -$" \
      at last [].s rjust below }; {"$ v_s$" \
      at last [].w rjust }; {"$ +$" \
@@ -54,13 +54,13 @@ Origin: Here                   # Position names are capitalized
     }
     M4_xyO: last line.c
     { line from last line.start to M4_xyO+(((linewid/6/4)*(-6))*(cos(rp_ang)),((linewid/6/4)*(-6))*(sin(rp_ang)))\
-       then to M4_xyO+((((linewid/6/4)*(-5))*(cos(rp_ang))+((linewid/6/4)*((2)))*((-sin(rp_ang)))),(((linewid/6/4)*(-5))*(sin(rp_ang))+((linewid/6/4)*((2)))*(cos(rp_ang)))) \
+      then to M4_xyO+((((linewid/6/4)*(-5))*(cos(rp_ang))+((linewid/6/4)*((2)))*((-sin(rp_ang)))),(((linewid/6/4)*(-5))*(sin(rp_ang))+((linewid/6/4)*((2)))*(cos(rp_ang)))) \
          then to M4_xyO+((((linewid/6/4)*(-3))*(cos(rp_ang))+((linewid/6/4)*((-2)))*((-sin(rp_ang)))),(((linewid/6/4)*(-3))*(sin(rp_ang))+((linewid/6/4)*((-2)))*(cos(rp_ang)))) \
-   then to M4_xyO+(((-(linewid/6/4))*(cos(rp_ang))+((linewid/6/4)*((2)))*((-sin(rp_ang)))),((-(linewid/6/4))*(sin(rp_ang))+((linewid/6/4)*((2)))*(cos(rp_ang)))) \
+then to M4_xyO+(((-(linewid/6/4))*(cos(rp_ang))+((linewid/6/4)*((2)))*((-sin(rp_ang)))),((-(linewid/6/4))*(sin(rp_ang))+((linewid/6/4)*((2)))*(cos(rp_ang)))) \
          then to M4_xyO+(((linewid/6/4)*(cos(rp_ang))+((linewid/6/4)*((-2)))*((-sin(rp_ang)))),((linewid/6/4)*(sin(rp_ang))+((linewid/6/4)*((-2)))*(cos(rp_ang)))) \
-   then to M4_xyO+((((linewid/6/4)*(3))*(cos(rp_ang))+((linewid/6/4)*((2)))*((-sin(rp_ang)))),(((linewid/6/4)*(3))*(sin(rp_ang))+((linewid/6/4)*((2)))*(cos(rp_ang)))) \
+then to M4_xyO+((((linewid/6/4)*(3))*(cos(rp_ang))+((linewid/6/4)*((2)))*((-sin(rp_ang)))),(((linewid/6/4)*(3))*(sin(rp_ang))+((linewid/6/4)*((2)))*(cos(rp_ang)))) \
          then to M4_xyO+((((linewid/6/4)*(5))*(cos(rp_ang))+((linewid/6/4)*((-2)))*((-sin(rp_ang)))),(((linewid/6/4)*(5))*(sin(rp_ang))+((linewid/6/4)*((-2)))*(cos(rp_ang)))) \
-           then to M4_xyO+(((linewid/6/4)*(6))*(cos(rp_ang)),((linewid/6/4)*(6))*(sin(rp_ang))) \
+         then to M4_xyO+(((linewid/6/4)*(6))*(cos(rp_ang)),((linewid/6/4)*(6))*(sin(rp_ang))) \
          then to last line.end
       [box invis ht linewid/6/4*2*2 wid linewid/6/4*6*2] at 2nd last line.c
       }
@@ -70,7 +70,7 @@ Origin: Here                   # Position names are capitalized
 #
   line invis from 2nd last line.start to 2nd last line.end ;    {"$ R$" \
      at last [].s below };  
-   [  circle rad (0.04*linewid)  fill 0    ] with .c at Here
+   [  circle rad (0.04*linewid) fill 0    ] with .c at Here
   move to last [].c
    {                           # Save the current position and direction
       line invis  down to (Here,Origin)
@@ -101,7 +101,7 @@ Origin: Here                   # Position names are capitalized
      at last [].l rjust }; {"$ -$" \
      at last [].s rjust below }; ;   {"$ C$" \
      at last [].e ljust };  
-      [  circle rad (0.04*linewid)  fill 0    ] with .c at Here
+      [  circle rad (0.04*linewid) fill 0    ] with .c at Here
   move to last [].c
       }                        # Restore position and direction
    line  right elen*2/3
@@ -110,13 +110,14 @@ Origin: Here                   # Position names are capitalized
   
    
          { line to Here+(((rp_len-4*linewid/16*2)/2)*(cos(rp_ang)),((rp_len-4*linewid/16*2)/2)*(sin(rp_ang)))
-       [ S: Here; {line to Here+((-(linethick *(scale/72)/2))*((-sin(rp_ang))),(-(linethick *(scale/72)/2))*(cos(rp_ang)))};
-     for m4i=1 to 4 do {
-       arc cw from Here to Here+((linewid/16*2)*(cos(rp_ang)),(linewid/16*2)*(sin(rp_ang))) with .c at Here+((linewid/16)*(cos(rp_ang)),(linewid/16)*(sin(rp_ang)))
-       {line to Here+((-(linethick *(scale/72)/2))*((-sin(rp_ang))),(-(linethick *(scale/72)/2))*(cos(rp_ang)))} }; E: Here ]  with .S at Here
-   line from last [].E to last [].E+(((rp_len-4*linewid/16*2)/2)*(cos(rp_ang)),((rp_len-4*linewid/16*2)/2)*(sin(rp_ang))) }
- 
- line to Here+((rp_len)*(cos(rp_ang)),(rp_len)*(sin(rp_ang))) invis ;   {"$ L$" \
+   {M4coil: [ S: Here;
+                {line to Here+((-(linethick *(scale/72)/2))*((-sin(rp_ang))),(-(linethick *(scale/72)/2))*(cos(rp_ang)))};
+      for m4i=1 to 4 do {
+        arc cw from Here to Here+((linewid/16*2)*(cos(rp_ang)),(linewid/16*2)*(sin(rp_ang))) with .c at Here+((linewid/16)*(cos(rp_ang)),(linewid/16)*(sin(rp_ang)))
+        {line to Here+((-(linethick *(scale/72)/2))*((-sin(rp_ang))),(-(linethick *(scale/72)/2))*(cos(rp_ang)))} }  ] with .S at Here }
+    
+   line from Here+((4*linewid/16*2)*(cos(rp_ang)),(4*linewid/16*2)*(sin(rp_ang))) to Here+(((rp_len+4*linewid/16*2)/2)*(cos(rp_ang)),((rp_len+4*linewid/16*2)/2)*(sin(rp_ang))) }
+   line to Here+((rp_len)*(cos(rp_ang)),(rp_len)*(sin(rp_ang))) invis ;   {"$ L$" \
      at last [].l rjust };  ;     
   { move to last line.start+((((rp_len-last [].ht)/2*2/3+arrowht/3))*(cos(rp_ang)),(((rp_len-last [].ht)/2*2/3+arrowht/3))*(sin(rp_ang)))
     arrow <-  to Here+((-arrowht)*(cos(rp_ang)),(-arrowht)*(sin(rp_ang))) "$ i$" \

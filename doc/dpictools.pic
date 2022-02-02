@@ -3,7 +3,7 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 9.7.1, copyright (c) 2021 J. D. Aplevich under      #
+# Circuit_macros Version 9.7.9.1, copyright (c) 2022 J. D. Aplevich under      #
 # the LaTeX Project Public Licence in file Licence.txt. The files of       #
 # this distribution may be redistributed or modified provided that this    #
 # copyright notice is included and provided that modifications are clearly #
@@ -98,6 +98,12 @@ define cross3 {
 
 #                               $1 . $2
 define dot3 {($1[1]*$2[1]+$1[2]*$2[2]+$1[3]*$2[3])}
+
+#                               $3 = $1 * $2
+define sprod3 {
+ $3[1]=($1)*$2[1]
+ $3[2]=($1)*$2[2]
+ $3[3]=($1)*$2[3]}
 
 #                               |$1|
 define length3 { sqrt($1[1]^2+$1[2]^2+$1[3]^2) }
@@ -252,6 +258,15 @@ define dpquicksort { [ if $3 > $2 then {
 #                               dprot(radians,x,y)
 #                               Evaluates to a rotated pair (like m4 rot_ )
 define dprot { cos($1)*($2)-sin($1)*($3),sin($1)*($2)+cos($1)*($3) }
+
+#                               dprtext(degrees,text)
+#                               Rotated pstricks or pgf text in a [] box
+define dprtext {[ if "$1"=="" then { a = 90 } else { a = $1 }
+  if dpicopt==optPSTricks then {
+    sprintf("\rput[c]{%g}(0,0)",a)+"{$2}"} else {
+  if dpicopt==optPGF then {
+    sprintf("\pgftext[rotate=%g]",a)+"{$2}" } else { "$2" }}
+    ]}
 
 #                               rgbtohsv(r,g,b,h,s,v)
 #                               rgb color triple to hsv with h range 0 to 360
@@ -450,6 +465,91 @@ if "cosh"=="co"+"sh" then {
   define sinh {((expe($1) - expe(-($1)))/2)}
 }
 
+## dpic equivalents or almost equivalents to libgen.m4 routines ########
+## Including them here has to be regarded as experimental for now ######
+
+define cosd {cos(($1)*dtor_)}
+define sind {sin(($1)*dtor_)}
+
+define ceiling {(-floor(-($1)))}
+define round_ {int($1+sign($1)/2)}
+
+define bp__ {*(scale/72)}       # Absolute Adobe point
+define pt__ {*(scale/72.27)}    # Absolute TeX point
+define pc__ {*(12*scale/72.27)} # Absolute Pica
+define in__ {*scale}            # Absolute inch
+define cm__ {*(scale/2.54)}     # Absolute cm
+define mm__ {*(scale/25.4)}     # Absolute mm
+define lthick {(linethick bp__)}
+if dpicopt==optSVG then { define px__ {*(scale/dpPPI)} } \
+else { define px__ {*(scale/96)} } # Absolute pixels
+
+rtod_ = 57.295779513082323
+dtor_ = 0.017453292519943295
+twopi_ = 6.2831853071795862
+pi_ = twopi_/2
+#                               Polar to rectangular conversion
+define Rect_ {($1)*cos(($2)*dtor_),($1)*sin(($2)*dtor_)}
+
+#                               intersect_(Start1,End1,Start2,End2)
+#                               Intersection of lines joining named positions
+define intersect_ {((($3.x-$1.x)*($3.y-$4.y)-($3.y-$1.y)*($3.x-$4.x))/\
+ (($2.x-$1.x)*($3.y-$4.y)-($2.y-$1.y)*($3.x-$4.x)) \
+ between $1 and $2) }
+#                               Intersect_(Name1,Name2)
+#                               Intersection of named lines
+define Intersect_ {intersect_($1.start,$1.end,$2.start,$2.end)}
+
+#                               drawdir_(degrees)
+#                               Nearest multiple of 90
+define drawdir_ {(int(pmod($1+45,360)/90)*90)}
+
+#                               vlength(x,y) 2-D vector length
+define vlength {sqrt(abs(($1)^2+($2)^2))}
+
+#                               distance(Pos1,Pos2) distance between positions
+define distance {vlength(($1).x-($2).x,($1).y-($2).y)}
+
+# For PGF, PSTricks, or SVG only:
+define dpshade { beginshade($1); $2; endshade } # like libgen shade()
+
+# beginshade
+if dpicopt==optPGF then {
+ define beginshade { if "$1"!="" then { dpshade_=$1 } else { dpshade_=0.5 }
+ command "\global\let\dpicshdraw=\dpicdraw\global\def\dpicdraw{}"
+ command "\global\def\dpicstop{--}"
+ command sprintf("\dpicshdraw[fill=white!%g!black]",dpshade_*100) } } \
+else { if dpicopt==optPSTricks then {
+ define beginshade { if "$1"!="" then { dpshade_=$1 } else { dpshade_=0.5 }
+ command sprintf("\newgray{m4fillv}{%g}",dpshade_)
+ command sprintf("\pscustom[fillstyle=solid,fillcolor=m4fillv]{%%") } } \
+else { if dpicopt==optSVG then {
+ define beginshade { if "$1"!="" then { dpshade_=$1 } else { dpshade_=0.5 }
+ command sprintf("<g fill=\"rgb(%g,%g,%g)\">",int(dpshade_*255+0.5),\
+   int(dpshade_*255+0.5),int(dpshade_*255+0.5))} } }}
+
+# endshade
+if dpicopt==optPGF then {
+ define endshade {command "cycle; \
+  \global\let\dpicdraw=\dpicshdraw\global\def\dpicstop{;}"} } \
+else { if dpicopt==optPSTricks then {
+  define endshade {command "}%"} } \
+else { if dpicopt==optSVG then {
+ define endshade { command "</g>"} } }}
+
+# rgbstring
+if dpicopt==optPGF then {
+ define rgbstring \
+  {sprintf("{rgb,1:red,%7.5f;green,%7.5f;blue,%7.5f}",$1,$2,$3)} } \
+else { if dpicopt==optPSTricks then {
+ define rgbstring \
+  {sprintf("{rgb,1:red,%7.5f;green,%7.5f;blue,%7.5f}",$1,$2,$3)} } \
+else { if dpicopt==optSVG then {
+ define rgbstring {sprintf("rgb(%g,%g,%g)",\
+  int(($1)*255+0.5),int(($2)*255+0.5),int(($3)*255+0.5))} } }}
+
+#######################################################################
+
 # print " *** dpic: dpictools.pic processed"
-define dpictools {1}
+define dpictools_ {1}
 # dpictools end
