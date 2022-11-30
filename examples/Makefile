@@ -109,6 +109,6 @@ clean:
 	rm -f *.ps *.eps *.dvi *.log *.mp *.1 mpxerr* *pk *gf *.mpx *.dim *.mf
 	rm -f *.tfm *.aux *.pfg tst.tex diag.pic diag.tex *.trace *.fig *.pdf *.svg
 	rm -f man* *.pic arcs.* arrowheads.* arrows.* basictests* mode.tex
-	(cd Lindenmayer && make clean)
+	(cd Lindenmayer && make clobber)
 	(cd Graphs && make clean)
 	rm -f illusions/*.svg Escher/*.svg

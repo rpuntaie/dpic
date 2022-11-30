@@ -125,7 +125,9 @@ of the pic language as described for the original Documenter's
 Workbench (ATT) pic~\cite{KRpic} or the
 current GNU pic (gpic) processor~\cite{Raymond95}.
 However, a concise dpic language reference is included here in
-Appendix~A, and the context-free dpic input grammar is given in Appendix~B.
+Appendix~A (\SR{Appendix A:})
+and the context-free dpic input grammar is given in
+Appendix~B (\SR{Appendix B:}).
 
 The pic ``little language''
 is particularly suited for easily creating line diagrams
@@ -319,19 +321,20 @@ of the postprocessors are powerful drawing languages in their own right,
 so it can be argued that dpic has all the power of these languages.
 However, if you find yourself writing extensive postprocessor code then
 you might ask why you are not programming exclusively in that language.
-Similarly, pic floating-point operations and macro facilities allow complex
-numerical computations at the price of number-crunching in an interpreted
-language, but sometimes there is convenience in calculating plotted
-values in the same source as graphing them.
+Similarly, pic floating-point operations and macro facilities enable complex
+numerical computations; the price is the inefficiency of number-crunching in
+an interpreted language. However, it can be convenient to calculate plotted
+values in the same source as graphing them, and the power of modern
+computers may compensate for the inherent inefficiencies.
 
-Pic is very suitable for line diagrams with basic color.
+The pic language is very suitable for line diagrams with basic color.
 Elaborate fills and cropping are the domain of
 the postprocessors, but can be included easily with the use of macros.
 
-The following sections are intended to help you become familiar
-with dpic language syntax.  Some of these details
-are exclusive to dpic and are not described in the GNU manual
-but are discussed in \SR{Diffs:} of this document.
+The following sections are intended to help you become familiar with
+dpic language syntax, which is simple but somewhat unusual.  Some of
+these details are exclusive to dpic and are not described in the GNU
+manual but are discussed in \SR{Diffs:} of this document.
 
 %\iffalse
 \subsection{Character set}
@@ -619,22 +622,92 @@ repeatedly until it becomes greater than the second argument:
 If this trick seems like an abuse of language, it can be disguised somewhat
 by the definition of a C-like loop. For example, suppose we wish to
 write
-\ntt{loop(\ x=1,\ x<10,\ x=x*2,}
-\ntt{ \ loop(\ y=1,\ y<=4,\ y=y+1,}
-\ntt{ \ \ print (x,y)\ )\ )}
+%\ntt{loop(\ x=1,\ x<10,\ x=x*2,}
+%\ntt{ \ loop(\ y=1,\ y<=4,\ y=y+1,}
+%\ntt{ \ \ print (x,y)\ )\ )}
+\ntt{loop(i=0, i<3, i+=1, {\sl drawing commands \ldots})}
 
 Then the following defines a suitable mechanism with a loop depth index to
 allow nesting:
 \ntt{ld\_\_ = 0}
-\ntt{define loop \{ld\_\_=ld\_\_+1; \$1}
+\ntt{define loop \{ ld\_\_+= 1; \$1}
 \ntt{\ for lx\_\_[ld\_\_]=0 to 1 do \{}
 \ntt{\ \ if \$2 then \{ lx\_\_[ld\_\_]=0; \$4; \$3 \}
  else \{lx\_\_[ld\_\_]=1\}\}}
-\ntt{\ ld\_\_=ld\_\_-1;\}}
+\ntt{\ ld\_\_-= 1;} \}
 
 However, {\tt loop()} is a macro, so references to arguments
 in the body will refer to {\tt loop()} arguments, which may not be desired.
 In that case, use a {\tt for} loop.
+\iffalse
+The following prototypical examples show how several types of loop
+structures can implement the previous example:
+\fi
+\iffalse
+\begin{verbatim}
+# repeat until
+define finished {($1>=3)}
+i = 0
+for done=0 to 1 do {
+  {\sl drawing commands \ldots}
+  i +=1
+  done=finished(i) }
+
+# while
+define while {($1 < 3)}
+i = 0
+for done=1 to while(i) do {
+  {\sl drawing commands \ldots}
+  i+=1
+  done=!while(i) }
+
+# while not
+i = 0
+for done=1 to !finished(i) do {
+  {\sl drawing commands \ldots}
+  i+=1
+  done=finished(i) }
+\end{verbatim}
+\fi
+The following prototypical example shows how to implement the previous
+example using a {\it repeat-until} structure that executes the drawing
+commands 1 or more times:
+%\ntt{\char35\ repeat until}
+%\ntt{i = 0}
+%\ntt{define finished \{(\$1 >= 3)\}}
+\ntt{i = 0; define finished \{(\$1 >= 3)\}}
+\ntt{for done = 0 to 1 do \{}
+\ntt{\ {\sl drawing commands \ldots}}
+\ntt{\ i += 1}
+\ntt{\ done = finished(i) \}}
+
+To execute the drawing code 0 or more times as in a {\it while} loop,
+change the {\tt for} line to
+\ntt{for done = 1 to !finished(i) do \{}
+\iffalse
+Similarly, a {\it while} structure that executes the drawing code 0
+or more times for the previous example is:
+%\hbox{}\\
+%\ntt{\char35\ while}
+\ntt{i = 0}
+\ntt{define while \{(\$1 < 3)\}}
+\ntt{for done = 1 to while(i) do \{}
+\ntt{\ {\sl drawing commands \ldots}}
+\ntt{\ i += 1}
+\ntt{\ done = !while(i) \}}
+\fi
+\iffalse
+\hbox{}\\
+\ntt{\char35\ while not}
+\ntt{i = 0}
+\ntt{for done=1 to !finished(i) do \{}
+\ntt{\ {\sl drawing commands \ldots}}
+\ntt{\ i += 1}
+\ntt{\ done = finished(i) \}}
+\fi
+
+If such loops are nested, the loop variables and stopping
+criteria have to be defined so they do not clash.
 
 \subsubsection{Evaluating arguments}
 A macro argument is referenced as {\tt\$}$n$,
@@ -659,6 +732,7 @@ To pass arguments by value, use {\tt exec sprintf ...}, for example,
 {\tt exec sprintf("function(\%g,\%g)",x,y+z)}.
 The recursive calls near the bottom of the sorting algorithm shown
 are another example:
+\pagebreak
 \begin{verbatim}
 #                               dpquicksort(a,lo,hi,ix)
 #                               Given array a[lo:hi] and index
@@ -712,13 +786,13 @@ A more robust solution is to call by value using {\tt exec}; thus,
 In this case however, the last three arguments remain vulnerable to
 name clashes and should be named with care.
 
-When, as in the example, no drawing commands appear in a {\tt [ ]} block,
-then the block has zero size but has position {\tt Here} so the block
-can affect the diagram bounding box if {\tt Here} happens to be outside the
-bounding box of drawn elements. An alternative to this complication is to
-omit the {\tt [ ]} brackets and rename the local variables to avoid
-name clashes. For example, {\tt r} above could be {\tt r\_rgbtohsv} and
-so on for other variables. 
+When, as in the example, no drawing commands appear in a {\tt [ ]}
+block, then the block has zero size but has position {\tt Here} so the
+block can affect the diagram bounding box if {\tt Here} happens to be
+outside the intended bounding box of drawn elements. An alternative
+to this complication is to omit the {\tt [ ]} brackets and rename the
+local variables to avoid name clashes. For example, {\tt r} above could
+be {\tt r\_rgbtohsv} and so on for other variables.
 
 \subsubsection{Complex numbers}
 A complex number is an ordered pair of real numbers like a
@@ -756,7 +830,7 @@ when it is a macro argument, for example, then the process is repeated.
 The single quotes serve to delay the evaluation of macros within
 {\tt text}, as in macro definitions described above.  Therefore, to
 avoid m4 changing dpic macro definitions or \LaTeX, enclose
-them in single quote pairs.
+them in single-quote pairs.
 
 Some simple applications of m4 macros are illustrated in the subsections
 that follow.
@@ -820,6 +894,7 @@ knowing their final orientation and to rotate the result at will.
 This capability can be added to the basic pic language
 by judicious use of macros.
 
+\pagebreak
 First, instead of specifying positions in the usual way, such as in
 \ntt{line from (x1,y1) to (x2,y2)}\\
 for example, let us agree to write
@@ -877,12 +952,17 @@ and can be employed in expressions as usual.
 Similarly, {\tt P} and {\tt P[3]} are distinct labels.
 Writing the subscript as {\tt [{\sl position}]} for any defined
 position is the same as {\tt [{\sl position}.x, {\sl position}.y]}.
-When using older versions of \dpic,
-in cases where a double-subscripted variable or label is part of a macro
-argument, protect the comma in the subscript with parentheses
-by writing, for example, {\tt x[(i,j)]} instead of {\tt x[i,j]}.
-Recent versions of \dpic\ do not require this, as the brackets protect
-the comma.
+
+Subscripted variables can simplify the storage and manipulation of
+sequential data, and subscripted labels aid in drawing sequences
+of objects.
+
+%When using older versions of \dpic,
+%in cases where a double-subscripted variable or label is part of a macro
+%argument, protect the comma in the subscript with parentheses
+%by writing, for example, {\tt x[(i,j)]} instead of {\tt x[i,j]}.
+%Recent versions of \dpic\ do not require this, as the brackets protect
+%the comma.
 
 \subsubsection{Assigning an array of numbers}
 We can assign an array of numbers to subscripted variables using
@@ -914,7 +994,7 @@ $\ldots$ so that, for example,
 assigns the second to sixteenth arguments to {\tt x[1]} to {\tt x[15]}
 respectively.
 
-\Dpic does not define vector operations, but it is easy to define macros
+\Dpic does not define vector operations, but it is easy to write macros
 for them. For example, macros can be used to define 3-dimensional vectors,
 transform them, and to project them onto a drawing plane.
 
@@ -937,7 +1017,6 @@ The tension parameter can be varied to assist in fitting a multisegment
 spline to a curve.  It turns out, for example, that the optimum tension
 for approximating a circle using four splines is the value 0.551784.
 
-\pagebreak
 \subsubsection{Curve fitting}
 Splines are drawn with respect to control points, but only pass through
 the first and last point.  Suppose that a sequence of points
@@ -1509,7 +1588,7 @@ relate to the use of \LaTeX\ or the other dpic output formats.
   Newer versions of gpic also draw two segments.
 \fi
 
-\subsection{{\tt line}, {\tt spline}, {\tt arrow}, {\tt move}}
+\subsection{Defaults for {\tt line}, {\tt spline}, {\tt arrow}, {\tt move}}
   Dpic treats the defaults for linear objects consistently with planar
   objects with respect to the {\tt at} modifier.
 % Versions of gpic up to 1.19 treated
@@ -1555,7 +1634,7 @@ Strings are arbitrary character sequences between double quotes.
 %quotes in strings preceded by the backslash character.
 Equivalently, a string is produced by the C-like sprintf function
 \ntt{sprintf("{\sl format}" {\rm[}, expression,~$\ldots$ {\rm]})}\\
-The C sprintf function is used for implementing this; therefore, the
+The C snprintf function is used for implementing this; therefore, the
 precision of default formats such as {\tt \%g} may vary by machine and compiler.
 To produce transportable results, specify the precision completely,
 e.g., {\tt \%8.5f}.  As in C, the pair {\tt \%\%}
@@ -1600,15 +1679,16 @@ arguments can be arbitrary expressions in place of the constants shown.
   Gpic implements the attribute {\tt aligned} of an object to
   rotate attached strings by sending commands to 
   postprocessor {\tt grops} or {\tt gropdf,}
-  which translate troff outuput to postscript or
+  which translate troff output to postscript or
   pdf respectively.  The bounding box of the rotated string is unknown.
   Dpic does not define this attribute but allows the user to rotate text
   directly when permitted by the postprocessor.
   For example,
   the Circuit\_macros macro {\tt rs\_box} rotates text for \PSTricks\
   or TikZ-PGF output and calculates the bounding box.
+  For SVG output, {\tt svg\_rot()} has a similar function.
   The following simple pic
-  macro accomnplishes the same goal for \PSTricks\ and \TPGF\ but
+  macro accomplishes the same goal for \PSTricks\ and \TPGF\ but
   the resulting text bounding box is not calculated.
 \begin{verbatim}      
 #                           dprtext(degrees,text)
@@ -1621,7 +1701,6 @@ define dprtext {[
 \end{verbatim}      
   Then, for example, {\tt dprtext(45,Hello) at {\sl position}}
   places the text ``Hello'' rotated 45$^{\circ}$ at the specified position.
-  A similar Circuit\_macros facility is available for SVG output.
 
   A string cannot be assigned to a varable name; the nearest equivalent
   is to define a macro containing the string as the body.
@@ -2032,10 +2111,6 @@ A few additional mathematical functions are defined in dpic:
 %\pagebreak
 \pdfbookmark[section]{\refname}{refs}
 \bibliographystyle{plain}
-\makeatletter
-\addcontentsline{toc}{section}{\protect{\hspace*{1em}$\:\,$}References
-\unhbox \voidb@x}
-\makeatother
 \bibliography{./dpic-doc}
 
 %===============================================================================
@@ -2047,7 +2122,7 @@ A few additional mathematical functions are defined in dpic:
 %\fi
 %===============================================================================
 \clearpage
-\section{Appendix B: dpic grammar}
+\section{Appendix B: dpic grammar}\label{Appendix B:}
 The tokens recognized by the dpic parser are as shown.  The tokens
 in {\tt <} {\tt >} pairs are generated internally.  Equated tokens
 ({\tt ";" = "<NL>"}) have identical effect.

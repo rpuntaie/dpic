@@ -1,8 +1,8 @@
 .PS
 # Spiral.m4 (Uses Circuit_macros library)
-# threeD_init Version 9.7.7: TikZ PGF m4 macro settings.
+# threeD_init Version 10.0.2: TikZ PGF m4 macro settings.
   
-  # gen_init Version 9.7.7: TikZ PGF m4 macro settings.
+  # gen_init Version 10.0.2: TikZ PGF m4 macro settings.
   
 
   define rpoint__ {
@@ -24,27 +24,27 @@
 
   
 # setview(`20',`20',`0')
-  view3D1=cos((20)*(dtor_))*cos((20)*(dtor_));  view3D2=sin((20)*(dtor_))*cos((20)*(dtor_));  view3D3=sin((20)*(dtor_))
+  view3D1=cos(((20)*(dtor_)))*cos(((20)*(dtor_)));  view3D2=sin(((20)*(dtor_)))*cos(((20)*(dtor_)));  view3D3=sin(((20)*(dtor_)))
   light3D1=view3D1; light3D2=view3D2; light3D3=view3D3
-  UPx_:  sin(-(20)*(dtor_)),  -((sin((20)*(dtor_)))*(cos(-(20)*(dtor_))))
-  UPy_:  cos(-(20)*(dtor_)),  -((sin((20)*(dtor_)))*(-(sin(-(20)*(dtor_)))))
-  UPz_: 0,  cos((20)*(dtor_))
+  UPx_:  sin(-((20)*(dtor_))),  (-(((sin(((20)*(dtor_))))*(cos(-((20)*(dtor_)))))))
+  UPy_:  cos(-((20)*(dtor_))),  (-(((sin(((20)*(dtor_))))*((-(sin(-((20)*(dtor_)))))))))
+  UPz_: 0,  cos(((20)*(dtor_)))
 # setview end
 
 
 # threeD_init end
 
-if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
 
   azimuth = 15                     # Set view angles in degrees
   elevation = 35
   
 # setview(`azimuth',`elevation')
-  view3D1=cos((azimuth)*(dtor_))*cos((elevation)*(dtor_));  view3D2=sin((azimuth)*(dtor_))*cos((elevation)*(dtor_));  view3D3=sin((elevation)*(dtor_))
+  view3D1=cos(((azimuth)*(dtor_)))*cos(((elevation)*(dtor_)));  view3D2=sin(((azimuth)*(dtor_)))*cos(((elevation)*(dtor_)));  view3D3=sin(((elevation)*(dtor_)))
   light3D1=view3D1; light3D2=view3D2; light3D3=view3D3
-  UPx_:  sin(-(azimuth)*(dtor_)),  -((sin((elevation)*(dtor_)))*(cos(-(azimuth)*(dtor_))))
-  UPy_:  cos(-(azimuth)*(dtor_)),  -((sin((elevation)*(dtor_)))*(-(sin(-(azimuth)*(dtor_)))))
-  UPz_: 0,  cos((elevation)*(dtor_))
+  UPx_:  sin(-((azimuth)*(dtor_))),  (-(((sin(((elevation)*(dtor_))))*(cos(-((azimuth)*(dtor_)))))))
+  UPy_:  cos(-((azimuth)*(dtor_))),  (-(((sin(((elevation)*(dtor_))))*((-(sin(-((azimuth)*(dtor_)))))))))
+  UPz_: 0,  cos(((elevation)*(dtor_)))
 # setview end
 
 
@@ -55,12 +55,12 @@ if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
 
   South: 0,0                       # South pole
          # North pole
-  North: 0,  (cos((elevation)*(dtor_)))*(2*crad)
+  North: 0,  ((cos(((elevation)*(dtor_))))*(2*crad))
            # Centre of the sphere
-  C: 0,  (cos((elevation)*(dtor_)))*(crad)
+  C: 0,  ((cos(((elevation)*(dtor_))))*(crad))
                                    # Shaded sphere at C
   g = 0.65
-  Hlight: C+((crad*g)*(cos((135)*dtor_)),(crad*g)*(sin((135)*dtor_)))
+  Hlight: C+(((crad*g)*(cos((135)*dtor_))),((crad*g)*(sin((135)*dtor_))))
   rm = crad*(1+g)
   n = int(rm/(linethick *(scale/72)))
   lt = linethick * 2
@@ -72,9 +72,9 @@ if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
     else {
       arc cw thick lt outlined sprintf("{rgb,1:red,%7.5f;green,%7.5f;blue,%7.5f}",u,u,u) \
         from             ((((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2) between Hlight and C) +\
-   ((sqrt(max(0,(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(-((C).y-(Hlight).y)),(sqrt(max(0,(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(((C).x-(Hlight).x))) \
+   (((sqrt(abs((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(-((C).y-(Hlight).y))),((sqrt(abs((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(((C).x-(Hlight).x)))) \
         to             ((((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2) between Hlight and C) -\
-   ((sqrt(max(0,(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(-((C).y-(Hlight).y)),(sqrt(max(0,(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(((C).x-(Hlight).x))) with .c at Hlight }
+   (((sqrt(abs((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(-((C).y-(Hlight).y))),((sqrt(abs((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)*(r)^2-(((((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2)+(r)^2-(crad)^2)/2)^2))/(((C).x-(Hlight).x)^2+((C).y-(Hlight).y)^2))*(((C).x-(Hlight).x)))) with .c at Hlight }
     }
   circle rad crad +linethick *(scale/72)/2 at C
 
@@ -87,35 +87,35 @@ if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
 
                                    # The visibility function is the dot product
                                    # of the view vector and the radius vector
-define Radiusvis { $2 = (((((cos((-2*turns*$1*dtor_)))*((cos((-$1*dtor_)))*(crad)))*(view3D1)+( (sin((-2*turns*$1*dtor_)))*((cos((-$1*dtor_)))*(crad)))*(view3D2))+( -((sin((-$1*dtor_)))*(crad)))*(view3D3))) }
+define Radiusvis { $2 = (((((((cos((-2*turns*$1*dtor_)))*(((cos((-$1*dtor_)))*(crad)))))*(view3D1))+(( ((sin((-2*turns*$1*dtor_)))*(((cos((-$1*dtor_)))*(crad)))))*(view3D2)))+(( (-(((sin((-$1*dtor_)))*(crad)))))*(view3D3)))) }
 
   dphi = 5                         # Horiz degrees between test pts on the curve
   dt = (dphi)/(2*turns)
   n = 0
-  P[n]:  ((sin(-(azimuth)*(dtor_)))*((cos((-2*turns*thetamin*dtor_)))*((cos((-thetamin*dtor_)))*(crad)))+(cos(-(azimuth)*(dtor_)))*( (sin((-2*turns*thetamin*dtor_)))*((cos((-thetamin*dtor_)))*(crad)))),  ((cos((elevation)*(dtor_)))*(crad -((sin((-thetamin*dtor_)))*(crad)))-((sin((elevation)*(dtor_)))*(((cos(-(azimuth)*(dtor_)))*((cos((-2*turns*thetamin*dtor_)))*((cos((-thetamin*dtor_)))*(crad)))-((sin(-(azimuth)*(dtor_)))*( (sin((-2*turns*thetamin*dtor_)))*((cos((-thetamin*dtor_)))*(crad))))))))
+  P[n]:  (((sin(-((azimuth)*(dtor_))))*(((cos((-2*turns*thetamin*dtor_)))*(((cos((-thetamin*dtor_)))*(crad))))))+((cos(-((azimuth)*(dtor_))))*( ((sin((-2*turns*thetamin*dtor_)))*(((cos((-thetamin*dtor_)))*(crad))))))),  (((cos(((elevation)*(dtor_))))*((crad+ (-(((sin((-thetamin*dtor_)))*(crad)))))))-(((sin(((elevation)*(dtor_))))*((((cos(-((azimuth)*(dtor_))))*(((cos((-2*turns*thetamin*dtor_)))*(((cos((-thetamin*dtor_)))*(crad))))))-(((sin(-((azimuth)*(dtor_))))*( ((sin((-2*turns*thetamin*dtor_)))*(((cos((-thetamin*dtor_)))*(crad))))))))))))
   Radiusvis(thetamin,xs)           # Visibility of the initial pt
   for theta=thetamin+dt to thetamax by dt do {
     Radiusvis(theta,xf)            # Visibility of the next pt
     if xs*xf < 0 then {
       findroot( Radiusvis, theta-dt,theta,1e-8,x ) # Find the transition pt
-      n+=1; P[n]:  ((sin(-(azimuth)*(dtor_)))*((cos((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))+(cos(-(azimuth)*(dtor_)))*( (sin((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))),  ((cos((elevation)*(dtor_)))*(crad -((sin((-x*dtor_)))*(crad)))-((sin((elevation)*(dtor_)))*(((cos(-(azimuth)*(dtor_)))*((cos((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad)))-((sin(-(azimuth)*(dtor_)))*( (sin((-2*turns*x*dtor_)))*((cos((-x*dtor_)))*(crad))))))))
-      if xs < 0 then { if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
-  dfitcurve(P,n,dashed) } else { if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+      n+=1; P[n]:  (((sin(-((azimuth)*(dtor_))))*(((cos((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))+((cos(-((azimuth)*(dtor_))))*( ((sin((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))),  (((cos(((elevation)*(dtor_))))*((crad+ (-(((sin((-x*dtor_)))*(crad)))))))-(((sin(((elevation)*(dtor_))))*((((cos(-((azimuth)*(dtor_))))*(((cos((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))-(((sin(-((azimuth)*(dtor_))))*( ((sin((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))))))))
+      if xs < 0 then { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+  dfitcurve(P,n,dashed) } else { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
   dfitcurve(P,n) }
       P[0]: P[n]
       n = 0
       xs = -xs
       }
-    n+=1; P[n]:  ((sin(-(azimuth)*(dtor_)))*((cos((-2*turns*theta*dtor_)))*((cos((-theta*dtor_)))*(crad)))+(cos(-(azimuth)*(dtor_)))*( (sin((-2*turns*theta*dtor_)))*((cos((-theta*dtor_)))*(crad)))),  ((cos((elevation)*(dtor_)))*(crad -((sin((-theta*dtor_)))*(crad)))-((sin((elevation)*(dtor_)))*(((cos(-(azimuth)*(dtor_)))*((cos((-2*turns*theta*dtor_)))*((cos((-theta*dtor_)))*(crad)))-((sin(-(azimuth)*(dtor_)))*( (sin((-2*turns*theta*dtor_)))*((cos((-theta*dtor_)))*(crad))))))))
+    n+=1; P[n]:  (((sin(-((azimuth)*(dtor_))))*(((cos((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))+((cos(-((azimuth)*(dtor_))))*( ((sin((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))),  (((cos(((elevation)*(dtor_))))*((crad+ (-(((sin((-theta*dtor_)))*(crad)))))))-(((sin(((elevation)*(dtor_))))*((((cos(-((azimuth)*(dtor_))))*(((cos((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))-(((sin(-((azimuth)*(dtor_))))*( ((sin((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))))))))
     }
-  n+=1; P[n]:  ((sin(-(azimuth)*(dtor_)))*((cos((-2*turns*thetamax*dtor_)))*((cos((-thetamax*dtor_)))*(crad)))+(cos(-(azimuth)*(dtor_)))*( (sin((-2*turns*thetamax*dtor_)))*((cos((-thetamax*dtor_)))*(crad)))),  ((cos((elevation)*(dtor_)))*(crad -((sin((-thetamax*dtor_)))*(crad)))-((sin((elevation)*(dtor_)))*(((cos(-(azimuth)*(dtor_)))*((cos((-2*turns*thetamax*dtor_)))*((cos((-thetamax*dtor_)))*(crad)))-((sin(-(azimuth)*(dtor_)))*( (sin((-2*turns*thetamax*dtor_)))*((cos((-thetamax*dtor_)))*(crad))))))))
-  if xs < 0 then { if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
-  dfitcurve(P,n,dashed) } else { if "dpictools_" != "1" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+  n+=1; P[n]:  (((sin(-((azimuth)*(dtor_))))*(((cos((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))+((cos(-((azimuth)*(dtor_))))*( ((sin((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))),  (((cos(((elevation)*(dtor_))))*((crad+ (-(((sin((-thetamax*dtor_)))*(crad)))))))-(((sin(((elevation)*(dtor_))))*((((cos(-((azimuth)*(dtor_))))*(((cos((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))-(((sin(-((azimuth)*(dtor_))))*( ((sin((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))))))))
+  if xs < 0 then { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+  dfitcurve(P,n,dashed) } else { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
   dfitcurve(P,n) }
 
                                    # Axes
-  X:  (sin(-(azimuth)*(dtor_)))*(crad),  -((sin((elevation)*(dtor_)))*((cos(-(azimuth)*(dtor_)))*(crad)))
-  Y:  (cos(-(azimuth)*(dtor_)))*(crad),  -((sin((elevation)*(dtor_)))*(-((sin(-(azimuth)*(dtor_)))*(crad))))
+  X:  ((sin(-((azimuth)*(dtor_))))*(crad)),  (-(((sin(((elevation)*(dtor_))))*(((cos(-((azimuth)*(dtor_))))*(crad))))))
+  Y:  ((cos(-((azimuth)*(dtor_))))*(crad)),  (-(((sin(((elevation)*(dtor_))))*((-(((sin(-((azimuth)*(dtor_))))*(crad))))))))
 
 define linevis { # ratio           # Visibility for lines fom South to Tmp
   $2 = sqrt(abs(((($1 between South and Tmp)).x-(C).x)^2+((($1 between South and Tmp)).y-(C).y)^2))-crad }

@@ -257,7 +257,7 @@ popgwarc (postype Ctr, double radius, double startangle, double endangle,
 
   if ((ccw > 0) && (endangle < startangle)) { endangle += 2 * pi; }
   else if ((ccw < 0) && (endangle > startangle)) { endangle -= 2 * pi; }
-  narcs = (long) (1.0 + (fabs (endangle - startangle) / pi));
+  narcs = (long) (1.0 + (fabs (endangle - startangle) / (pi/2)));
   arcangle = (endangle - startangle) / narcs;
   c = cos (arcangle / 2);
   s = sin (arcangle / 2);

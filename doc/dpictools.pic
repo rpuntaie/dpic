@@ -3,7 +3,7 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 9.7.9.1, copyright (c) 2022 J. D. Aplevich under      #
+# Circuit_macros Version 10.1, copyright (c) 2022 J. D. Aplevich under     #
 # the LaTeX Project Public Licence in file Licence.txt. The files of       #
 # this distribution may be redistributed or modified provided that this    #
 # copyright notice is included and provided that modifications are clearly #
@@ -49,7 +49,6 @@ define testexpr { $1 = 0; [for i_testexpr=2 to $+ do {
 #                               C-like loop.  Commas in arg3 and arg4 must
 #                               be in quotes or parentheses, e.g.,
 #                               loop(i=1, i<=3, i+=1, print i) prints 1, 2, 3
-ld__ = 0
 define loop {ld__+=1
  $1
  for lx__[ld__]=0 to 1 do {
@@ -167,8 +166,8 @@ define randn {
   if "$3"=="" then { m_randn = 0 } else { m_randn = $3 }
   if "$4"=="" then { s_randn = 1 } else { s_randn = $4 }
   for i_randn=1 to n_randn by 2 do {
-    loop( t_randn=2, t_randn >= 1, u_randn = 2*rand()-1; v_randn = 2*rand()-1
-      t_randn = u_randn^2+v_randn^2 )
+    for done=0 to 1 do { u_randn=2*rand()-1; v_randn=2*rand()-1
+      t_randn = u_randn^2+v_randn^2; done=(t_randn<1) }
     t_randn = sqrt( -2*loge(t_randn)/t_randn )
     $1[i_randn] = u_randn*t_randn*s_randn+m_randn
     if i_randn < n_randn then {
@@ -484,10 +483,14 @@ define lthick {(linethick bp__)}
 if dpicopt==optSVG then { define px__ {*(scale/dpPPI)} } \
 else { define px__ {*(scale/96)} } # Absolute pixels
 
-rtod_ = 57.295779513082323
-dtor_ = 0.017453292519943295
-twopi_ = 6.2831853071795862
-pi_ = twopi_/2
+define assign_dpicvars {
+ ld__ = 0
+ rtod_ = 57.295779513082323
+ dtor_ = 0.017453292519943295
+ twopi_ = 6.2831853071795862
+ pi_ = twopi_/2
+ $1
+ }
 #                               Polar to rectangular conversion
 define Rect_ {($1)*cos(($2)*dtor_),($1)*sin(($2)*dtor_)}
 
@@ -516,16 +519,16 @@ define dpshade { beginshade($1); $2; endshade } # like libgen shade()
 # beginshade
 if dpicopt==optPGF then {
  define beginshade { if "$1"!="" then { dpshade_=$1 } else { dpshade_=0.5 }
- command "\global\let\dpicshdraw=\dpicdraw\global\def\dpicdraw{}"
- command "\global\def\dpicstop{--}"
- command sprintf("\dpicshdraw[fill=white!%g!black]",dpshade_*100) } } \
+  command "\global\let\dpicshdraw=\dpicdraw\global\def\dpicdraw{}"
+  command "\global\def\dpicstop{--}"
+  command sprintf("\dpicshdraw[fill=white!%g!black]",dpshade_*100) } } \
 else { if dpicopt==optPSTricks then {
  define beginshade { if "$1"!="" then { dpshade_=$1 } else { dpshade_=0.5 }
- command sprintf("\newgray{m4fillv}{%g}",dpshade_)
- command sprintf("\pscustom[fillstyle=solid,fillcolor=m4fillv]{%%") } } \
+  command sprintf("\newgray{m4fillv}{%g}",dpshade_)
+  command sprintf("\pscustom[fillstyle=solid,fillcolor=m4fillv]{%%") } } \
 else { if dpicopt==optSVG then {
  define beginshade { if "$1"!="" then { dpshade_=$1 } else { dpshade_=0.5 }
- command sprintf("<g fill=\"rgb(%g,%g,%g)\">",int(dpshade_*255+0.5),\
+  command sprintf("<g fill=\"rgb(%g,%g,%g)\">",int(dpshade_*255+0.5),\
    int(dpshade_*255+0.5),int(dpshade_*255+0.5))} } }}
 
 # endshade
@@ -550,6 +553,22 @@ else { if dpicopt==optSVG then {
 
 #######################################################################
 
+assign_dpicvars()
 # print " *** dpic: dpictools.pic processed"
 define dpictools_ {1}
+  case(abs(dpicopt),
+    optMFpic := -abs(optMFpic),
+    optMpost := -abs(optMFpic),
+    optPDF := -abs(optPDF),
+    optPGF := -abs(optPGF),
+    optPict2e := -abs(optPict2e),
+    optPS := -abs(optPS),
+    optPSfrag := -abs(optPSfrag),
+    optPSTricks := -abs(optPSTricks),
+    optSVG := -abs(optSVG),
+    optTeX := -abs(optTeX),
+    opttTeX := -abs(opttTeX),
+    optxfig := -abs(optxfig) )
+  dpicopt := -abs(dpicopt)
+
 # dpictools end
