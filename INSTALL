@@ -2,8 +2,12 @@ Installing dpic:
 
    On a Unix-lide system, type `make' to compile the sources, which are
    C99 and gcc-10 compatible and should compile and load on most systems.
-   With MinGW, you may have to type `./configure' and then `make' to add
-   a library to the linking step in order to load the random() routines.
+   Otherwise type `chmod +x ./configure' (if necessary), `./configure'
+   and then `make'.
+
+   With MinGW, in a MinGW shell window, type `./configure' and then `make'
+   to add a library to the linking step in order to load the random() routines.
+
    On older machines you may have to check the settings at the top of
    the Makefile. Type
     `make install' or `sudo make install'
@@ -29,5 +33,11 @@ Web-server installation:
 Otherwise, commands equivalent to the following should do the trick:
       gcc   -O  -c  main.c
       gcc   -O  -c  -o parser.o dpic.tab.c
+      gcc   -O  -c  backend.c
+      gcc -o dpic main.o parser.o backend.o -lm
+
+The following has also been used when the random() routines are not found:
+      gcc   -O  -c -Dsrandom=srand -Drandom=rand  main.c
+      gcc   -O  -c -o parser.o -Dsrandom=srand -Drandom=rand dpic.tab.c
       gcc   -O  -c  backend.c
       gcc -o dpic main.o parser.o backend.o -lm

@@ -72,7 +72,7 @@ dkms.conf
 /config.guess
 /config.h.in
 /config.sub
-/configure
+# /configure
 /configure.scan
 /depcomp
 /install-sh

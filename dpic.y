@@ -3468,13 +3468,12 @@ int
 varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
 {
   int idx;
-
-  if (chb == NULL) {
-    idx = 0;
-    return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1))); }
-  idx = chb[chbufx];
-  if (toklen > 2) { idx += chb[chbufx + toklen - 2]; }
-  return (idx - ((idx / (HASHLIM + 1)) * (HASHLIM + 1)));
+  if (chb == NULL) { idx = 0; }
+  else {
+    idx = chb[chbufx];
+    if (toklen > 2) { idx += chb[chbufx + toklen - 2]; }
+    }
+  return ((idx % (HASHLIM+1)));
 }
 
 							/* Binary search for name in chain of stored

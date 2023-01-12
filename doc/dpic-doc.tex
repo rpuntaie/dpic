@@ -324,8 +324,10 @@ you might ask why you are not programming exclusively in that language.
 Similarly, pic floating-point operations and macro facilities enable complex
 numerical computations; the price is the inefficiency of number-crunching in
 an interpreted language. However, it can be convenient to calculate plotted
-values in the same source as graphing them, and the power of modern
-computers may compensate for the inherent inefficiencies.
+values in the same source as graphing them and,
+although pic was developed for simplicity, its implementations are
+Turing-complete so arbitrarily complex computation is possible in
+principle.
 
 The pic language is very suitable for line diagrams with basic color.
 Elaborate fills and cropping are the domain of
@@ -617,7 +619,7 @@ repeatedly until it becomes greater than the second argument:
 %\ntt{define series \{ x = \$1; for i=1 to 2 do \{}
 %\ntt{  if x \tRA\ \$2 then \{ i = 2 \} else \{ print x; x = x*2; i=1 \} \} \}}
 \ntt{define series \{ x = \$1; for done = 0 to 1 do \{ print x; x *= 2}
-\ntt{  done = (x > \$2) \} }
+\ntt{  done = (x > \$2) \} \} }
 
 If this trick seems like an abuse of language, it can be disguised somewhat
 by the definition of a C-like loop. For example, suppose we wish to
@@ -2108,18 +2110,16 @@ A few additional mathematical functions are defined in dpic:
 %  with\verb|\usepackage[97]{pstricks}| or\verb|\input{pstricks97.tex}|.
 %  However, this method precludes using the newer \PSTricks facilities.
 
-%\pagebreak
-\pdfbookmark[section]{\refname}{refs}
+\section{References}
 \bibliographystyle{plain}
+\renewcommand{\refname}{\vspace*{-\baselineskip}}
 \bibliography{./dpic-doc}
 
 %===============================================================================
-%\iffalse
 \clearpage
 \section{Appendix A: dpic man page}\label{Appendix A:}
-%\verbatiminput{dpic.man}
 \input dpic_man.tex
-%\fi
+
 %===============================================================================
 \clearpage
 \section{Appendix B: dpic grammar}\label{Appendix B:}

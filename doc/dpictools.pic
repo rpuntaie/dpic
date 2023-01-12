@@ -3,7 +3,7 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 10.1, copyright (c) 2022 J. D. Aplevich under     #
+# Circuit_macros Version 10.1.3, copyright (c) 2023 J. D. Aplevich under     #
 # the LaTeX Project Public Licence in file Licence.txt. The files of       #
 # this distribution may be redistributed or modified provided that this    #
 # copyright notice is included and provided that modifications are clearly #
@@ -323,7 +323,7 @@ define rgbtocmyk {
 #                               postprocessor specified by dpic command-line
 #                               option; colorname then evaluates to a string
 define DefineRGBColor {
-case(dpicopt,  # The order of the following is defined in dpic source:
+case(abs(dpicopt),  # The order of the following is defined in dpic source:
 # MFpic:
   command sprintf("\mfpdefinecolor{_$1__}{rgb}{%g,%g,%g}",$2,$3,$4)
   define $1 {"_$1__"} ,
