@@ -141,6 +141,10 @@ linlen (double x, double y) {
   return (xm * sqrt (1.0 + (ym * ym)));
 }
 
+double
+distance(postype A, postype B)
+{ return (linlen(A.xpos - B.xpos, A.ypos - B.ypos)); }
+
 /*--------------------------------------------------------------------*/
 							/* Substrings common to one or more postprocessor */
 void
@@ -249,12 +253,13 @@ isthen (primitive * pr) {
 
 							/* Draw arc in segments for arc arrowheads */
 void
-popgwarc (postype Ctr, double radius, double startangle, double endangle,
-	  double ccw) {
+popgwarc (postype Ctr, postype A, postype B, double radjust, double ccw) {
   int narcs, i;
-  double c, s, cc, ss, arcangle;
+  double c, s, cc, ss, radius, startangle, endangle, arcangle;
   postype Q;
-
+  radius = distance(B,Ctr)+radjust;
+  startangle = posangle(A,Ctr);
+  endangle = posangle(B,Ctr);
   if ((ccw > 0) && (endangle < startangle)) { endangle += 2 * pi; }
   else if ((ccw < 0) && (endangle > startangle)) { endangle -= 2 * pi; }
   narcs = (long) (1.0 + (fabs (endangle - startangle) / (pi/2)));
@@ -747,7 +752,14 @@ pointinput (nametype * txt) {
     }
 #endif
   if (higherinbuf != NULL) { markerror (853); return; }
-  if (checkfile (infname, true) != 0) { markerror (859); return; }
+  if (checkfile(infname, true) != 0) {
+    fprintf(errout, "Attempting to read file \"");
+    FORLIM = txt->len;
+    for (i = 0; i < FORLIM; i++) { wchar(&errout, infname[i]); }
+    fprintf(errout, "\"\n");
+    markerror(859);
+    return;
+    }
   if (copyin != NULL) { copyin = freopen ((char *) infname, "r", copyin); }
   else { copyin = fopen ((char *) infname, "r"); }
   if (copyin == NULL) { fatal (1); }

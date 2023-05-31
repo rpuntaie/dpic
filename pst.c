@@ -234,20 +234,24 @@ pstahead (postype * point, postype shaft, double ht, double wid, double lth,
 }
 
 void
-pstwarc (postype C, double r, double startangle, double endangle, double ccw) {
-  wpos (C);
+pstwarc(postype Ctr, postype A, postype B, double radjust, double ccw) {
+  double radius, startangle, endangle;
+  radius = distance(B, Ctr) + radjust;
+  startangle = posangle(A, Ctr);
+  endangle = posangle(B, Ctr);
+  wpos(Ctr);
   if ((ccw > 0) && (endangle < startangle)) { endangle += 2 * pi; }
   else if ((ccw < 0) && (endangle > startangle)) { endangle -= 2 * pi; }
-  wbrace (r / fsc);
-  wbrace ((180.0 / pi) * startangle);
-  wbrace ((180.0 / pi) * endangle);
-  putchar ('\n');
+  wbrace(radius / fsc);
+  wbrace((180.0 / pi) * startangle);
+  wbrace((180.0 / pi) * endangle);
+  putchar('\n');
 #ifdef DDEBUG
   if (debuglevel > 0) {
   fprintf(log_, " pstwarc:");
-  logpos(" C", C);
-  fprintf(log_, " r=");
-  wfloat(&log_, r);
+  logpos(" C", Ctr);
+  fprintf(log_, " radius=");
+  wfloat(&log_, radius);
   fprintf(log_, " startangle=");
   wfloat(&log_, startangle * 180 / pi);
   fprintf(log_, " endangle=");
@@ -284,19 +288,19 @@ pstarcahead (postype C, postype point, int atyp, nametype * sou, double ht,
   else { printf ("black"); }
   printf ("]{%%\n");
   pstarc (-ccw);
-  pstwarc (Ci, radius, posangle (Ai, Ci), posangle (point, Ci), -ccw);
+  pstwarc (Ci, Ai, point, 0.0, -ccw);
   pstarc (ccw);
-  pstwarc (Co, radius, posangle (point, Co), posangle (Ao, Co), ccw);
+  pstwarc (Co, point, Ao, 0.0, ccw);
   if ((atyp == 0) && (lwi < ((wid - lwi) / 2))) {
     pstarc (-ccw);
-    pstwarc (Co, radius - lwi, posangle (Ao, Co), posangle (*P, Co), -ccw);
+    pstwarc (Co, Ao, Px, 0.0, -ccw);
     pstarc (ccw);
-    pstwarc (Ci, radius + lwi, posangle (*P, Ci), posangle (Ai, Ci), ccw); }
-  else if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
+    pstwarc (Ci, Px, Ai, lwi, ccw); }
+  else if (atyp == 3) {
     pstarc (-ccw);
-    pstwarc (Cox, radius, posangle (Ao, Cox), posangle (Px, Cox), -ccw);
+    pstwarc (Cox, Ao, Px, 0.0, -ccw);
     pstarc (ccw);
-    pstwarc (Cix, radius, posangle (Px, Cix), posangle (Ai, Cix), ccw); }
+    pstwarc (Cix, Px, Ai, 0.0, ccw); }
   printf ("\\closepath}%%\n");
 }
 
@@ -414,8 +418,7 @@ pstdraw (primitive * node) {
 	    s = node->lthick;
 	    node->lthick = 0.0;
 	    pstfilloptions (node, lsp, node->arcangle_);
-	    pstwarc(node->aat, fabs (node->aradius_),
-		 posangle(X0, node->aat), posangle(X1, node->aat), node->arcangle_);
+	    pstwarc(node->aat, X0, X1, 0.0, node->arcangle_);
 	    node->lthick = s;
         }
       TEMP = ahlex (node->lineatype_);
@@ -439,8 +442,7 @@ pstdraw (primitive * node) {
       pstfilloptions (node, lsp, node->arcangle_);
       shadestr = sx;
       node->linefill_ = c;
-      pstwarc (node->aat, fabs (node->aradius_),
-	       posangle (X0, node->aat), posangle (X1, node->aat), node->arcangle_);
+      pstwarc (node->aat, X0, X1, 0.0, node->arcangle_);
       }
     pstwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);
     break;

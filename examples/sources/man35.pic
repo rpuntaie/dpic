@@ -1,6 +1,7 @@
-% samplesort.pic
-% Slightly modified from an example by Duncan Simpson
 .PS
+# samplesort.pic
+# Slightly modified from an example by Duncan Simpson
+
 define boxen
 {
   box sprintf("$2%g",0)
@@ -23,19 +24,19 @@ define splarrow
 	
 define inarrows
 {
-  for i=$3 to $1+$3-1 do { splarrow(`i'th last box, $2) }
+  for i=$3 to $1+$3-1 do { splarrow({i}th last box, $2) }
 }
 
 define outarrows
 {
-  for i=1 to $1 do { splarrow($2, `i'th last box) }
+  for i=1 to $1 do { splarrow($2, {i}th last box) }
 }
 
 
 define merge_pattern
 {
   for i=1 to $1 do {
-    for j=1 to $1 do { splarrow(`j+$1'th last box,`i'th last box) } }
+    for j=1 to $1 do { splarrow({j+$1}th last box,{i}th last box) } }
 }
 
 define bypass
@@ -55,13 +56,14 @@ define sample
   oscale=scale
   natwidth=8.200
   scale=$2/natwidth*scale
+  textht = textht*scale
+  ellipsewid = ellipsewid*1.5
+# boxwid = boxwid*1.2
   dist=0.2*scale
-# boxwid = 1.5*boxwid
-  ellipsewid = 1.5*ellipsewid
   [ 
     left
     line <-
-    move left 0.4 "nums "
+    move left 0.5 "nums "
     right
     G: ellipse "generate" fill $3 with .w at last line .start
     move
@@ -74,9 +76,9 @@ define sample
     boxen($1,split)
     outarrows($1,S)
     { for i=1 to $1-1 do {
-        arrow from `i+$1+1'th last box .e to `i'th last box .w }
+        arrow from {i+$1+1}th last box .e to {i}th last box .w }
     } 
-    bypass(`$1+$1+1'th last box, `$1'th last box, 0.25*scale)
+    bypass({$1+$1+1}th last box, {$1}th last box, 0.25*scale)
     move right 1.2*scale
     boxen($1,merge)
     merge_pattern($1)

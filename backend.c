@@ -10,7 +10,8 @@ extern int Ceil (double);
 extern int envinx (double);
 extern int Floor (double);
 extern double datan (double, double);
-extern double linlen (double, double);
+extern double linlen(double, double);
+extern double distance(postype, postype);
 extern double Max (double, double);
 extern double Min (double, double);
 extern double principal (double, double);
@@ -27,7 +28,7 @@ extern void deletename (nametype **);
 extern void deletetree (primitive **);
 extern void ddot (void);
 extern void fatal (int);
-extern void popgwarc (postype, double, double, double, double);
+extern void popgwarc (postype, postype, postype, double, double);
 extern void pprop (postype, postype *, double, double, double);
 extern void wcoord (FILE **, double, double);
 extern void wfloat (FILE **, double);
@@ -35,6 +36,8 @@ extern void initnesw (void);
 extern void markerror (int);
 extern void newstr (nametype **);
 extern void nesw (primitive *);
+extern void setangles(double *, double *, postype, double, double, double,
+                      double);
 extern void wrand (void);
 extern void wstring (FILE **, nametype *);
 #ifdef DDEBUG
@@ -113,7 +116,7 @@ getlinshade (primitive *nod,
     primp = *tn;
     if (primp->outlinep != NULL) { *so = primp->outlinep; }
     *tn = (*tn)->son;
-  }
+    }
   *tn = nod;
   if (*hshade) { *hshade = false; }
   else {
@@ -124,8 +127,8 @@ getlinshade (primitive *nod,
 	    *fillval = primp->linefill_; }
       *tn = nod;
       nod = nod->son;
+      }
     }
-  }
   if (((*ss) != NULL) || ((*fillval) >= 0.0)) { *hshade = true; }
 }
 
@@ -173,191 +176,166 @@ dahead (postype point, postype shaft,
 #ifdef DDEBUG
   if (debuglevel > 0) {
       fprintf(log_, " dahead input:\n");
-      fprintf(log_, " ht=");
-      wfloat(&log_, ht);
-      fprintf(log_, ";wid=");
-      wfloat(&log_, wid);
-      fprintf(log_, ";ltu=");
-      wfloat(&log_, ltu);
-      fprintf(log_, ";fsc=");
-      wfloat(&log_, fsc);
+      fprintf(log_, " ht="); wfloat(&log_, ht);
+      fprintf(log_, ";wid="); wfloat(&log_, wid);
+      fprintf(log_, ";ltu="); wfloat(&log_, ltu);
+      fprintf(log_, ";fsc="); wfloat(&log_, fsc);
       logpos("point", point);
       logpos("shaft", shaft);
       putc('\n', log_);
   }
 #endif
-  *C = affang (shaft, point);	/* shaft direction cosines */
-  po = ahoffset (ht, wid, ltu);
-  if (po > ht) { po = ht; }
-  *P = affine (po, 0.0, point, *C);	/* point adjusted by line thickness */
-  h = ht - (ltu / 2);
-  *x = h - po;
-  if (ht == 0.0) { v = 0.0; }
-  else { v = (wid / 2) * (*x) / ht; }
-  *R = affine (h, v, point, *C);
-  *L = affine (h, -v, point, *C);
-  if ((*x) == 0.0) { t = 1.0; }
-  else { t = ht / (*x); }
-  Rx->xpos = point.xpos + ((R->xpos - P->xpos) * t);	/* right corner */
-  Rx->ypos = point.ypos + ((R->ypos - P->ypos) * t);
-  Lx->xpos = point.xpos + ((L->xpos - P->xpos) * t);	/* left corner  */
-  Lx->ypos = point.ypos + ((L->ypos - P->ypos) * t);
-  Px->xpos = (point.xpos + Lx->xpos + Rx->xpos) / 3;	/* type 3 center pt */
-  Px->ypos = (point.ypos + Lx->ypos + Rx->ypos) / 3;
-  if (ht == 0.0) { *y = 0.0; }
-  else { *y = ht - po + (ltu * wid / ht / 4); }
+    *C = affang(shaft, point);                   /* shaft direction cosines */
+    po = Min(ahoffset(ht, wid, ltu), ht);
+    *P = affine(po, 0.0, point, *C);    /* point adjusted by line thickness */
+    h = ht - (ltu / 2);
+    *x = h - po;
+    if (ht == 0.0) { v = 0.0; } else { v = (wid / 2) * (*x) / ht; }
+    *R = affine(h, v, point, *C);
+    *L = affine(h, -v, point, *C);
+    if ((*x) == 0.0) { t = 1.0; } else { t = ht / (*x); }
+    Rx->xpos = point.xpos + ((R->xpos - P->xpos) * t);      /* right corner */
+    Rx->ypos = point.ypos + ((R->ypos - P->ypos) * t);
+    Lx->xpos = point.xpos + ((L->xpos - P->xpos) * t);      /* left corner  */
+    Lx->ypos = point.ypos + ((L->ypos - P->ypos) * t);
+    Px->xpos = (point.xpos + Lx->xpos + Rx->xpos) / 3;  /* type 3 center pt */
+    Px->ypos = (point.ypos + Lx->ypos + Rx->ypos) / 3;
+    if (distance(*Px, point) < distance(*P, point)) { *Px = *P; }
+    if (ht == 0.0) { *y = 0.0; } else { *y = ht - po + (ltu * wid / ht / 4); }
 #ifdef DDEBUG
   if (debuglevel > 0) {
-  fprintf(log_, " dahead out: po=");
-  wfloat(&log_, po);
-  logpos("P", *P);
-  logpos("L", *L);
-  logpos("R", *R);
-  logpos("C", *C);
-  logpos("Px", *Px);
-  logpos("Lx", *Lx);
-  logpos("Rx", *Rx);
-  fprintf(log_, "\n x=");
-  wfloat(&log_, *x);
-  fprintf(log_, " y=");
-  wfloat(&log_, *y);
-  putc('\n', log_);
-  }
+    fprintf(log_, " dahead out: po=");
+    wfloat(&log_, po);
+    logpos("P", *P);
+    logpos("L", *L);
+    logpos("R", *R);
+    logpos("C", *C);
+    logpos("Px", *Px);
+    logpos("Lx", *Lx);
+    logpos("Rx", *Rx);
+    fprintf(log_, "\n x="); wfloat(&log_, *x);
+    fprintf(log_, " y="); wfloat(&log_, *y);
+    putc('\n', log_);
+    }
 #endif
 }
+                                            /* Intersection of two circles */
+postype
+Cintersect(postype C1, double r1, postype C2, double r2, double ccw)
+{ postype X, R;
+  double dx, dy, cls, cq, f;
+  dx = C1.xpos - C2.xpos;
+  dy = C1.ypos - C2.ypos;
+  cls = (dx * dx) + (dy * dy);
+  if (cls == 0) {
+     R.xpos = C1.xpos;
+     R.ypos = C1.ypos;
+     }
+  else {
+     cq = (cls + (r1 * r1) - (r2 * r2)) / 2;
+     f = cq / cls;
+     X.xpos = ((1 - f) * C1.xpos) + (f * C2.xpos);
+     X.ypos = ((1 - f) * C1.ypos) + (f * C2.ypos);
+     f = sqrt(Max((cls * r1 * r1) - (cq * cq),0.0)) / cls;
+     R.xpos = X.xpos + (dy * f * ccw);
+     R.ypos = X.ypos - (dx * f * ccw);
+     }
+  return R;
+}
 
-							/* Parameters and positions for traced arrows*/
-void
-arcahead (postype C, postype point,
-    int atyp, double ht, double wid, double lth, double radius, double angle,
-    postype * P, postype * Co, postype * Ci, postype * Px, postype * Cox,
-    postype * Cix, postype * Ao, postype * Ai,
-    double *ccw, double *lwi, boolean * startarrow) {
-  double lw, aa, bb, cc, s, v, d, b, t;
-  postype Q;
-  double TEMP, TEMP1;
+postype
+ArcCtr(postype AA, postype P, postype CC, double ccw) {
+  postype A, C, Q, Ax, Rt;
+  double asq, rsq, br;
+  A.xpos = AA.xpos - P.xpos; A.ypos = AA.ypos - P.ypos;
+  C.xpos = CC.xpos - P.xpos; C.ypos = CC.ypos - P.ypos;
+  asq = (A.xpos * A.xpos) + (A.ypos * A.ypos);
+  rsq = (C.xpos * C.xpos) + (C.ypos * C.ypos);
+  if ((asq == 0) || (rsq == 0)) { Rt = CC; }
+  else {
+    Q.ypos = ccw * ((A.xpos * C.xpos) + (A.ypos * C.ypos)) / sqrt(asq * rsq);
+    Q.xpos = sqrt(1 - (Q.ypos * Q.ypos));
+    br = sqrt(Max(0.0, 1 - (asq / (rsq * 4))));
+    Ax.xpos = (AA.xpos + P.xpos) / 2; Ax.ypos = (AA.ypos + P.ypos) / 2;
+    Rt = affine(br * C.xpos, br * C.ypos, Ax, Q);
+  }
+  return Rt;
+}
 
+void                         /* Parameters and positions for traced arc arrows*/
+arcahead(postype C, postype Point, int atyp, double ht, double wid,
+	 double lth, double radius, double angle, postype *P, postype *Co,
+	 postype *Ci, postype *Px, postype *Cox, postype *Cix,
+     postype *Ao, postype *Ai, double *ccw, double *lwi,
+     boolean *startarrow)
+{ double t, ha;
+  postype Q, Ac;
+#ifdef DDEBUG
+  if (debuglevel > 0) { fprintf(log_, " arcahead input:");
+      logpos("C", C);
+      fprintf(log_, "\n atyp="); fprintf(log_, "%d", atyp);
+      fprintf(log_, ";ht="); wfloat(&log_, ht);
+      fprintf(log_, ";wid="); wfloat(&log_, wid);
+      fprintf(log_, ";lth="); wfloat(&log_, lth);
+      fprintf(log_, ";radius="); wfloat(&log_, radius);
+      fprintf(log_, ";angle="); wfloat(&log_, angle);
+      putc('(', log_); wfloat(&log_, angle * 180 / pi); fprintf(log_, ")\n"); }
+#endif
   if (radius * angle > 0) { *ccw = 1.0; } else { *ccw = -1.0; }
   *startarrow = (radius >= 0);
-  ht = fabs (ht);
-  wid = fabs (wid);
-  *lwi = (lth / 72) * scale;	/* line thickness in diagram units */
-  lw = Min (fabs (*lwi), Min (wid / 2, ht / 2));
-  wid = Max (wid, lw);
-  radius = fabs (radius);
-  d = sqrt ((ht * ht) + (wid * wid / 4));
-							/* Centres of the wing arcs */
-  if (d == 0) {
-    Q.xpos = 1.0;
-    Q.ypos = 0.0; }
+  radius = fabs(radius);
+  ht = Min( 2*radius, fabs(ht));
+  if (atyp == 0) { wid = Min( radius,fabs(wid) ); } else { wid = fabs(wid); }
+  *lwi = (fabs(lth) / 72) * scale;        /* line thickness in diagram units */
+  wid = Max(wid, *lwi);
+                                                       /* head angle, Ao, Ai */
+  if (radius == 0) { ha = 0.0; } else { ha = ht / radius; }
+  Q.xpos = cos(ha); Q.ypos = (*ccw) * sin(ha);
+  Ac = affine(Point.xpos - C.xpos, Point.ypos - C.ypos, C, Q);
+  *Ao = Ac; pprop(C, Ao, wid / (-2), radius + (wid / 2), radius);
+  *Ai = Ac; pprop(C, Ai, wid / 2, radius - (wid / 2), radius);
+                                                                  /* Co, Ci */
+  *Co = ArcCtr(*Ao, Point, C, *ccw);
+  *Ci = ArcCtr(*Ai, Point, C, *ccw);
+                                       /* Point adjusted for line thickness */
+  if (wid == 0) { *P = *Ao; } else if (radius == 0) { *P = C; }
   else {
-    Q.xpos = ht / d;
-    Q.ypos = (*ccw) * wid / 2 / d;
-  }
-  *Ci = affine (C.xpos - point.xpos, C.ypos - point.ypos, point, Q);
-  Q.ypos = -Q.ypos;
-  *Co = affine (C.xpos - point.xpos, C.ypos - point.ypos, point, Q);
-							/* Outer corner */
-  if (radius == 0) { t = 0.0; }
-  else { t = Min (pi / 2, d / radius); }
-  Q.xpos = cos (t);
-  Q.ypos = (*ccw) * sin (t);
-  *Ao = affine (point.xpos - Co->xpos, point.ypos - Co->ypos, *Co, Q);
-  TEMP = Ao->xpos - C.xpos;
-  TEMP1 = Ao->ypos - C.ypos;
-							/* Make angle(C to Ai) = angle(C to Ao) */
-  aa = (TEMP * TEMP) + (TEMP1 * TEMP1);
-  bb = 2 * (((Ao->xpos - C.xpos) * (C.xpos - Ci->xpos)) +
-	    ((Ao->ypos - C.ypos) * (C.ypos - Ci->ypos)));
-  TEMP = C.xpos - Ci->xpos;
-  TEMP1 = C.ypos - Ci->ypos;
-  cc = (TEMP * TEMP) + (TEMP1 * TEMP1) - (radius * radius);
-  s = (bb * bb) - (4 * aa * cc);
-  if (s < 0) { v = aa; }
-  else { v = (sqrt (s) - bb) / 2; }
-  *Ai = *Ao;
-  pprop (C, Ai, aa - v, v, aa);
-							/* Point adjusted for line thickness */
-  if (d == 0) { *P = point; }
-  else if (radius == 0) { *P = C; }
-  else if (ht == d) { *P = *Ao; }
+    t = (Min(wid, *lwi) / wid) * ht / radius;
+    Q.xpos = cos(t);
+    Q.ypos = (*ccw) * sin(t);
+    *P = affine(Point.xpos - C.xpos, Point.ypos - C.ypos, C, Q); }
+                                                     /* Type 0 intersection */
+  if (atyp == 0) {
+    *Px = Cintersect(*Co, radius - (*lwi), *Ci, radius + (*lwi), *ccw);
+    if (distance(*Px,Point) > distance(Ac,Point)) { *Px = Ac; }
+    *Cox = *Px; *Cix = *Px; }
+                                                /* Other center and corners */
   else {
-    b = 2 * radius * sqrt ((1 - (ht / d)) / 2);	/* distance C to Co */
-							/* Angle from Co-C to P, center C */
-    Q.xpos = ((b * b) - (lw * lw) + (2 * lw * radius)) / (2 * b * radius);
-    if (fabs (Q.xpos) > 1) {
-      P->xpos = (Ao->xpos + Ai->xpos) / 2;
-      P->ypos = (Ao->ypos + Ai->ypos) / 2; }
-    else {
-      Q.ypos = -(*ccw) * sqrt (1 - (Q.xpos * Q.xpos));
-      *P = affine (radius * (Co->xpos - C.xpos) / b,
-		   radius * (Co->ypos - C.ypos) / b, C, Q);
+    if (radius == 0) { t = 0.0; } else { t = Min( pi/2, (ht/radius)*2/3 ); }
+    Q.xpos = cos(t); Q.ypos = (*ccw) * sin(t);
+    *Px = affine(Point.xpos - C.xpos, Point.ypos - C.ypos, C, Q);
+    if (distance(*Px,Point) < distance(*P,Point)) { *Px = *P; }
+    *Cox = ArcCtr(*Px, *Ao, *Co, -(*ccw));
+    *Cix = ArcCtr(*Px, *Ai, *Ci, -(*ccw));
     }
-  }
-							/* Type 3 center and corners */
-  if (radius == 0) { t = 0.0; }
-  else { t = Min (pi / 2, (ht / radius) * 2 / 3); }
-  Q.xpos = cos (t);
-  Q.ypos = (*ccw) * sin (t);
-  *Px = affine (point.xpos - C.xpos, point.ypos - C.ypos, C, Q);
-
-  v = radius * radius;
-  TEMP = Ao->xpos - Px->xpos;
-  TEMP1 = Ao->ypos - Px->ypos;
-  d = (TEMP * TEMP) + (TEMP1 * TEMP1);
-  if (d == 0) { s = sqrt (v); }
-  else if (v / d < 0.25) { s = 0.0; }
-  else { s = sqrt ((v / d) - 0.25); }
-  Cox->xpos =
-    ((Px->xpos + Ao->xpos) / 2) - ((*ccw) * (Ao->ypos - Px->ypos) * s);
-  Cox->ypos =
-    ((Px->ypos + Ao->ypos) / 2) + ((*ccw) * (Ao->xpos - Px->xpos) * s);
-
-  TEMP = Ai->xpos - Px->xpos;
-  TEMP1 = Ai->ypos - Px->ypos;
-  d = (TEMP * TEMP) + (TEMP1 * TEMP1);
-  if (d == 0) { s = sqrt (v); }
-  else if (v / d < 0.25) { s = 0.0; }
-  else { s = sqrt ((v / d) - 0.25); }
-  Cix->xpos =
-    ((Px->xpos + Ai->xpos) / 2) - ((*ccw) * (Ai->ypos - Px->ypos) * s);
-  Cix->ypos =
-    ((Px->ypos + Ai->ypos) / 2) + ((*ccw) * (Ai->xpos - Px->xpos) * s);
-}
-
-							/* Start of arc when there is an initial
-                               arrowhead */
-void
-startarc (primitive * n, postype X0, double lth, double *h, double *w) {
-  double x, y;
-
-  *h = qenv (n, Xarrowht, n->lineheight_);
-  *w = qenv (n, Xarrowwid, n->linewidth_);
-  y = ahoffset (*h, *w, (lth / 72) * scale);
-  if ((n->aradius_ * n->aradius_) - (y * y) <= 0.0) { x = 0.0; }
-  else { x = 2 * atan (y / sqrt ((n->aradius_ * n->aradius_) - (y * y))); }
-  if (n->arcangle_ >= 0.0) {
-    n->startangle_ += x;
-    n->arcangle_ -= x; }
-  else {
-    n->startangle_ -= x;
-    n->arcangle_ += x;
+#ifdef DDEBUG
+  if (debuglevel > 0) { fprintf(log_, "\n arcahead out:\n");
+    fprintf(log_, " lwi="); wfloat(&log_, *lwi);
+    logpos("C", C);
+    logpos("Point", Point);
+    logpos("Ao", *Ao);
+    logpos("Ai", *Ai);
+    logpos("Ac", Ac);
+    logpos("Co", *Co);
+    logpos("Ci", *Ci);
+    logpos("P", *P);
+    logpos("Px", *Px);
+    logpos("Cox", *Cox);
+    logpos("Cix", *Cix);
+    putc('\n', log_);
     }
+#endif
 }
-
-							/* End of arc when there is a final arrowhead*/
-void
-endarc (primitive * n, postype X0, double lth, double *h, double *w) {
-  double x, y;
-  *h = qenv (n, Xarrowht, n->lineheight_);
-  *w = qenv (n, Xarrowwid, n->linewidth_);
-  y = ahoffset (*h, *w, (lth / 72) * scale);
-  if ((n->aradius_ * n->aradius_) - (y * y) <= 0.0) { x = 0.0; }
-  else { x = 2 * atan (y / sqrt ((n->aradius_ * n->aradius_) - (y * y))); }
-  if (n->arcangle_ >= 0.0) { n->arcangle_ -= x; }
-  else { n->arcangle_ += x; }
-}
-
 							/* Arc start point */
 postype
 arcstart (primitive * n) {
@@ -453,37 +431,6 @@ double
 posangle (postype V, postype C) {
   return (datan (V.ypos - C.ypos, V.xpos - C.xpos));
 }
-
-/*
-void
-resetgs(primitive *node)
-{ double x;
-  if (gsocolor) {
-      pdfwln(" 0 0 0 RG", 9, &cx);
-      gsocolor = false; }
-  if (gsfcolor) {
-      pdfwln(" 0 0 0 rg", 9, &cx);
-      gsfcolor = false; }
-  if (gsgcolor) {
-      pdfwln(" 0 g", 4, &cx);
-      gsgcolor = false; }
-  x = venv(node, Xlinethick);
-  if (gslinethick != x) {
-      pdfwfloat(x);
-      pdfwln(" w", 2, &cx);
-      gslinethick = x; }
-  if (gslinecap != 0) {
-      pdfwln(" 0 J", 4, &cx);
-      gslinecap = 0; }
-  if (gslinejoin != 0) {
-      pdfwln(" 0 j", 4, &cx);
-      gslinejoin = 0; }
-  if ((gsdashw == 0) && (gsdashs == 0)) { return; }
-  pdfwln(" [] 0 d", 7, &cx);
-  gsdashw = 0.0;
-  gsdashs = 0.0;
-}
-*/
 
 /*--------------------------------------------------------------------*/
 

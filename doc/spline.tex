@@ -1,6 +1,6 @@
 % spline.pic
 \begin{tikzpicture}[scale=2.54]%
-% dpic version 2022.12.01 option -g for TikZ and PGF 1.01
+% dpic version 2023.06.01 option -g for TikZ and PGF 1.01
 \ifx\dpiclw\undefined\newdimen\dpiclw\fi
 \global\def\dpicdraw{\draw[line width=\dpiclw]}
 \global\def\dpicstop{;}
@@ -9,7 +9,7 @@
  --(0,0.75)
  --(2,0.75)
  --(2,-0.75)\dpicstop
-\dpicdraw (0,-0.75)
+\dpicdraw[line width=0.8bp](0,-0.75)
  --(0,0)
  ..controls (0,0.5) and (0.333333,0.75)
  ..(1,0.75)
@@ -20,22 +20,22 @@
  --(2.5,0.75)
  --(4.5,0.75)
  --(4.5,-0.75)\dpicstop
-\dpicdraw (2.5,-0.75)
+\dpicdraw[line width=0.8bp](2.5,-0.75)
  ..controls (2.5,-0.45) and (3.3,0.75)
  ..(3.5,0.75)
  ..controls (3.7,0.75) and (4.5,-0.45)
  ..(4.5,-0.75)\dpicstop
-\dpicdraw (2.5,-0.75)
+\dpicdraw[line width=0.8bp](2.5,-0.75)
  ..controls (2.5,0.15) and (2.9,0.75)
  ..(3.5,0.75)
  ..controls (4.1,0.75) and (4.5,0.15)
  ..(4.5,-0.75)\dpicstop
-\dpicdraw (2.5,-0.75)
+\dpicdraw[line width=0.8bp](2.5,-0.75)
  ..controls (2.5,0.75) and (2.5,0.75)
  ..(3.5,0.75)
  ..controls (4.5,0.75) and (4.5,0.75)
  ..(4.5,-0.75)\dpicstop
-\dpicdraw (2.5,-0.75)
+\dpicdraw[line width=0.8bp](2.5,-0.75)
  ..controls (2.5,1.35) and (2.1,0.75)
  ..(3.5,0.75)
  ..controls (4.9,0.75) and (4.5,1.35)

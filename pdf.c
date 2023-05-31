@@ -385,14 +385,13 @@ pdflineopts (int lspec, double param, double thck, nametype * op)
 }
 
 void
-pdfwarc (postype Ctr, postype St, postype En, double radius, double ccw)
-{
+pdfwarc (postype Ctr, postype St, postype En, double radjust, double ccw) {
   int narcs, i;
-  double c, s, cc, ss, startangle, endangle, arcangle;
+  double c, s, cc, ss, startangle, endangle, arcangle, radius;
   postype Q;
-
-  startangle = datan (St.ypos - Ctr.ypos, St.xpos - Ctr.xpos);
-  endangle = datan (En.ypos - Ctr.ypos, En.xpos - Ctr.xpos);
+  startangle = posangle(St,Ctr);
+  endangle = posangle(En,Ctr);
+  radius = distance(Ctr,En) + radjust;
   if ((ccw > 0) && (endangle < startangle)) { endangle += 2 * pi; }
   else if ((ccw < 0) && (endangle > startangle)) { endangle -= 2 * pi; }
   narcs = (long) (1.0 + (fabs (endangle - startangle) / (pi / 2)));
@@ -416,33 +415,28 @@ pdfwarc (postype Ctr, postype St, postype En, double radius, double ccw)
 
 void
 pdfarcahead (postype C, int atyp, postype * point, double ht, double wid,
-	     double lth, double radius, double angle, nametype * sou)
-{
+	     double lth, double radius, double angle, nametype * sou) {
   postype P, Q, Co, Ci, Px, Cox, Cix, Ao, Ai;
-  double ccw, lwi;
+  double ccw, lwi, ds;
   boolean startarrow;
 
   arcahead (C, *point, atyp, ht, wid, lth, radius, angle, &P, &Co, &Ci, &Px,
 	    &Cox, &Cix, &Ao, &Ai, &ccw, &lwi, &startarrow);
   radius = fabs (radius);
-  /* Trace arrowhead outline */
-  pdfwpos (Ai);
-  pdfwln (" m", 2, &cx);
-  pdfwarc (Ci, Ai, *point, radius, -ccw);
-  pdfwarc (Co, *point, Ao, radius, ccw);
+                                                 /* Trace arrowhead outline */
+  pdfwpos (Ai); pdfwln (" m", 2, &cx);
+  pdfwarc (Ci, Ai, *point, 0, -ccw);
+  pdfwarc (Co, *point, Ao, 0, ccw);
   if ((atyp == 0) && (lwi < ((wid - lwi) / 2))) {
-    Q = Co;
-    pprop (Ao, &Q, radius - lwi, lwi, radius);
-    pdfwpos (Q);
-    pdfwln (" l", 2, &cx);
-    pdfwarc (Co, Q, P, radius - lwi, -ccw);
-    Q = Ci;
-    pprop (Ai, &Q, radius + lwi, -lwi, radius);
-    pdfwarc (Ci, P, Q, radius + lwi, ccw);
+    ds = distance(Co,Ao);
+    Q = Co; pprop (Ao, &Q, ds - lwi, lwi, ds);
+    pdfwpos (Q); pdfwln (" l", 2, &cx);
+    pdfwarc (Co, Q, Px, 0, -ccw);
+    pdfwarc (Ci, Px, Ai, lwi, ccw);
     }
-  if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
-    pdfwarc (Cox, Ao, Px, radius, -ccw);
-    pdfwarc (Cix, Px, Ai, radius, ccw); }
+  if (atyp == 3) {
+    pdfwarc (Cox, Ao, Px, 0, -ccw);
+    pdfwarc (Cix, Px, Ai, 0, ccw); }
   else {
     pdfwpos (Ai);
     pdfwln (" l", 2, &cx); }
@@ -626,7 +620,7 @@ pdfdraw (primitive * node)
   int lsp;
   postype X1, X2;
   primitive *lastseg, *tx, *primp;
-  double h, w, x, y, lth, fill;
+  double x, y, lth, fill;
   boolean fll;
   int TEMP;
 
@@ -684,28 +678,34 @@ pdfdraw (primitive * node)
 	    pdflinearfill (fillfrac, shadestr);
 	    pdfwpos (X1);
 	    pdfwln (" m", 2, &cx);
-	    pdfwarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
+	    pdfwarc (node->aat, X1, X2, 0, node->arcangle_);
 	    pdfwln (" f", 2, &cx);
 	    resetgs (node); }
       if (lsp != Xinvis) {
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      pdfsetcolor (outlinestr, true);
-	      startarc (node, X1, lth, &h, &w);
-	      pdfarcahead (node->aat, ahnum (node->lineatype_), &X1, h,
-			   w, lth, fabs (node->aradius_), node->arcangle_, outlinestr);
+	      pdfarcahead (node->aat, ahnum (node->lineatype_), &X1,
+            qenv(node, Xarrowht, node->lineheight_),
+            qenv(node, Xarrowwid, node->linewidth_),
+            lth, fabs (node->aradius_), node->arcangle_, outlinestr);
+          node->startangle_ =
+            datan(X1.ypos - node->aat.ypos,X1.xpos - node->aat.xpos);
 	      resetgs (node); }
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      pdfsetcolor (outlinestr, true);
-	      endarc (node, X2, lth, &h, &w);
-	      pdfarcahead (node->aat, ahnum (node->lineatype_), &X2, h,
-			   w, lth, -fabs (node->aradius_), node->arcangle_, outlinestr);
+	      pdfarcahead (node->aat, ahnum (node->lineatype_), &X2,
+            qenv(node, Xarrowht, node->lineheight_),
+            qenv(node, Xarrowwid, node->linewidth_),
+            lth, -fabs (node->aradius_), node->arcangle_, outlinestr);
+          setangles(&node->startangle_, &node->arcangle_,
+            node->aat, X1.xpos, X1.ypos, X2.xpos, X2.ypos);
 	      resetgs (node); }
 	    pdflineopts (lsp, node->lparam, lth, outlinestr);
 	    pdfwpos (X1);
 	    pdfwln (" m", 2, &cx);
-	    pdfwarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
+	    pdfwarc (node->aat, X1, X2, 0, node->arcangle_);
 	    pdfwln (" S", 2, &cx);
 	    }
       pdfwtext (node, node->textp, node->aat.xpos, node->aat.ypos);

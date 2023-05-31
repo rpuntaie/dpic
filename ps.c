@@ -271,24 +271,23 @@ psendline (nametype * op) {
 }
 
 void
-pswarc (postype C, postype S, postype E, double r, double ccw) {
-  double y;
+pswarc (postype Ctr, postype Start, postype En, double radjust, double ccw) {
+  double y, radius;
 
-  pswpos (C);
-  pswfloat (&output, r / fsc);
-  y = datan (S.ypos - C.ypos, S.xpos - C.xpos);
+  radius = distance(Ctr,En) + radjust;
+  pswpos (Ctr); pswfloat (&output, radius / fsc);
+  y = datan (Start.ypos - Ctr.ypos, Start.xpos - Ctr.xpos);
   pswfloat (&output, (180.0 / pi) * y);
-  y = datan (E.ypos - C.ypos, E.xpos - C.xpos);
+  y = datan (En.ypos - Ctr.ypos, En.xpos - Ctr.xpos);
   pswfloat (&output, (180.0 / pi) * y);
-  if (ccw >= 0.0) { printf (" arc\n"); }
-  else { printf (" arcn\n"); }
+  if (ccw >= 0.0) { printf (" arc\n"); } else { printf (" arcn\n"); }
 }
 
 void
 psarcahead (postype C, int atyp, postype * point, double ht, double wid,
 	    double lth, double radius, double angle) {
   postype P, Q, Co, Ci, Px, Cox, Cix, Ao, Ai;
-  double ccw, lwi;
+  double ccw, lwi, ds;
   boolean startarrow;
 
   arcahead (C, *point, atyp, ht, wid, lth, radius, angle, &P, &Co, &Ci, &Px,
@@ -296,25 +295,20 @@ psarcahead (postype C, int atyp, postype * point, double ht, double wid,
   radius = fabs (radius);
   /* Trace arrowhead outline */
   psnewpath ();
-  pswarc (Ci, Ai, *point, radius, -ccw);
-  pswarc (Co, *point, Ao, radius, ccw);
+  pswarc (Ci, Ai, *point, 0.0, -ccw);
+  pswarc (Co, *point, Ao, 0.0, ccw);
   if ((atyp == 0) && (lwi < ((wid - lwi) / 2))) {
-    Q = Co;
-    pprop (Ao, &Q, radius - lwi, lwi, radius);
-    pswpos (Q);
-    printf (" lineto\n");
-    pswarc (Co, Q, P, radius - lwi, -ccw);
-    Q = Ci;
-    pprop (Ai, &Q, radius + lwi, -lwi, radius);
-    pswarc (Ci, P, Q, radius + lwi, ccw);
-    }
-  if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
-    pswarc (Cox, Ao, Px, radius, -ccw);
-    pswarc (Cix, Px, Ai, radius, ccw); }
+      ds = distance(Co, Ao);
+      Q = Co; pprop(Ao, &Q, ds - lwi, lwi, ds);
+      pswpos(Q); printf(" lineto\n");
+      pswarc(Co, Q, Px, 0.0, -ccw);
+      pswarc(Ci, Px, Ai, lwi, ccw); }
+  if (atyp == 3) {
+      pswarc(Cox, Ao, Px, 0.0, -ccw);
+      pswarc(Cix, Px, Ai, 0.0, ccw); }
   else {
-    pswpos (Ai);
-    printf (" lineto\n");
-    }
+      pswpos(Ai);
+      printf(" lineto\n"); }
   printf (" fill\n");
   *point = P;
 }
@@ -478,7 +472,7 @@ psdraw (primitive * node) {
   int lsp;
   postype X1, X2;
   primitive *lastseg, *tx;
-  double h, w, lth, fill;
+  double lth, fill;
   int TEMP;
 
   getlinespec (node, &lsp, &lastseg);
@@ -674,7 +668,7 @@ psdraw (primitive * node) {
       if (hasfill) {
 	    printf (" currentrgbcolor\n");
 	    psnewpath ();
-	    pswarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
+	    pswarc (node->aat, X1, X2, 0.0, node->arcangle_);
 	    pssetthick (0.0);
 	    pslinearfill (fillfrac, shadestr);
 	    fillfrac = -1.0;
@@ -686,21 +680,27 @@ psdraw (primitive * node) {
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
 	      pssetcolor (outlinestr);
-	      startarc (node, X1, lth, &h, &w);
-	      psarcahead (node->aat, ahnum (node->lineatype_), &X1, h, w,
+	      psarcahead (node->aat, ahnum (node->lineatype_), &X1,
+          qenv(node, Xarrowht, node->lineheight_),
+          qenv(node, Xarrowwid, node->linewidth_),
 		      lth, fabs(node->aradius_), node->arcangle_);
+          node->startangle_ =
+            datan(X1.ypos - node->aat.ypos,X1.xpos - node->aat.xpos);
 	      if (outlinestr != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
 	      pssetcolor (outlinestr);
-	      endarc (node, X2, lth, &h, &w);
-	      psarcahead (node->aat, ahnum (node->lineatype_), &X2, h, w,
+	      psarcahead (node->aat, ahnum (node->lineatype_), &X2,
+          qenv(node, Xarrowht, node->lineheight_),
+          qenv(node, Xarrowwid, node->linewidth_),
 		      lth, -fabs (node->aradius_), node->arcangle_);
+          setangles(&node->startangle_, &node->arcangle_,
+            node->aat, X1.xpos, X1.ypos, X2.xpos, X2.ypos);
 	      if (outlinestr != NULL) { printf (" setrgbcolor\n"); }
 	      }
 	    psnewpath ();
-	    pswarc (node->aat, X1, X2, node->aradius_, node->arcangle_);
+	    pswarc (node->aat, X1, X2, 0.0, node->arcangle_);
 	    psdashdot (lsp, node->lparam);
 	    pssetcolor (outlinestr);
 	    psendline (outlinestr);

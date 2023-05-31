@@ -1,19 +1,7 @@
-%\newif\ifpst
-%%\psttrue
-%\documentclass{article}
-%\ifpst
-%  \usepackage[usenames,dvipsnames]{xcolor}
-%  \usepackage{mtgreek,boxdims,pstricks}
-%\else
-%  \usepackage[usenames,dvipsnames]{xcolor}
-%  \usepackage{mtgreek,boxdims,tikz}
-%\fi
-%\pagestyle{empty}
-%\begin{document}
-%\centerline{%
 .PS
 # a three-dimensional block
 #
+# slantbox(width, height, x offset, y offset, attributes)
 define slantbox { [
   if "$1"=="" then { w = boxwid } else { w = $1 }
   if "$2"=="" then { h = boxht } else { h = $2 }
@@ -28,11 +16,18 @@ define slantbox { [
   S: 0.5 between SE and SW
   W: 0.5 between SW and NW
   C: 0.5 between SW and NE
-  line $5 from N to NE then to SE then to SW then to NW then to N
+  line from N to NE then to SE then to SW then to NW then to N $5
   ] }
 
-# Dandelion = 1,0.71,0.16
+# Goldenrod is a predefined SVG color
 # Goldenrod = 0.855, 0.648, 0.125
+# Dandelion = 1,0.71,0.16
+#efine(`Dandelion',`1,0.71,0.16')
+if (dpicopt == optPSfrag) || (dpicopt == optPS) then {
+command "/Goldenrod { 0.855 0.648 0.125 } def
+/Dandelion { 1 0.71 0.16 } def
+/black { 0 0 0 } def
+/yellow { 1 1 0 } def" }
 
 # tblock(<width>, <height>, <text>)
 define tblock { [
@@ -43,10 +38,9 @@ define tblock { [
     with .ne at last [] .ne;
   ] }
 
+x = 0.5
   tblock(1, 0.5, "Master" "1");
   move -0.1
   tblock(0.5, 1, "Slave");
 
 .PE
-%}%
-%\end{document}

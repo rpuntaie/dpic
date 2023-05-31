@@ -314,7 +314,7 @@ svgarcahead (postype C, int atyp, postype * point, nametype * sou, double ht,
   else { printf (" fill=\"black\"\n"); }
   if ((atyp == 0) && (lwi < ((wid - lwi) / 2))) {
     printf (" d=\"M ");
-    svgwpos (P);
+    svgwpos (Px);
     putchar ('\n');
     Q = Ci;
     pprop (Ai, &Q, radius + lwi, -lwi, radius);
@@ -327,8 +327,8 @@ svgarcahead (postype C, int atyp, postype * point, nametype * sou, double ht,
     printf (" L ");
     svgwprop (Ao, Co, radius - lwi, lwi, radius);
     putchar ('\n');
-    svgwarc (P, radius - lwi, 1.0, -ccw); }
-  else if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
+    svgwarc (Px, radius - lwi, 1.0, -ccw); }
+  else if (atyp == 3) {
     printf (" d=\"M ");
     svgwpos (Px);
     putchar ('\n');
@@ -497,7 +497,7 @@ svgdraw (primitive * node) {
   int lsp;
   postype X1, X2;
   primitive *lastseg, *tx, *primp;
-  double h, w, lth;
+  double lth;
   int TEMP;
   getlinespec (node, &lsp, &lastseg);
   shadestr = node->shadedp;
@@ -703,14 +703,22 @@ svgdraw (primitive * node) {
       lth = qenv (lastseg, Xlinethick, lastseg->lthick);
       TEMP = ahlex (node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xlefthead)) {
-	startarc (node, X1, lth, &h, &w);
-	svgarcahead (node->aat, ahnum (node->lineatype_), &X1, outlinestr,
-		     h, w, lth, fabs (node->aradius_), node->arcangle_); }
-      TEMP = ahlex (node->lineatype_);
+        svgarcahead(node->aat, ahnum(node->lineatype_), &X1, outlinestr,
+          qenv(node, Xarrowht, node->lineheight_),
+          qenv(node, Xarrowwid, node->linewidth_), lth,
+          fabs(node->aradius_),node->arcangle_);
+        node->startangle_ =
+          datan(X1.ypos - node->aat.ypos,X1.xpos - node->aat.xpos);
+        }
+      TEMP = ahlex(node->lineatype_);
       if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	    endarc (node, X2, lth, &h, &w);
-	    svgarcahead (node->aat, ahnum (node->lineatype_), &X2, outlinestr,
-		     h, w, lth, -fabs (node->aradius_), node->arcangle_); }
+        svgarcahead(node->aat, ahnum(node->lineatype_), &X2, outlinestr,
+          qenv(node, Xarrowht, node->lineheight_),
+          qenv(node, Xarrowwid, node->linewidth_), lth,
+          -fabs(node->aradius_),node->arcangle_);
+        setangles(&node->startangle_, &node->arcangle_,
+          node->aat, X1.xpos, X1.ypos, X2.xpos, X2.ypos);
+        }
       printf ("<path");
       svglineoptions (node, lsp);
       printf (" d=\"M ");

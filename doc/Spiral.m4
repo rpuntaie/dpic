@@ -1,13 +1,15 @@
 .PS
 # Spiral.m4 (Uses Circuit_macros library)
 threeD_init
-NeedDpicTools
+# This assumes that dpictools.pic is in the current working directory;
+# otherwise use a blank argument to use the Circuit_macros file.
+NeedDpicTools(.)
 
   azimuth = 15                     # Set view angles in degrees
   elevation = 35
   setview(azimuth,elevation)
 
-  crad = 1                         # Sphere radius
+  crad = 0.9                       # Sphere radius
   thetamin = -89                   # Rotation about the y axis (deg)
   thetamax = 89
   turns = 6
@@ -82,10 +84,10 @@ define invisline { # name          # Draw dashed invisible part of line in
 
 thinlines_
   invisline(X)
-  arrow to X chop dw/2 chop 0; "$x$" rjust
+  arrow to X chop dw/2 chop 0; "$x$" rjust above
   invisline(Y)
   arrow to Y chop dw/2 chop 0; "$y$" ljust
   line dashed from South to North chop 0 chop dashwid
-  arrow up crad*0.5 chop 0.05 chop 0 ; "$z$" ljust
+  arrow up crad*0.5 chop 0.05 chop 0 ; "$\;z$" ljust below
 
 .PE

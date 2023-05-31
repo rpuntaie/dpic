@@ -1,7 +1,8 @@
 
-/* This file "parser.w" is the input to bison, except for the token
+/* This file "parser.w" is the input to bison except for the token
    definitions, which are generated separately by an awk script and then
-   edited and inserted below by the Makefile.
+   edited and inserted below by the Makefile. A more readable grammar
+   without productions is in the file grammar.txt produced by bison.
 
    An explanation of coding style is in order.  This program was first
    written in the late 1980s in pascal for compilation on an IBM VM/CMS
@@ -3463,7 +3464,7 @@ marknotfound(int eno, Char *chb, chbufinx inx, chbufinx len)
 }
 
 							/* Hash of variable name:
-   							   (ord(chr(1))+ord(chr(n-1))) mod 10 */
+   							   (ord(chr(1))+ord(chr(n-1))) mod (HASHLIM+1) */
 int
 varhash(Char *chb, chbufinx chbufx, chbufinx toklen)
 {
@@ -3520,7 +3521,8 @@ findname(primitive *eb, Char *chb, chbufinx chbufx, chbufinx toklen,
     *last = leftptr;
     for (i = left + 1; i <= midpt; i++) { *last = (*last)->nextname; }
     testname = *last;
-    *tstval = eqstring(chb, chbufx, toklen, testname->segmnt, testname->seginx,testname->len);
+    *tstval = eqstring(chb, chbufx, toklen,
+      testname->segmnt, testname->seginx,testname->len);
     if ((*tstval) < 0) {
 	  left = midpt + 1;
 	  leftptr = (*last)->nextname;

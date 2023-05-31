@@ -195,8 +195,11 @@ mfpahead (int atyp, postype * point, postype shaft, double ht, double wid,
 }
 
 void
-mfpwarc (postype Ctr, double radius, double startangle, double endangle,
-	 double ccw) {
+mfpwarc (postype Ctr, postype A, postype B, double radjust, double ccw) {
+  double radius,startangle,endangle;
+  radius = distance(B,Ctr)+radjust;
+  startangle = posangle(A,Ctr);
+  endangle = posangle(B,Ctr);
   printf ("\\arc[p]{");
   wpos (Ctr);
   comma ();
@@ -228,14 +231,14 @@ mfparcahead (postype C, postype point, int atyp, nametype * sou, double ht,
     wstring (&output, sou);
     putchar (']'); }
   printf ("\\lclosed\\begin{connect}\n");
-  mfpwarc (Ci, radius, posangle (Ai, Ci), posangle (point, Ci), -ccw);
-  mfpwarc (Co, radius, posangle (point, Co), posangle (Ao, Co), ccw);
+  mfpwarc (Ci, Ai,point,0,-ccw);
+  mfpwarc (Co, point,Ao,0, ccw);
   if ((atyp == 0) && (lwi < ((wid - lwi) / 2))) {
-    mfpwarc (Co, radius - lwi, posangle (Ao, Co), posangle (*P, Co), -ccw);
-    mfpwarc (Ci, radius + lwi, posangle (*P, Ci), posangle (Ai, Ci), ccw); }
-  else if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
-    mfpwarc (Cox, radius, posangle (Ao, Cox), posangle (Px, Cox), -ccw);
-    mfpwarc (Cix, radius, posangle (Px, Cix), posangle (Ai, Cix), ccw);
+    mfpwarc (Co, Ao,Px, 0,-ccw);
+    mfpwarc (Ci, Px,Ai, 0, ccw); }
+  else if (atyp == 3) {
+    mfpwarc (Cox, Ao,Px,0,-ccw);
+    mfpwarc (Cix, Px,Ai,0, ccw);
     }
   printf ("\\end{connect}\n");
 }
@@ -530,7 +533,8 @@ mfpdraw (primitive * node) {
         wpos (node->endpos_);
         if (node->son == NULL) {
 	      printf ("}\n");
-	      if (outlinestr != NULL) { printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
+	      if (outlinestr != NULL) {
+            printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
         }
       }
     if (node->son == NULL) {
@@ -554,8 +558,7 @@ mfpdraw (primitive * node) {
       mfpsetshade (fillfrac, shadestr);
       printf ("%%\n");
       printf ("\\lclosed");
-      mfpwarc(node->aat, node->aradius_, posangle(X0, node->aat),
-	       posangle(X1, node->aat), node->arcangle_);
+      mfpwarc(node->aat, X0,X1,0,node->arcangle_);
       fillfrac = -1.0;
       shadestr = NULL; }
     if (lsp != Xinvis) {
@@ -572,8 +575,7 @@ mfpdraw (primitive * node) {
 		     qenv(node, Xarrowwid, node->linewidth_), lth,
 		     -fabs(node->aradius_), node->arcangle_, &X1); }
       mfplineopts (lth, node->lparam, lsp, outlinestr);
-      mfpwarc(node->aat, node->aradius_, posangle(X0, node->aat),
-	       posangle(X1, node->aat), node->arcangle_);
+      mfpwarc(node->aat, X0,X1,0, node->arcangle_);
       if (outlinestr != NULL) { printf ("\\drawcolor{\\mfpdefaultcolor}\n"); }
       }
     mfpwrtext (node, node->textp, node->aat.xpos, node->aat.ypos);

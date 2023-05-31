@@ -2204,7 +2204,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 PACKAGE=dpic
 UCPACKAGE=DPIC
-VERSION=2023.02.01
+VERSION=2023.06.01
 
 
 

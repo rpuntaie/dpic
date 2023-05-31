@@ -1,5 +1,5 @@
 .PS
-# arrowheads.pic
+# arrowwide.pic
 
 ######################################
 define array {
@@ -121,32 +121,24 @@ define markarchead {[ # (Name,wid,ht,thickp,type)
 
 Box: box invis wid 7 ht 9 
 [
-array(a,0,1,3)
+array(head,0,1,3)
 array(thk,0.1*72,0.2*72,0.3*72)
-if 1 then {[
-  arrowl = 2.0; arrowwid = 1; arrowht = 1
-  for ii=2 to 2 do { [
-    for j = 1 to 3 do {
-      if j > 1 then {move right 0.2}
-      [ arrowhead = a[j]; E: (arrowl,arrowl); S: (0,0)
-        A: arrow from S to E <-> thick thk[ii] color "yellow"
-        markahead(A,arrowwid,arrowht,thk[ii],a[j])
-        sprintf("arrowhead=%g",a[j]) at (1.5,0.8)
-        ] } 
-      ]} ]; move to last [].sw+(0,-1)}
-if 1 then {[
-  arad = 0.5; arrowwid = arad*1.5; arrowht = arrowwid
-  for ii=1 to 3 do {
-    if ii > 1 then { move to last [].sw+(0,-0.75); right}
-    [ for j = 1 to 3 do {
-      arrowhead = a[j]
-      B: [ Arc: arc <-> thick thk[ii] color "green" \
-            from (-1,1)*arad to (1,1)*arad with .c at (0,0) ]
-      { markarchead(B.Arc,arrowwid,arrowht,thk[ii],a[j])}
-      if j < 3 then {move right 0.75}
-      } ] 
+array(hght,1,2,4,8)
+if 1 then {
+  arad = 0.5; arrowwid = 1.25; linethick = 0.1*72
+  nj = 3
+  for j = 1 to nj do { [ arrowhead = head[j]
+    nii = 4; kt = 1
+    for ii=1 to nii do { [ aht = arrowwid/hght[kt]; kt+=1
+      Arc: arc <-> color "green" \
+            ht aht \
+            from (-1,1)*arad to (1,1)*arad with .c at (0,0)
+      { markarchead(Arc,arrowwid,aht,linethick,head[j])} ]
+      if ii < nii then { move to last [].w + (0,-1.5) }
+      }
+    ];
+    if j < nj then { move right 0.5 }
     }
-  ] with .nw at last [].sw+(0,-0.2)
-}
+  }
 ] with .w at Box.w+(1,0)
 .PE

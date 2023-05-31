@@ -97,7 +97,7 @@ xfig:
 	cp sources/diag9.pic diag.pic
 	$(DPIC) -x diag.pic > diag.fig
 
-MANSRC = arcs.pic arrowheads.pic arrows.pic basictests.pic
+MANSRC = arcs.pic arrowheads.pic arrows.pic arrowwide.pic basictests.pic
 man:
 	cp sources/man.tex sources/mode.tex .
 	for file in $(MANSRC) `(cd sources; ls man*.pic )` ; do \

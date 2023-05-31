@@ -1,8 +1,8 @@
 .PS
 # Spiral.m4 (Uses Circuit_macros library)
-# threeD_init Version 10.1.3: TikZ PGF m4 macro settings.
+# threeD_init Version 10.2: TikZ PGF m4 macro settings.
   
-  # gen_init Version 10.1.3: TikZ PGF m4 macro settings.
+  # gen_init Version 10.2: TikZ PGF m4 macro settings.
   
 
   define rpoint__ {
@@ -14,7 +14,8 @@
   rtod_ = 57.295779513082323;  dtor_ = 0.017453292519943295
   twopi_ = 6.2831853071795862;  pi_ = (twopi_/2)
   rp_ang = 0;  right
-  
+  define dpictools_ {0}  define copydpictools_ {if "$1"=="" then { copy "/cygdrive/d/Dwight/lib//dpictools.pic"; } \
+    else { copy "$1/dpictools.pic"; } }
   
   linethick = 0.8
   arrowwid = 0.05*scale; arrowht = 0.1*scale 
@@ -34,7 +35,9 @@
 
 # threeD_init end
 
-if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+# This assumes that dpictools.pic is in the current working directory;
+# otherwise use a blank argument to use the Circuit_macros file.
+if !dpictools_ then { copydpictools_(.) }
 
   azimuth = 15                     # Set view angles in degrees
   elevation = 35
@@ -48,7 +51,7 @@ if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
 # setview end
 
 
-  crad = 1                         # Sphere radius
+  crad = 0.9                       # Sphere radius
   thetamin = -89                   # Rotation about the y axis (deg)
   thetamax = 89
   turns = 6
@@ -99,8 +102,8 @@ define Radiusvis { $2 = (((((((cos((-2*turns*$1*dtor_)))*(((cos((-$1*dtor_)))*(c
     if xs*xf < 0 then {
       findroot( Radiusvis, theta-dt,theta,1e-8,x ) # Find the transition pt
       n+=1; P[n]:  (((sin(-((azimuth)*(dtor_))))*(((cos((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))+((cos(-((azimuth)*(dtor_))))*( ((sin((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))),  (((cos(((elevation)*(dtor_))))*((crad+ (-(((sin((-x*dtor_)))*(crad)))))))-(((sin(((elevation)*(dtor_))))*((((cos(-((azimuth)*(dtor_))))*(((cos((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))-(((sin(-((azimuth)*(dtor_))))*( ((sin((-2*turns*x*dtor_)))*(((cos((-x*dtor_)))*(crad))))))))))))
-      if xs < 0 then { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
-  dfitcurve(P,n,dashed) } else { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+      if xs < 0 then { if !dpictools_ then { copydpictools_() }
+  dfitcurve(P,n,dashed) } else { if !dpictools_ then { copydpictools_() }
   dfitcurve(P,n) }
       P[0]: P[n]
       n = 0
@@ -109,8 +112,8 @@ define Radiusvis { $2 = (((((((cos((-2*turns*$1*dtor_)))*(((cos((-$1*dtor_)))*(c
     n+=1; P[n]:  (((sin(-((azimuth)*(dtor_))))*(((cos((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))+((cos(-((azimuth)*(dtor_))))*( ((sin((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))),  (((cos(((elevation)*(dtor_))))*((crad+ (-(((sin((-theta*dtor_)))*(crad)))))))-(((sin(((elevation)*(dtor_))))*((((cos(-((azimuth)*(dtor_))))*(((cos((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))-(((sin(-((azimuth)*(dtor_))))*( ((sin((-2*turns*theta*dtor_)))*(((cos((-theta*dtor_)))*(crad))))))))))))
     }
   n+=1; P[n]:  (((sin(-((azimuth)*(dtor_))))*(((cos((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))+((cos(-((azimuth)*(dtor_))))*( ((sin((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))),  (((cos(((elevation)*(dtor_))))*((crad+ (-(((sin((-thetamax*dtor_)))*(crad)))))))-(((sin(((elevation)*(dtor_))))*((((cos(-((azimuth)*(dtor_))))*(((cos((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))-(((sin(-((azimuth)*(dtor_))))*( ((sin((-2*turns*thetamax*dtor_)))*(((cos((-thetamax*dtor_)))*(crad))))))))))))
-  if xs < 0 then { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
-  dfitcurve(P,n,dashed) } else { if dpicopt > 0 then { copy "/cygdrive/d/Dwight/lib/dpictools.pic" }
+  if xs < 0 then { if !dpictools_ then { copydpictools_() }
+  dfitcurve(P,n,dashed) } else { if !dpictools_ then { copydpictools_() }
   dfitcurve(P,n) }
 
                                    # Axes
@@ -129,10 +132,10 @@ define invisline { # name          # Draw dashed invisible part of line in
 linethick = 0.4
   arrowwid = 0.04*scale; arrowht = 0.2/3*scale 
   invisline(X)
-  arrow to X chop dw/2 chop 0; "$x$" rjust
+  arrow to X chop dw/2 chop 0; "$x$" rjust above
   invisline(Y)
   arrow to Y chop dw/2 chop 0; "$y$" ljust
   line dashed from South to North chop 0 chop dashwid
-  arrow up crad*0.5 chop 0.05 chop 0 ; "$z$" ljust
+  arrow up crad*0.5 chop 0.05 chop 0 ; "$\;z$" ljust below
 
 .PE

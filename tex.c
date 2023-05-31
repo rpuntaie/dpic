@@ -200,8 +200,7 @@ texdraw (primitive * node) {
 		 (TEMP == Xrighthead))) {
 	    p2ahead (&node->endpos_, node->aat,
 		 qenv (node, Xarrowht, lastseg->lineheight_)); }
-      lgth = linlen (node->endpos_.xpos - node->aat.xpos,
-		     node->endpos_.ypos - node->aat.ypos);
+         lgth = distance(node->endpos_,node->aat);
       if ((drawmode == Pict2e) ||
 	    ((lsp == Xsolid) && ((lgth > 0.18) || (drawmode == tTeX)))) {
 	    if (lgth > 0) {
@@ -301,8 +300,9 @@ texdraw (primitive * node) {
 	    tmpat = node->endpos_;
 	    TEMP = ahlex (node->lineatype_);
 	    if ((TEMP == Xdoublehead) || (TEMP == Xrighthead)) {
-	      x = linlen (node->endpos_.xpos - node->aat.xpos,
-		      node->endpos_.ypos - node->aat.ypos);
+	      /* x = linlen (node->endpos_.xpos - node->aat.xpos,
+		      node->endpos_.ypos - node->aat.ypos); */
+          x = distance(node->endpos_,node->aat);
 	      y = qenv (node, Xarrowht, lastseg->lineheight_);
 	      pprop (node->aat, &node->endpos_, y, x - y, x);
 	      }

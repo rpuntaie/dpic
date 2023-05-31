@@ -225,16 +225,16 @@ mpoarcahead (postype C, postype point, int atyp, nametype * sou, double ht,
   radius = fabs (radius);
   printf ("fill ");
   wpos (Ai);
-  popgwarc (Ci, radius, posangle (Ai, Ci), posangle (point, Ci), -ccw);
-  popgwarc (Co, radius, posangle (point, Co), posangle (Ao, Co), ccw);
+  popgwarc (Ci, Ai,point, 0,-ccw);
+  popgwarc (Co, point,Ao, 0, ccw);
   if ((atyp == 0) && (lwi < ((wid - lwi) / 2))) {
     ddash ();
-    wprop (Ao, Co, radius - lwi, lwi, radius);
-    popgwarc (Co, radius - lwi, posangle (Ao, Co), posangle (*P, Co), -ccw);
-    popgwarc (Ci, radius + lwi, posangle (*P, Ci), posangle (Ai, Ci), ccw); }
-  else if ((atyp == 3) && (lwi < ((wid - lwi) / 2))) {
-    popgwarc (Cox, radius, posangle (Ao, Cox), posangle (Px, Cox), -ccw);
-    popgwarc (Cix, radius, posangle (Px, Cix), posangle (Ai, Cix), ccw);
+    wprop (Co, Ao, lwi, radius-lwi, radius);
+    popgwarc (Co, Ao, Px, 0, -ccw);
+    popgwarc (Ci, Px, Ai, lwi, ccw); }
+  else if (atyp == 3) {
+    popgwarc (Cox, Ao,Px, 0, -ccw);
+    popgwarc (Cix, Px,Ai, 0,  ccw);
     }
   printf (" --cycle");
   addcolor (sou, 0.0);
@@ -382,8 +382,7 @@ mpodraw (primitive * node) {
       mposetthick (0.0);
       printf ("fill ");
       wpos (X0);
-      popgwarc(node->aat, fabs (node->aradius_),
-		posangle(X0, node->aat), posangle(X1, node->aat), node->arcangle_);
+      popgwarc(node->aat, X0, X1, 0, node->arcangle_);
       printf (" --cycle");
       addcolor (shadestr, fillfrac);
       printf (" X\n");
@@ -409,8 +408,7 @@ mpodraw (primitive * node) {
       mpolinecap (lsp);
       printf ("drw ");
       wpos (X0);
-      popgwarc (node->aat, fabs (node->aradius_),
-		posangle (X0, node->aat), posangle (X1, node->aat), node->arcangle_);
+      popgwarc (node->aat, X0, X1, 0, node->arcangle_);
       mpodashdot (lsp, node->lparam, node->outlinep);
       }
     mpowrtext (node, node->textp, node->aat.xpos, node->aat.ypos);

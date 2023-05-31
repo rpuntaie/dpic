@@ -5,38 +5,42 @@
 [
 #                               case(i,.,.) statement: execute alternative i
 define case { exec sprintf("$%g",floor($1+0.5)+1); }
-
+#                               DefineRGBColor(colorname,r,g,b)
+#                               Arguments are in the range 0 to 1
+#                               Define dpic macro colorname according to the
+#                               postprocessor specified by dpic command-line
+#                               option; colorname then evaluates to a string
 define DefineRGBColor {
 case(dpicopt,  # The order of the following is defined in dpic source:
-    # MFpic:
-  command sprintf("\mfpdefinecolor{_color__}{rgb}{%g,%g,%g}",$2,$3,$4)
-  define $1 {"_color__"}
-  , # Mpost:
-  define $1 {sprintf("(%g,%g,%g)",$2,$3,$4)}
-  , # PDF:
-  define $1 {sprintf("%g %g %g",$2,$3,$4)}
-  , # PGF:
-  command sprintf("\definecolor{_color__}{rgb}{%g,%g,%g}",$2,$3,$4)
-  define $1 {"_color__"}
-  , # Pict2e:
-  command sprintf("\definecolor{_color__}{rgb}{%g,%g,%g}",$2,$3,$4)
-  define $1 {"_color__"}
-  , # PS:
-  define $1 {sprintf("%g %g %g",$2,$3,$4)}
-  , # PSfrag:
-  define $1 {sprintf("%g %g %g",$2,$3,$4)}
-  , # PSTricks:
-  command sprintf("\definecolor{_color__}{rgb}{%g,%g,%g}",$2,$3,$4)
-  define $1 {"_color__"}
-  , # SVG:
-  define $1 {sprintf("rgb(%g,%g,%g)",int($2*255),int($3*255),int($4*255))}
-  , # TeX:
-  command sprintf("\definecolor{_color__}{rgb}{%g,%g,%g}",$2,$3,$4)
-  define $1 {"_color__"}
-  , # tTeX:
-  command sprintf("\definecolor{_color__}{rgb}{%g,%g,%g}",$2,$3,$4)
-  define $1 {"_color__"}
-  , # xfig:
+# MFpic:
+  command sprintf("\mfpdefinecolor{_$1__}{rgb}{%g,%g,%g}",$2,$3,$4)
+  define $1 {"_$1__"} ,
+# Mpost:
+  define $1 {sprintf("(%g,%g,%g)",$2,$3,$4)} ,
+# PDF:
+  define $1 {sprintf("%g %g %g",$2,$3,$4)} ,
+# PGF:
+  command sprintf("\definecolor{_$1__}{rgb}{%g,%g,%g}",$2,$3,$4)
+  define $1 {"_$1__"} ,
+# Pict2e:
+  command sprintf("\definecolor{_$1__}{rgb}{%g,%g,%g}",$2,$3,$4)
+  define $1 {"_$1__"} ,
+# PS:
+  define $1 {sprintf("%g %g %g",$2,$3,$4)} ,
+# PSfrag:
+  define $1 {sprintf("%g %g %g",$2,$3,$4)} ,
+# PSTricks:
+  command sprintf("\definecolor{_$1__}{rgb}{%g,%g,%g}",$2,$3,$4)
+  define $1 {"_$1__"} ,
+# SVG:
+  define $1 {sprintf("rgb(%g,%g,%g)",int($2*255),int($3*255),int($4*255))} ,
+# TeX:
+  command sprintf("\definecolor{_$1__}{rgb}{%g,%g,%g}",$2,$3,$4)
+  define $1 {"_$1__"} ,
+# tTeX:
+  command sprintf("\definecolor{_$1__}{rgb}{%g,%g,%g}",$2,$3,$4)
+  define $1 {"_$1__"} ,
+# xfig:
   define $1 {"black"}
   ) }
 
