@@ -27,7 +27,7 @@
    result, there are few C idioms used but some p2c idiosyncracies
    (use of With, FORLIM ...) remain.  Starting from scratch would
    have resulted in cleaner code but bugs would have been introduced.
-   The main program changes have resulted from going from parse code
+   The main program changes have resulted from going from productions
    exploiting a completely accessible stack to the more implicit mode
    of bison. Error recovery and some error messages are also different.
    To avoid changing how dpic handles input, the original lexical analyser
@@ -672,7 +672,7 @@ for	:	forhead elementlist optnl                                   /* for1 */
 #endif
 		  }
 
-		| for forincr elementlist optnl /* for2 */
+		| for forincr elementlist optnl                             /* for2 */
 		{ forattr = $$; }
 		;
 

@@ -1433,7 +1433,6 @@ yylex (attribute * a0) {
       else if ((firstch == '.') && (currbuf->readx == 3) &&
 		 (inbuf->prevb == NULL) && (newsymb != (-2))) {
 	    readlatex (); }
-/* else if (firstch > ordMAXCH) { terminalaccepted = illegalchar(firstch); } */
 							/* Use the lexical tables to identify
        							terminals, checking for macro names */
       else {

@@ -100,9 +100,9 @@ void
 svglineoptions (primitive * node, int lnspec) {
   double param,fact,thk;
 
-  if (node->lthick >= 0.0) { svgsetstroke (node->lthick); }
-  if (outlinestr != NULL) { svgsoutline (outlinestr); }
+  if (node->lthick >= 0.0) { svgsetstroke(node->lthick); }
   if (node->ptype == Xblock) { lnspec = Xinvis; }
+  if ((outlinestr != NULL) && (lnspec != Xinvis)) { svgsoutline(outlinestr); }
   switch (lnspec) {
 
   case Xdashed:

@@ -1,4 +1,4 @@
-%                               dpic-doc.tex
+%                               dpic-doc.te
 \documentclass[11pt]{article}
 \usepackage{verbatim,url}
 \usepackage{amssymb}
@@ -39,6 +39,21 @@
     \hb@xt@\hsize{\box\@tempboxa\hfil}%
   \fi
   \vskip\belowcaptionskip}
+\newcommand{\MONTH}{%
+  \ifcase\the\month
+  \or January% 1
+  \or February% 2
+  \or March% 3
+  \or April% 4
+  \or May% 5
+  \or June% 6
+  \or July% 7
+  \or August% 8
+  \or September% 9
+  \or October% 10
+  \or November% 11
+  \or December% 12
+  \fi}
 
 %\def\@date{February 01, 2015}
 \makeatother
@@ -97,19 +112,22 @@
 %\maketitle%
 %
 \begin{centering}
-{\LARGE Drawing with dpic}\\
-{\large
-Dwight Aplevich%
+{\LARGE Drawing with dpic}%
 \footnote{Copyright \textcopyright\ \the\year\ J.\ D.\ Aplevich,
-  all rights reserved.  This document version is made available
+  all rights reserved.  This document is made available
   under the Creative Commons attribution licence version 3.0
   (\protect{\tt http://creativecommons.org/licenses/by/3.0/});
   you are free to copy
   and distribute this document provided proper attribution is given by
   identifying the author.
-  }\\
-%\the\day\ \monthname[\the\month]\ \the\year}\\
-\input{VERSION.tex}}\\
+}\\
+{\large
+Dwight Aplevich}\\
+%\Dpic\ version \input{VERSION.tex}\\
+\input{VERSION.tex}\\
+%\input{VERSION.tex}%\hskip-1ex,
+%this document 2023.12.01}\\
+%%\input{DOCVERSION.tex}
 \end{centering}
 
 %
@@ -129,23 +147,19 @@ Appendix~A (\SR{Appendix A:})
 and the context-free dpic input grammar is given in
 Appendix~B (\SR{Appendix B:}).
 
-The pic ``little language''
-is particularly suited for easily creating line diagrams
-such as electric circuits, and many persons use a set of macros
-called Circuit\_macros, which are processed using the m4 macro processor
-and \dpic.
-The pic language itself allows macro definitions, and both pic and m4 macros
-will be described.
+The pic ``little language'' is particularly suited for easily creating
+line diagrams such as electric circuits, and many persons use a set of
+macros called Circuit\_macros, which are processed using the m4 macro
+processor and \dpic.  The pic language itself allows macro definitions,
+and both pic and m4 macros will be described.
 
 Many other software tools can produce line diagrams and the choice of
-tool is often subjective or a matter of prior familiarity. The advantages of
-\dpic\ are that its basic use is easy to learn and that
-arbitrary formatted diagram text can be included using \LaTeX.
-\Dpic\ will also produce
-SVG output for web files but the advantage of employing a word processor
-for text is not then directly available. A route to sophisticated text
-in SVG is to use \LaTeX\ to produce a pdf file, followed by a pdf-to-svg
-converter.
+tool is often subjective or a matter of prior familiarity.  \Dpic\ is
+relatively easy to learn and can include sophisticated formatted diagram
+text using \LaTeX.  \Dpic\ will also produce SVG output for web files
+but the advantage of employing a word processor for text is not then
+directly available. A route to sophisticated text in SVG is to use \LaTeX\
+to produce a pdf file, followed by a pdf-to-svg converter.
 
 \Dpic accepts gpic input for the most part but
 there are minor differences.  The outputs of gpic and dpic are quite
@@ -1161,7 +1175,9 @@ one or two postprocessors such as Tikz-pgf or \PSTricks.
   to be the same as
     \ntt{outlined {\sl string}}\\
   but fill can be added by explicitly writing
-    \ntt{outlined {\sl string} shaded {\sl string}}
+    \ntt{outlined {\sl string} shaded {\sl string}}\\
+  Arrowheads on linear objects are colored by dpic the same as
+  the line using the {\tt outlined} attribute.
 
   The original pic language did not include the {\tt outlined} or
   {\tt shaded} attributes.  Current processors recognize these but
@@ -1299,8 +1315,6 @@ of dpic produce output that is not intended to be processed directly by
 
   Other output formats, however, require different treatment.
   This is specially true of SVG output for the web.
-% There are several issues: selecting the font and determining the
-% height, width, and position of text.
 
 \subsection{SVG text\label{SVGtext:}}
   In contrast with the various dpic \LaTeX\ output formats for which
@@ -1324,9 +1338,6 @@ of dpic produce output that is not intended to be processed directly by
   is to be used to set text size,
   should the value of {\it y} be the nominal height (the point size) or
   the formatted height of the text?
-% Initial versions of the experimental
-% SVG output of \dpic used the
-% nominal height but later versions now conform to \LaTeX\ usage by treating
   \Dpic treats {\it y} as the true graphical height in drawing units.
   Thus for example, {\tt "text" ht 10*(scale/72)} produces output
   {\tt 10bp} high.
@@ -1913,8 +1924,8 @@ previous example, \gpic places the text with its left edge exactly
 at {\tt A}, with similar effect for right justification.  \Dpic
 uses the environment variable {\tt textoffset}, which is 2.5\,bp by
 default, to place the left edge of the text at {\tt A + (textoffset,0)}
-with a similar gap for other relative positioning.  Assigning {\tt textoffset}
-to 0 sets the gap added by \dpic to zero.
+with a similar gap for other relative positioning.  Assigning
+{\tt textoffset = 0} sets the gap added by \dpic to zero.
 
 \subsection{{\tt continue}}
   In dpic, the {\tt continue} command appends a linear drawn object to
@@ -1942,7 +1953,7 @@ to 0 sets the gap added by \dpic to zero.
 % but it has been retained for historical compatibility.
 
 \subsection{Subscripted variables and labels}
-  Dpic allows subscripted variables and capitalized labels, as described in
+  Dpic allows subscripted variables and labels, as described in
   \SR{Subscripts:}.
 \iffalse
   as an aid in

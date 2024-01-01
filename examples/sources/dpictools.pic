@@ -3,7 +3,7 @@
 # m4 macro NeedDpicTools or the pic statement copy "HOMELIB_/dpictools.pic"
 # when HOMELIB_ is defined or, generically, copy "<path>dpictools.pic"
 
-# Circuit_macros Version 10.2, copyright (c) 2023 J. D. Aplevich under     #
+# Circuit_macros Version 10.5, copyright (c) 2024 J. D. Aplevich under     #
 # the LaTeX Project Public Licence in file Licence.txt. The files of       #
 # this distribution may be redistributed or modified provided that this    #
 # copyright notice is included and provided that modifications are clearly #
@@ -65,12 +65,12 @@ define array {
 define array2 { for i_array=3 to $+ do {
   exec sprintf("$1[%g,%g]=$%g",$2,i_array-2,i_array);}}
 
-#                               posarray(Var,Position1,Position2,...)
-#                               Var[1]:Position1; Var[2]:Position2,...
+#                               posarray(Name,Position1,Position2,...)
+#                               Name[1]:Position1; Name[2]:Position2,...
 define posarray {
  for i_array=2 to $+ do { exec sprintf("$1[%g] : $%g",i_array-1,i_array); }}
 
-#                               posarray2(Var,expr,position1,position2,...)
+#                               posarray2(Var,expr,Position1,Position2,...)
 #                               Var[expr,1]:position1; Var[expr,2]:Position2,...
 define posarray2 { for i_array=3 to $+ do {
   exec sprintf("$1[%g,%g] : $%g",$2,i_array-2,i_array); }}
@@ -322,6 +322,8 @@ define rgbtocmyk {
 #                               Define dpic macro colorname according to the
 #                               postprocessor specified by dpic command-line
 #                               option; colorname then evaluates to a string
+#                               See m4 macro definergbcolor which gives a
+#                               color name
 define DefineRGBColor {
 case(abs(dpicopt),  # The order of the following is defined in dpic source:
 # MFpic:
@@ -388,7 +390,6 @@ define ShadeObject { [ Origin: Here; nSteps = abs($2)
   nextP = $3; nextR = $4; nextG = $5; nextB = $6
   nextarg = 7
   thisP = nextP
-#                               Creates [] wid 0 ht 0 at (0,0):
   if $2 < 0 then { rgbtohsv(nextR,nextG,nextB,nextH,nextS,nextV) } \
   else { rgbtohsv(nextR^2,nextG^2,nextB^2,nextH,nextS,nextV) }
   if nextP*nSteps >= 1 then { nextP = 0 }
@@ -451,7 +452,7 @@ define rnd {int($1+sign($1)/2)} # round function
 #                               Operations on complex numbers (x,y)
 define Zsum {($1+($2))}
 define Zdiff{($1-($2))}
-define Zprod {($1.x*$2.x-$1.y*$2.y,$1.y*$2.x+$1.x*$2.y)}
+define Zprod{($1.x*$2.x-$1.y*$2.y,$1.y*$2.x+$1.x*$2.y)}
 define Zinv {($1.x/($1.x^2+$1.y^2),-$1.y/($1.x^2+$1.y^2))}
 define Zexp {((cos($1.y),sin($1.y))*expe($1.x))}
 define Zcos {(cos($1.x)*cosh($1.y),-sin($1.x)*sinh($1.y))}

@@ -1,8 +1,8 @@
 .PS
 # Spiral.m4 (Uses Circuit_macros library)
-# threeD_init Version 10.2: TikZ PGF m4 macro settings.
+# threeD_init Version 10.5: TikZ PGF m4 macro settings.
   
-  # gen_init Version 10.2: TikZ PGF m4 macro settings.
+  # gen_init Version 10.5: TikZ PGF m4 macro settings.
   
 
   define rpoint__ {
@@ -14,7 +14,8 @@
   rtod_ = 57.295779513082323;  dtor_ = 0.017453292519943295
   twopi_ = 6.2831853071795862;  pi_ = (twopi_/2)
   rp_ang = 0;  right
-  define dpictools_ {0}  define copydpictools_ {if "$1"=="" then { copy "/cygdrive/d/Dwight/lib//dpictools.pic"; } \
+  define dpictools_ {0}
+  define copydpictools_ {if "$1"=="" then { copy "/cygdrive/d/Dwight/lib/dpictools.pic";} \
     else { copy "$1/dpictools.pic"; } }
   
   linethick = 0.8

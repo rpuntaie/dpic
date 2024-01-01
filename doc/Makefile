@@ -48,9 +48,9 @@ dpic.1: dpic.1.src
 
 clean:
 	rm -f *.ps *.dvi *.aux *.log *.blg *.ilg *.toc core *.bbl *.upa *.upb
-	rm -f dpic.1 dpic.man dpic_man.tex
+	rm -f dpic.1 dpic.man dpic_man.tex VERSION.tex
 	( cd examples && make clean )
 
 clobber: clean
-	rm -f *.pdf VERSION.tex $(PICS) Spiral.pic dpic_man.tex dpic.1
+	rm -f *.pdf $(PICS) Spiral.pic dpic_man.tex dpic.1
 	rm -f *.dim dpic.man
