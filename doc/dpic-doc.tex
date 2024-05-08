@@ -113,7 +113,8 @@
 %
 \begin{centering}
 {\LARGE Drawing with dpic}%
-\footnote{Copyright \textcopyright\ \the\year\ J.\ D.\ Aplevich,
+\footnote{\raggedright Manual revised \the\day\ \MONTH\ \the\year.
+  Copyright \textcopyright\ \the\year\ J.\ D.\ Aplevich,
   all rights reserved.  This document is made available
   under the Creative Commons attribution licence version 3.0
   (\protect{\tt http://creativecommons.org/licenses/by/3.0/});
@@ -1319,7 +1320,7 @@ of dpic produce output that is not intended to be processed directly by
 \subsection{SVG text\label{SVGtext:}}
   In contrast with the various dpic \LaTeX\ output formats for which
   text size is established by postprocessor commands,
-  the size of SVG text has to be set by the \pic interpreter
+  the size of SVG text has to be set by the \pic interpreter,
   (at least until an automatic way of returning formatted sizes from
   renderer back to \pic interpreter is established).
 \begin{wrapfigure}[9]{r}{0.3\textwidth}%
@@ -1384,6 +1385,11 @@ of dpic produce output that is not intended to be processed directly by
   is required for only a few key strings.
   In principle, this process might be automated using suitable macros
   and scripting (JavaScript, probably).
+
+  A second issue is that because SVG text has to be treated specially,
+  the resulting drawing-coordinate defined points of the text and the
+  exit position {\tt Here} are not identical to those for text intended
+  for LaTeX.
 
 \enlargethispage{\baselineskip}
 \subsection{Bounding boxes}
@@ -1955,16 +1961,16 @@ with a similar gap for other relative positioning.  Assigning
 \subsection{Subscripted variables and labels}
   Dpic allows subscripted variables and labels, as described in
   \SR{Subscripts:}.
-\iffalse
-  as an aid in
-  geometric calculations such as fitting splines to a set of points.
-  For example, {\tt Pos[{\sl expression}]} is a valid name for a position.
-  The rounded integer value of the expression is used.  Up to two subscripts
-  are allowed, and 
-  {\tt x[{\sl expression},{\sl expression}]} is
-  a valid variable name.  There are no array operations, but it is easy
-  to write macros for them.
-\fi
+
+\subsection{Nul and multiply labeled objects}
+  Gpic accepts the following code:
+    \ntt{A:}
+    \ntt{B: C: Here}
+    \ntt{D: E: box}\\
+which shows a label without an object and multiple labels for positions
+and objects.  Dpic admits only unique labels but allows the first line
+followed by a position or object because line ends are ignored after
+the colon.
 
 \subsection{Splines}
   Gpic extends the ATT pic grammar to make {\tt line 0.5} legal and mean
